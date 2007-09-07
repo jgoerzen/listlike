@@ -43,9 +43,10 @@ Written by John Goerzen, jgoerzen\@complete.org
 -}
 
 module ListLike where
-import Prelude hiding (concat, length, head, last, null, tail, map)
+import Prelude hiding (length, head, last, null, tail, map)
 import qualified Data.List as L
 import qualified Data.Foldable as F
+import Data.Monoid
 
 {- | The class implementing list-like functions.
 
@@ -55,7 +56,7 @@ Implementators must define at least:
 * singleton
 * head
 * tail
-* concat
+* append
 * null or length
 
 -}
@@ -68,14 +69,14 @@ class (F.Foldable full) => ListLike full where
 
     {- | Like (:) for lists: adds an element to the beginning of a list -}
     cons :: elem -> full elem -> full elem
-    cons elem l = concat (singleton elem) l
+    cons elem l = append (singleton elem) l
 
     {- | Adds an element to the *end* of a 'ListLike'. -}
     snoc :: full elem -> elem -> full elem
-    snoc l elem = concat l (singleton elem)
+    snoc l elem = append l (singleton elem)
 
     {- | Combines two lists.  Like (++). -}
-    concat :: full elem -> full elem -> full elem
+    append :: full elem -> full elem -> full elem
 
     {- | Extracts the first element of a 'ListLike'. -}
     head :: full elem -> elem
@@ -120,7 +121,7 @@ instance ListLike [] where
     singleton x = [x]
     cons x l = x : l
     snoc l x = l ++ [x]
-    concat l1 l2 = l1 ++ l2
+    append l1 l2 = l1 ++ l2
     head = L.head
     last = L.last
     tail = L.tail
