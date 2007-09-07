@@ -1,4 +1,4 @@
-{- arch-tag: String utilities main file
+{-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
 All rights reserved.
@@ -43,7 +43,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 -}
 
 module ListLike where
-import Prelude hiding (length, head, last, null, tail, map, filter, concat)
+import Prelude hiding (length, head, last, null, tail, map, filter, concat, any)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -112,7 +112,10 @@ class (F.FoldableLL full item) =>
                      then accum
                      else calclen (accum + 1) (tail cl)
 
-    {- | Apply a function to each itement. -}
+    {- | Apply a function to each element, returning any other
+         valid 'ListLike'.  'rigidMap' will always be at least
+         as fast, if not faster, than this function and is recommended
+         if it will work for your purposes. -}
     map :: ListLike full' item' => (item -> item') -> full -> full'
     map func inp  
         | null inp = empty
@@ -125,53 +128,59 @@ class (F.FoldableLL full item) =>
     rigidMap :: (item -> item) -> full -> full
     rigidMap = map
 
-    {-
-
-    {- | Reverse the itements in a list. -}
-    reverse :: full item -> full item
+    {- | Reverse the elements in a list. -}
+    reverse :: full -> full 
     reverse l = rev l empty
         where rev rl a
                 | null rl = a
                 | otherwise = rev (tail rl) (cons (head rl) a)
 
     {- | Sorts the list. -}
-    sort :: Ord item => full item -> full item
+    sort :: Ord item => full -> full
     sort = sortBy compare
 
     {- | Sort function taking a custom comparison function -}
-    sortBy :: Ord item => (item -> item -> Ordering) -> full item -> full item
+    sortBy :: Ord item => (item -> item -> Ordering) -> full -> full 
     sortBy cmp = F.foldr (insertBy cmp) empty
 
     {- | Inserts the itement at the last place where it is still less than or
          equal to the next itement -}
-    insert :: Ord item => item -> full item -> full item
+    insert :: Ord item => item -> full -> full 
     insert = insertBy compare
 
     {- | Like 'insert', but with a custom comparison function -}
     insertBy :: Ord item => (item -> item -> Ordering) -> item ->
-                full item -> full item
+                full -> full 
     insertBy cmp x ys
         | null ys = singleton x
         | otherwise = case cmp x (head ys) of
                         GT -> cons (head ys) (insertBy cmp x (tail ys))
                         _ ->  cons x (tail ys)
 
+    {- | True if any items satisfy the function -}
+    any :: (item -> Bool) -> full -> Bool
+    any f l = case findIndex f l of
+                   Just _ -> True
+                   Nothing -> False
+
     {- | True if the item occurs in the list -}
-    elem :: Eq item => item -> full item -> Bool
-    elem = F.elem
+    elem :: Eq item => item -> full -> Bool
+    elem = any . (==)
 
     {- | Returns the index of the element, if it exists. -}
-    elemIndex :: Eq item => item -> full item -> Maybe Int
+    elemIndex :: Eq item => item -> full -> Maybe Int
     elemIndex e l = findIndex (== e) l
 
     {- | Take a function and return the first matching element, or Nothing
        if there is no such element. -}
-    find :: (item -> Bool) -> full item -> Maybe item
-    find = F.find
+    find :: (item -> Bool) -> full -> Maybe item
+    find f l = case findIndex f l of
+                    Nothing -> Nothing
+                    Just x -> Just (index l x)
 
     {- | Take a function and return the index of the first matching element,
          or Nothing if no element matches -}
-    findIndex :: (item -> Bool) -> full item -> Maybe Int
+    findIndex :: (item -> Bool) -> full -> Maybe Int
     findIndex f l = worker l 0
         where worker l' accum 
                 | null l' = Nothing
@@ -180,7 +189,7 @@ class (F.FoldableLL full item) =>
 
     {- | The element at 0-based index i.  Raises an exception if i is out
          of bounds.  Like (!!) for lists. -}
-    index :: full item -> Int -> item
+    index :: full -> Int -> item
     index l i 
         | null l = error "index: index not found"
         | i < 0 = error "index: index must be >= 0"
@@ -188,30 +197,35 @@ class (F.FoldableLL full item) =>
         | otherwise = index (tail l) (i - 1)
 
     {- | Returns only the elements that satisfy the function. -}
-    filter :: (item -> Bool) -> full item -> full item
+    filter :: (item -> Bool) -> full -> full 
     filter func l 
         | null l = empty
         | func (head l) = cons (head l) (filter func (tail l))
         | otherwise = filter func (tail l)
 
-    {- | Converts the structure to a list. -}
-    toList :: full item -> [item]
-    toList = F.toList
+    {- | Converts the structure to a list.  This is logically equivolent
+         to 'fromListLike', but may have a more optimized implementation. -}
+    --toList :: full -> [item]
+    --toList = fromListLike
 
     {- | Generates the structure from a list. -}
-    fromList :: [item] -> full item
+    fromList :: [item] -> full 
     fromList [] = empty
     fromList (x:xs) = cons x (fromList xs)
 
+    {- | Converts one ListLike to another.  See also 'toList'.
+         Default implementation is @fromListLike = map id@ -}
+    --fromListLike :: ListLike full' item' => full -> full'
+    --fromListLike = map id
+
     {- | Flatten the structure. -}
-    --concat :: (ListLike full', Monoid (full item)) => full' (full item) -> full item
-    --concat = F.fold
+    concat :: (ListLike full' full, Monoid full) => full' -> full
+    concat = F.fold
 
     {- | Map a function over the items and concatenate the results. -}
-    --concatMap :: Monoid (full item') =>
-    --             (item -> full item') -> full item -> full item'
+    --concatMap :: (ListLike full' item', Monoid full') =>
+    --             (item -> full') -> full -> full'
     --concatMap func l = concat (map func l)
--}
 
 instance ListLike [a] a where
     empty = []
@@ -224,7 +238,7 @@ instance ListLike [a] a where
     tail = L.tail
     null = L.null
     length = L.length
-    -- map = L.map
+    rigidMap = L.map
     {-
     reverse = L.reverse
 -}
