@@ -45,7 +45,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 module ListLike where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat)
 import qualified Data.List as L
-import qualified Data.Foldable as F
+import qualified FoldableLL as F
 import qualified Control.Monad as M
 import Data.Monoid
 import qualified Data.Traversable as T
@@ -64,53 +64,55 @@ Implementators must define at least:
 * null or genericLength
 
 -}
-class ListLike full item | full -> item where
+class (F.FoldableLL full item) =>
+    ListLike full item | full -> item where
     {- | The empty list -}
     empty :: full
 
     {- | Creates a single-itement list out of an itement -}
     singleton :: item -> full
-    {-
 
     {- | Like (:) for lists: adds an itement to the beginning of a list -}
-    cons :: item -> full item -> full item
+    cons :: item -> full -> full
     cons item l = append (singleton item) l
 
     {- | Adds an itement to the *end* of a 'ListLike'. -}
-    snoc :: full item -> item -> full item
+    snoc :: full -> item -> full
     snoc l item = append l (singleton item)
 
     {- | Combines two lists.  Like (++). -}
-    append :: full item -> full item -> full item
+    append :: full -> full -> full 
 
     {- | Extracts the first itement of a 'ListLike'. -}
-    head :: full item -> item
+    head :: full -> item
 
     {- | Extracts the last itement of a 'ListLike'. -}
-    last :: full item -> item
+    last :: full -> item
     last l = case genericLength l of
                   0 -> error "Called last on empty item"
                   1 -> head l
                   _ -> last (tail l)
 
     {- | Gives all itements after the head. -}
-    tail :: full item -> full item
+    tail :: full -> full 
 
     {- | Tests whether the list is empty. -}
-    null :: full item -> Bool
+    null :: full -> Bool
     null x = genericLength x == 0
 
     {- | Length of the list. -}
-    length :: full item -> Int
+    length :: full -> Int
     length = genericLength
 
     {- | Length of the list -}
-    genericLength :: Num a => full item -> a
+    genericLength :: Num a => full -> a
     genericLength l = calclen 0 l
         where calclen accum cl =
                   if null cl
                      then accum
                      else calclen (accum + 1) (tail cl)
+
+    {-
 
     {- | Apply a function to each itement. -}
     map :: (item -> item') -> full item -> full item'
@@ -205,7 +207,6 @@ class ListLike full item | full -> item where
 instance ListLike [a] a where
     empty = []
     singleton x = [x]
-    {-
     cons x l = x : l
     snoc l x = l ++ [x]
     append l1 l2 = l1 ++ l2
@@ -214,7 +215,15 @@ instance ListLike [a] a where
     tail = L.tail
     null = L.null
     length = L.length
+    {-
     map = L.map
     reverse = L.reverse
 -}
+
+instance ListLike BS.ByteString Word8 where
+    empty = BS.empty
+    singleton = BS.singleton
+    append = BS.append
+    head = BS.head
+    tail = BS.tail
 
