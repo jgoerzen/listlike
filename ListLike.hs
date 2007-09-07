@@ -180,6 +180,15 @@ class (F.Foldable full, T.Traversable full) => ListLike full where
         | func (head l) = cons (head l) (filter func (tail l))
         | otherwise = filter func (tail l)
 
+    {- | Converts the structure to a list. -}
+    toList :: full item -> [item]
+    toList = F.toList
+
+    {- | Generates the structure from a list. -}
+    fromList :: [item] -> full item
+    fromList [] = empty
+    fromList (x:xs) = cons x (fromList xs)
+
 instance ListLike [] where
     empty = []
     singleton x = [x]
