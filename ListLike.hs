@@ -43,7 +43,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 -}
 
 module ListLike where
-import Prelude hiding (length, head, last, null, tail, map, filter)
+import Prelude hiding (length, head, last, null, tail, map, filter, concat)
 import qualified Data.List as L
 import qualified Data.Foldable as F
 import qualified Control.Monad as M
@@ -110,7 +110,7 @@ class (F.Foldable full, T.Traversable full) => ListLike full where
                      else calclen (accum + 1) (tail cl)
 
     {- | Apply a function to each itement. -}
-    map :: (item -> item) -> full item -> full item
+    map :: (item -> item') -> full item -> full item'
     map = M.fmap
 
     {- | Reverse the itements in a list. -}
@@ -188,6 +188,15 @@ class (F.Foldable full, T.Traversable full) => ListLike full where
     fromList :: [item] -> full item
     fromList [] = empty
     fromList (x:xs) = cons x (fromList xs)
+
+    {- | Flatten the structure. -}
+    concat :: (ListLike full', Monoid (full item)) => full' (full item) -> full item
+    concat = F.fold
+
+    {- | Map a function over the items and concatenate the results. -}
+    concatMap :: Monoid (full item') =>
+                 (item -> full item') -> full item -> full item'
+    concatMap func l = concat (map func l)
 
 instance ListLike [] where
     empty = []
