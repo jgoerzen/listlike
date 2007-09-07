@@ -51,14 +51,6 @@ import qualified Data.ByteString as BS
 import Data.Word
 
 class FoldableLL full item | full -> item where
-    {-
-    fold :: Monoid item => full -> item
-    fold = foldMap id
-
-    foldMap :: Monoid m => (item -> m) -> full -> m
-    foldMap f = foldr (mappend . f) mempty
-    -}
-
     foldl :: (a -> item -> a) -> a -> full -> a
     foldr :: (item -> b -> b) -> b -> full -> b
 
@@ -75,3 +67,4 @@ instance FoldableLL BS.ByteString Word8 where
 instance (F.Foldable f) => FoldableLL (f a) a where
     foldl = F.foldl
     foldr = F.foldr
+

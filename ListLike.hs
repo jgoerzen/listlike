@@ -158,13 +158,11 @@ class (F.FoldableLL full item) =>
                         _ ->  cons x (tail ys)
 
     {- | True if any items satisfy the function -}
-    any :: (item -> Bool) -> full -> Bool
-    any f l = case findIndex f l of
-                   Just _ -> True
-                   Nothing -> False
+    any :: Monoid full => (item -> Bool) -> full -> Bool
+    any p = getAny . F.foldMap (Any . p)
 
     {- | True if the item occurs in the list -}
-    elem :: Eq item => item -> full -> Bool
+    elem :: (Monoid full, Eq item) => item -> full -> Bool
     elem = any . (==)
 
     {- | Returns the index of the element, if it exists. -}
