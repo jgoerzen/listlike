@@ -44,6 +44,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 
 module ListLike where
 import Prelude hiding (concat, length, head, last, null, tail, map)
+import qualified Data.List as L
 
 {- | The class implementing list-like functions.
 
@@ -57,7 +58,7 @@ Implementators must define at least:
 * null or length
 
 -}
-class ListLike full elem where
+class ListLike full where
     {- | The empty list -}
     empty :: full elem
 
@@ -112,3 +113,23 @@ class ListLike full elem where
         where rev rl a
                 | null rl = a
                 | otherwise = rev (tail rl) (cons (head rl) a)
+
+instance ListLike [] where
+    empty = []
+    singleton x = [x]
+    cons x l = x : l
+    snoc l x = l ++ [x]
+    concat l1 l2 = l1 ++ l2
+    head = L.head
+    last = L.last
+    tail = L.tail
+    null = L.null
+    length = L.length
+    map = L.map
+    reverse = L.reverse
+
+
+
+
+
+
