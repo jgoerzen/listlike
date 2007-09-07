@@ -56,11 +56,9 @@ import Data.Word
 
 Implementators must define at least:
 
-* empty
 * singleton
 * head
 * tail
-* append
 * null or genericLength
 
 -}
@@ -68,6 +66,7 @@ class (F.FoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
     {- | The empty list -}
     empty :: full
+    empty = mempty
 
     {- | Creates a single-itement list out of an itement -}
     singleton :: item -> full
@@ -82,6 +81,7 @@ class (F.FoldableLL full item, Monoid full) =>
 
     {- | Combines two lists.  Like (++). -}
     append :: full -> full -> full 
+    append = mappend
 
     {- | Extracts the first itement of a 'ListLike'. -}
     head :: full -> item
@@ -163,7 +163,7 @@ class (F.FoldableLL full item, Monoid full) =>
 
     {- | True if the item occurs in the list -}
     elem :: Eq item => item -> full -> Bool
-    elem = any . (==)
+    elem i = any (== i)
 
     {- | Returns the index of the element, if it exists. -}
     elemIndex :: Eq item => item -> full -> Maybe Int
