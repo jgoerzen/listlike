@@ -43,10 +43,12 @@ Written by John Goerzen, jgoerzen\@complete.org
 -}
 
 module ListLike where
-import Prelude hiding (length, head, last, null, tail, map)
+import Prelude hiding (length, head, last, null, tail, map, filter)
 import qualified Data.List as L
 import qualified Data.Foldable as F
+import qualified Control.Monad as M
 import Data.Monoid
+import Data.Traversable as T
 
 {- | The class implementing list-like functions.
 
@@ -60,7 +62,7 @@ Implementators must define at least:
 * null or genericLength
 
 -}
-class (F.Foldable full) => ListLike full where
+class (F.Foldable full, T.Traversable full) => ListLike full where
     {- | The empty list -}
     empty :: full item
 
@@ -109,9 +111,7 @@ class (F.Foldable full) => ListLike full where
 
     {- | Apply a function to each itement. -}
     map :: (item -> item) -> full item -> full item
-    map f inp 
-        | null inp = empty
-        | otherwise = cons (f (head inp)) (map f (tail inp))
+    map = M.fmap
 
     {- | Reverse the itements in a list. -}
     reverse :: full item -> full item
@@ -144,10 +144,41 @@ class (F.Foldable full) => ListLike full where
 
     {- | True if the item occurs in the list -}
     elem :: Eq item => item -> full item -> Bool
-    elem e l 
-        | null l = False
-        | e == head l = True
-        | otherwise = elem e (tail l)
+    elem = F.elem
+
+    {- | Returns the index of the element, if it exists. -}
+    elemIndex :: Eq item => item -> full item -> Maybe Int
+    elemIndex e l = findIndex (== e) l
+
+    {- | Take a function and return the first matching element, or Nothing
+       if there is no such element. -}
+    find :: (item -> Bool) -> full item -> Maybe item
+    find = F.find
+
+    {- | Take a function and return the index of the first matching element,
+         or Nothing if no element matches -}
+    findIndex :: (item -> Bool) -> full item -> Maybe Int
+    findIndex f l = worker l 0
+        where worker l' accum 
+                | null l' = Nothing
+                | f (head l') = Just accum
+                | otherwise = worker (tail l') (accum + 1)
+
+    {- | The element at 0-based index i.  Raises an exception if i is out
+         of bounds.  Like (!!) for lists. -}
+    index :: full item -> Int -> item
+    index l i 
+        | null l = error "index: index not found"
+        | i < 0 = error "index: index must be >= 0"
+        | i == 0 = head l
+        | otherwise = index (tail l) (i - 1)
+
+    {- | Returns only the elements that satisfy the function. -}
+    filter :: (item -> Bool) -> full item -> full item
+    filter func l 
+        | null l = empty
+        | func (head l) = cons (head l) (filter func (tail l))
+        | otherwise = filter func (tail l)
 
 instance ListLike [] where
     empty = []
