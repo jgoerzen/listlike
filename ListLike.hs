@@ -64,12 +64,13 @@ Implementators must define at least:
 * null or genericLength
 
 -}
-class (F.Foldable full, T.Traversable full) => ListLike full where
+class ListLike full item | full -> item where
     {- | The empty list -}
-    empty :: full item
+    empty :: full
 
     {- | Creates a single-itement list out of an itement -}
-    singleton :: item -> full item
+    singleton :: item -> full
+    {-
 
     {- | Like (:) for lists: adds an itement to the beginning of a list -}
     cons :: item -> full item -> full item
@@ -192,17 +193,19 @@ class (F.Foldable full, T.Traversable full) => ListLike full where
     fromList (x:xs) = cons x (fromList xs)
 
     {- | Flatten the structure. -}
-    concat :: (ListLike full', Monoid (full item)) => full' (full item) -> full item
-    concat = F.fold
+    --concat :: (ListLike full', Monoid (full item)) => full' (full item) -> full item
+    --concat = F.fold
 
     {- | Map a function over the items and concatenate the results. -}
-    concatMap :: Monoid (full item') =>
-                 (item -> full item') -> full item -> full item'
-    concatMap func l = concat (map func l)
+    --concatMap :: Monoid (full item') =>
+    --             (item -> full item') -> full item -> full item'
+    --concatMap func l = concat (map func l)
+-}
 
-instance ListLike [] where
+instance ListLike [a] a where
     empty = []
     singleton x = [x]
+    {-
     cons x l = x : l
     snoc l x = l ++ [x]
     append l1 l2 = l1 ++ l2
@@ -213,6 +216,5 @@ instance ListLike [] where
     length = L.length
     map = L.map
     reverse = L.reverse
+-}
 
-instance F.Foldable BS.ByteString where
-    foldr = BS.foldr
