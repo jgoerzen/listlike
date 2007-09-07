@@ -255,12 +255,10 @@ class MapLike ml k v | ml -> k, ml -> v where
 instance (Ord k) => MapLike (Map.Map k v) k v where
     lookup = Map.lookup
 
-{-
-instance ListLike ml (k, v) => MapLike2 ml k v where
-    lookup2 k l 
+instance (Eq k, ListLike ml (k, v)) => MapLike ml k v where
+    lookup k l 
         | null l = fail "ListLike lookup: Key not found"
         | otherwise = case head l of
                         (k', v) -> if k' == k
                                       then return v
-                                      else lookup2 k (tail l)
--}
+                                      else lookup k (tail l)
