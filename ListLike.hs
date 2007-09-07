@@ -45,6 +45,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 module ListLike where
 import Prelude hiding (concat, length, head, last, null, tail, map)
 import qualified Data.List as L
+import qualified Data.Foldable as F
 
 {- | The class implementing list-like functions.
 
@@ -58,7 +59,7 @@ Implementators must define at least:
 * null or length
 
 -}
-class ListLike full where
+class (F.Foldable full) => ListLike full where
     {- | The empty list -}
     empty :: full elem
 
