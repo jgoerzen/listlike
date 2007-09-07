@@ -43,7 +43,8 @@ Written by John Goerzen, jgoerzen\@complete.org
 -}
 
 module ListLike where
-import Prelude hiding (length, head, last, null, tail, map, filter, concat, any)
+import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
+                       any, lookup)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -51,6 +52,7 @@ import Data.Monoid
 import qualified Data.Traversable as T
 import qualified Data.ByteString as BS
 import Data.Word
+import qualified Data.Map as Map
 
 {- | The class implementing list-like functions.
 
@@ -237,9 +239,7 @@ instance ListLike [a] a where
     null = L.null
     length = L.length
     rigidMap = L.map
-    {-
     reverse = L.reverse
--}
 
 instance ListLike BS.ByteString Word8 where
     empty = BS.empty
@@ -249,3 +249,18 @@ instance ListLike BS.ByteString Word8 where
     tail = BS.tail
     rigidMap = BS.map
 
+class MapLike ml k v | ml -> k, ml -> v where
+    lookup :: Monad m => k -> ml -> m v
+
+instance (Ord k) => MapLike (Map.Map k v) k v where
+    lookup = Map.lookup
+
+{-
+instance (Eq k, ListLike full (k, v)) => MapLike full k v where
+    lookup k l 
+        | null l = fail "ListLike lookup: Key not found"
+        | otherwise = case head l of
+                        (k', v) -> if k' == k
+                                      then return v
+                                      else lookup k (tail l)
+-}
