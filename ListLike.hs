@@ -116,6 +116,28 @@ class (F.Foldable full) => ListLike full where
                 | null rl = a
                 | otherwise = rev (tail rl) (cons (head rl) a)
 
+    {- | Sorts the list. -}
+    sort :: Ord elem => full elem -> full elem
+    sort = sortBy compare
+
+    {- | Sort function taking a custom comparison function -}
+    sortBy :: Ord elem => (elem -> elem -> Ordering) -> full elem -> full elem
+    sortBy cmp = F.foldr (insertBy cmp) empty
+
+    {- | Inserts the element at the last place where it is still less than or
+         equal to the next element -}
+    insert :: Ord elem => elem -> full elem -> full elem
+    insert = insertBy compare
+
+    {- | Like 'insert', but with a custom comparison function -}
+    insertBy :: Ord elem => (elem -> elem -> Ordering) -> elem ->
+                full elem -> full elem
+    insertBy cmp x ys
+        | null ys = singleton x
+        | otherwise = case cmp x (head ys) of
+                        GT -> cons (head ys) (insertBy cmp x (tail ys))
+                        _ ->  cons x (tail ys)
+
 instance ListLike [] where
     empty = []
     singleton x = [x]
