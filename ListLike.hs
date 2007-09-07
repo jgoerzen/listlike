@@ -57,86 +57,97 @@ Implementators must define at least:
 * head
 * tail
 * append
-* null or length
+* null or genericLength
 
 -}
 class (F.Foldable full) => ListLike full where
     {- | The empty list -}
-    empty :: full elem
+    empty :: full item
 
-    {- | Creates a single-element list out of an element -}
-    singleton :: elem -> full elem
+    {- | Creates a single-itement list out of an itement -}
+    singleton :: item -> full item
 
-    {- | Like (:) for lists: adds an element to the beginning of a list -}
-    cons :: elem -> full elem -> full elem
-    cons elem l = append (singleton elem) l
+    {- | Like (:) for lists: adds an itement to the beginning of a list -}
+    cons :: item -> full item -> full item
+    cons item l = append (singleton item) l
 
-    {- | Adds an element to the *end* of a 'ListLike'. -}
-    snoc :: full elem -> elem -> full elem
-    snoc l elem = append l (singleton elem)
+    {- | Adds an itement to the *end* of a 'ListLike'. -}
+    snoc :: full item -> item -> full item
+    snoc l item = append l (singleton item)
 
     {- | Combines two lists.  Like (++). -}
-    append :: full elem -> full elem -> full elem
+    append :: full item -> full item -> full item
 
-    {- | Extracts the first element of a 'ListLike'. -}
-    head :: full elem -> elem
+    {- | Extracts the first itement of a 'ListLike'. -}
+    head :: full item -> item
 
-    {- | Extracts the last element of a 'ListLike'. -}
-    last :: full elem -> elem
-    last l = case length l of
+    {- | Extracts the last itement of a 'ListLike'. -}
+    last :: full item -> item
+    last l = case genericLength l of
                   0 -> error "Called last on empty item"
                   1 -> head l
-                  x -> last (tail l)
+                  _ -> last (tail l)
 
-    {- | Gives all elements after the head. -}
-    tail :: full elem -> full elem
+    {- | Gives all itements after the head. -}
+    tail :: full item -> full item
 
     {- | Tests whether the list is empty. -}
-    null :: full elem -> Bool
-    null x = length x == 0
+    null :: full item -> Bool
+    null x = genericLength x == 0
 
     {- | Length of the list. -}
-    length :: full elem -> Int
-    length l = calclen 0 l
+    length :: full item -> Int
+    length = genericLength
+
+    {- | Length of the list -}
+    genericLength :: Num a => full item -> a
+    genericLength l = calclen 0 l
         where calclen accum cl =
                   if null cl
                      then accum
                      else calclen (accum + 1) (tail cl)
 
-    {- | Apply a function to each element. -}
-    map :: (elem -> elem) -> full elem -> full elem
+    {- | Apply a function to each itement. -}
+    map :: (item -> item) -> full item -> full item
     map f inp 
         | null inp = empty
         | otherwise = cons (f (head inp)) (map f (tail inp))
 
-    {- | Reverse the elements in a list. -}
-    reverse :: full elem -> full elem
+    {- | Reverse the itements in a list. -}
+    reverse :: full item -> full item
     reverse l = rev l empty
         where rev rl a
                 | null rl = a
                 | otherwise = rev (tail rl) (cons (head rl) a)
 
     {- | Sorts the list. -}
-    sort :: Ord elem => full elem -> full elem
+    sort :: Ord item => full item -> full item
     sort = sortBy compare
 
     {- | Sort function taking a custom comparison function -}
-    sortBy :: Ord elem => (elem -> elem -> Ordering) -> full elem -> full elem
+    sortBy :: Ord item => (item -> item -> Ordering) -> full item -> full item
     sortBy cmp = F.foldr (insertBy cmp) empty
 
-    {- | Inserts the element at the last place where it is still less than or
-         equal to the next element -}
-    insert :: Ord elem => elem -> full elem -> full elem
+    {- | Inserts the itement at the last place where it is still less than or
+         equal to the next itement -}
+    insert :: Ord item => item -> full item -> full item
     insert = insertBy compare
 
     {- | Like 'insert', but with a custom comparison function -}
-    insertBy :: Ord elem => (elem -> elem -> Ordering) -> elem ->
-                full elem -> full elem
+    insertBy :: Ord item => (item -> item -> Ordering) -> item ->
+                full item -> full item
     insertBy cmp x ys
         | null ys = singleton x
         | otherwise = case cmp x (head ys) of
                         GT -> cons (head ys) (insertBy cmp x (tail ys))
                         _ ->  cons x (tail ys)
+
+    {- | True if the item occurs in the list -}
+    elem :: Eq item => item -> full item -> Bool
+    elem e l 
+        | null l = False
+        | e == head l = True
+        | otherwise = elem e (tail l)
 
 instance ListLike [] where
     empty = []
