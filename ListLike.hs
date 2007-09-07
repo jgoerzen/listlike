@@ -64,7 +64,7 @@ Implementators must define at least:
 * null or genericLength
 
 -}
-class (F.FoldableLL full item) =>
+class (F.FoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
     {- | The empty list -}
     empty :: full
@@ -158,11 +158,11 @@ class (F.FoldableLL full item) =>
                         _ ->  cons x (tail ys)
 
     {- | True if any items satisfy the function -}
-    any :: Monoid full => (item -> Bool) -> full -> Bool
+    any :: (item -> Bool) -> full -> Bool
     any p = getAny . F.foldMap (Any . p)
 
     {- | True if the item occurs in the list -}
-    elem :: (Monoid full, Eq item) => item -> full -> Bool
+    elem :: Eq item => item -> full -> Bool
     elem = any . (==)
 
     {- | Returns the index of the element, if it exists. -}
@@ -221,7 +221,7 @@ class (F.FoldableLL full item) =>
     concat = F.fold
 
     {- | Map a function over the items and concatenate the results. -}
-    concatMap :: (ListLike full' item', Monoid full') =>
+    concatMap :: (ListLike full' item') =>
                  (item -> full') -> full -> full'
     concatMap = F.foldMap
 
