@@ -112,11 +112,20 @@ class (F.FoldableLL full item) =>
                      then accum
                      else calclen (accum + 1) (tail cl)
 
-    {-
-
     {- | Apply a function to each itement. -}
-    map :: (item -> item') -> full item -> full item'
-    map = M.fmap
+    map :: ListLike full' item' => (item -> item') -> full -> full'
+    map func inp  
+        | null inp = empty
+        | otherwise = cons (func (head inp)) (map func (tail inp))
+
+    {- | Like 'map', but without the possibility of changing the type of
+       the item.  This can have performance benefits for things such as
+       ByteStrings, since it will let the ByteString use its native
+       low-level map implementation. -}
+    rigidMap :: (item -> item) -> full -> full
+    rigidMap = map
+
+    {-
 
     {- | Reverse the itements in a list. -}
     reverse :: full item -> full item
@@ -215,8 +224,8 @@ instance ListLike [a] a where
     tail = L.tail
     null = L.null
     length = L.length
+    -- map = L.map
     {-
-    map = L.map
     reverse = L.reverse
 -}
 
@@ -226,4 +235,5 @@ instance ListLike BS.ByteString Word8 where
     append = BS.append
     head = BS.head
     tail = BS.tail
+    rigidMap = BS.map
 
