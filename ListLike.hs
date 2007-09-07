@@ -48,7 +48,9 @@ import qualified Data.List as L
 import qualified Data.Foldable as F
 import qualified Control.Monad as M
 import Data.Monoid
-import Data.Traversable as T
+import qualified Data.Traversable as T
+import qualified Data.ByteString as BS
+import Data.Word
 
 {- | The class implementing list-like functions.
 
@@ -212,8 +214,5 @@ instance ListLike [] where
     map = L.map
     reverse = L.reverse
 
-
-
-
-
-
+instance F.Foldable BS.ByteString where
+    foldr = BS.foldr
