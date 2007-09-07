@@ -205,8 +205,8 @@ class (F.FoldableLL full item) =>
 
     {- | Converts the structure to a list.  This is logically equivolent
          to 'fromListLike', but may have a more optimized implementation. -}
-    --toList :: full -> [item]
-    --toList = fromListLike
+    toList :: full -> [item]
+    toList = fromListLike
 
     {- | Generates the structure from a list. -}
     fromList :: [item] -> full 
@@ -215,17 +215,17 @@ class (F.FoldableLL full item) =>
 
     {- | Converts one ListLike to another.  See also 'toList'.
          Default implementation is @fromListLike = map id@ -}
-    --fromListLike :: ListLike full' item' => full -> full'
-    --fromListLike = map id
+    fromListLike :: ListLike full' item => full -> full'
+    fromListLike = map id
 
     {- | Flatten the structure. -}
     concat :: (ListLike full' full, Monoid full) => full' -> full
     concat = F.fold
 
     {- | Map a function over the items and concatenate the results. -}
-    --concatMap :: (ListLike full' item', Monoid full') =>
-    --             (item -> full') -> full -> full'
-    --concatMap func l = concat (map func l)
+    concatMap :: (ListLike full' item', Monoid full') =>
+                 (item -> full') -> full -> full'
+    concatMap = F.foldMap
 
 instance ListLike [a] a where
     empty = []
