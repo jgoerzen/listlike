@@ -249,16 +249,43 @@ instance ListLike BS.ByteString Word8 where
     tail = BS.tail
     rigidMap = BS.map
 
+{-
+lookup k l
+    | null l = fail "ListLike lookup: Key not found"
+    | otherwise = case head l of
+                    (k', v) -> if k' == k
+                                   then return v
+                                   else lookup k (tail l)
+-}
+
+data MapLikeV k v = MapLikeV {
+     lookup :: Monad m => k -> m v
+     }
+
 class MapLike ml k v | ml -> k, ml -> v where
-    lookup :: Monad m => k -> ml -> m v
+    toMapLike :: ml -> MapLikeV k v
 
 instance (Ord k) => MapLike (Map.Map k v) k v where
-    lookup = Map.lookup
+    toMapLike m = MapLikeV (\fk -> Map.lookup fk m)
 
-instance (Eq k, ListLike ml (k, v)) => MapLike ml k v where
+ml = toMapLike testmap
+
+--    lookup :: Monad m => k -> ml -> m v
+
+{-
+instance (Ord x) => MapLike (Map.Map x v) where
+    lookup = Map.lookup
+-}
+
+{-
+instance (ListLike full (k, v), Eq k) => MapLike full where
     lookup k l 
         | null l = fail "ListLike lookup: Key not found"
         | otherwise = case head l of
                         (k', v) -> if k' == k
                                       then return v
                                       else lookup k (tail l)
+-}
+
+testlist = [(1, "one"), (2, "two"), (3, "three")]
+testmap = Map.fromList testlist
