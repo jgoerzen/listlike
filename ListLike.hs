@@ -259,7 +259,7 @@ lookup k l
 -}
 
 data MapLikeV k v = MapLikeV {
-     lookup :: Monad m => k -> m v
+     lookup :: forall m. Monad m => k -> m v
      }
 
 class MapLike ml k v | ml -> k, ml -> v where
