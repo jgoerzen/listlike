@@ -44,7 +44,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 
 module ListLike where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
-                       any, lookup)
+                       any, lookup, init, all)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -66,12 +66,16 @@ Implementators must define at least:
 -}
 class (F.FoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
+
+    ------------------------------ Creation
     {- | The empty list -}
     empty :: full
     empty = mempty
 
     {- | Creates a single-itement list out of an itement -}
     singleton :: item -> full
+
+    ------------------------------ Basic Functions
 
     {- | Like (:) for lists: adds an itement to the beginning of a list -}
     cons :: item -> full -> full
@@ -91,12 +95,20 @@ class (F.FoldableLL full item, Monoid full) =>
     {- | Extracts the last itement of a 'ListLike'. -}
     last :: full -> item
     last l = case genericLength l of
-                  0 -> error "Called last on empty item"
+                  0 -> error "Called last on empty list"
                   1 -> head l
                   _ -> last (tail l)
 
     {- | Gives all itements after the head. -}
     tail :: full -> full 
+
+    {- | All elements of the list except the last one. -}
+    init :: full -> full
+    init l
+        | null l = error "init: empty list"
+        | null xs = empty
+        | otherwise = cons (head l) (init xs)
+        where xs = tail l
 
     {- | Tests whether the list is empty. -}
     null :: full -> Bool
@@ -106,13 +118,7 @@ class (F.FoldableLL full item, Monoid full) =>
     length :: full -> Int
     length = genericLength
 
-    {- | Length of the list -}
-    genericLength :: Num a => full -> a
-    genericLength l = calclen 0 l
-        where calclen accum cl =
-                  if null cl
-                     then accum
-                     else calclen (accum + 1) (tail cl)
+    ------------------------------ List Transformations
 
     {- | Apply a function to each element, returning any other
          valid 'ListLike'.  'rigidMap' will always be at least
@@ -136,6 +142,46 @@ class (F.FoldableLL full item, Monoid full) =>
         where rev rl a
                 | null rl = a
                 | otherwise = rev (tail rl) (cons (head rl) a)
+{- FIXME
+    {- | Add an item between each element in the structure -}
+    intersperse :: item -> full -> full
+    intersperse sep l
+        | null l = empty
+        | null xs = x
+        | otherwise = cons x (cons sep (intersperse sep xs))
+        where x = head l
+              xs = tail l
+              -}
+
+    ------------------------------ Reducing Lists (folds)
+    -- See also functions in FoldableLLL
+
+    ------------------------------ Special folds
+    {- | Flatten the structure. -}
+    concat :: (ListLike full' full, Monoid full) => full' -> full
+    concat = F.fold
+
+    {- | Map a function over the items and concatenate the results. -}
+    concatMap :: (ListLike full' item') =>
+                 (item -> full') -> full -> full'
+    concatMap = F.foldMap
+
+    {- | True if any items satisfy the function -}
+    any :: (item -> Bool) -> full -> Bool
+    any p = getAny . F.foldMap (Any . p)
+
+    {- | True if all items satisfy the function -}
+    all :: (item -> Bool) -> full -> Bool
+    all p = getAll . F.foldMap (All . p)
+
+
+    {- | Length of the list -}
+    genericLength :: Num a => full -> a
+    genericLength l = calclen 0 l
+        where calclen accum cl =
+                  if null cl
+                     then accum
+                     else calclen (accum + 1) (tail cl)
 
     {- | Sorts the list. -}
     sort :: Ord item => full -> full
@@ -158,10 +204,6 @@ class (F.FoldableLL full item, Monoid full) =>
         | otherwise = case cmp x (head ys) of
                         GT -> cons (head ys) (insertBy cmp x (tail ys))
                         _ ->  cons x (tail ys)
-
-    {- | True if any items satisfy the function -}
-    any :: (item -> Bool) -> full -> Bool
-    any p = getAny . F.foldMap (Any . p)
 
     {- | True if the item occurs in the list -}
     elem :: Eq item => item -> full -> Bool
@@ -218,14 +260,23 @@ class (F.FoldableLL full item, Monoid full) =>
     fromListLike :: ListLike full' item => full -> full'
     fromListLike = map id
 
-    {- | Flatten the structure. -}
-    concat :: (ListLike full' full, Monoid full) => full' -> full
-    concat = F.fold
+-- | Returns True if all elements are True
+and :: ListLike full Bool => full -> Bool
+and = all (== True)
 
-    {- | Map a function over the items and concatenate the results. -}
-    concatMap :: (ListLike full' item') =>
-                 (item -> full') -> full -> full'
-    concatMap = F.foldMap
+-- | Returns True if any element is True
+or :: ListLike full Bool => full -> Bool
+or = any (== True)
+
+-- | The sum of the list
+sum :: (Num a, ListLike full a) => full -> a
+sum = getSum . F.foldMap Sum
+
+-- | The product of the list
+product :: (Num a, ListLike full a) => full -> a
+product = getProduct . F.foldMap Product
+
+-- | The maximum value of a list
 
 instance ListLike [a] a where
     empty = []
