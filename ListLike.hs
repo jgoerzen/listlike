@@ -259,6 +259,7 @@ lookup k l
 -}
 
 data ListT k v = forall full. (Eq k, ListLike full (k, v)) => ListT full
+data MapT k v = (Ord k, Eq k) => MapT (Map.Map k v)
 --data forall full. ListLike full (k, v) => 
 --    ListT k v = ListT full
 
@@ -268,8 +269,10 @@ class EncapIt a tp b c where
 instance (Eq k, ListLike full (k, v)) => EncapIt full ListT k v where
     mkEncap = ListT
 
+instance Ord k => EncapIt (Map.Map k v) Map.Map k v where
+    mkEncap = id 
 class MapLike ml where
-    lookup :: (Eq k, Monad m) => k -> ml k v -> m v
+    lookup :: (Eq k, Ord k, Monad m) => k -> ml k v -> m v
 
 instance MapLike ListT where
     lookup k (ListT l)
@@ -278,11 +281,10 @@ instance MapLike ListT where
                         (k', v) -> if k' == k
                                       then return v
                                       else lookup k (ListT (tail l))
-{- 
-tm = toMapLike testmap
-tl = toMapLike testlist
 
---    lookup :: Monad m => k -> ml -> m v
+instance MapLike MapT where
+    lookup k (MapT m) = Map.lookup k m
+{-
 
 {-
 instance (Ord x) => MapLike (Map.Map x v) where
