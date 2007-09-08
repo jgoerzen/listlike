@@ -25,7 +25,7 @@ module ListLike where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
                        maximum, minimum, iterate, span, break, takeWhile,
-                       dropWhile, reverse, zip)
+                       dropWhile, reverse, zip, zipWith)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -427,10 +427,17 @@ zip :: (ListLike full item,
           ListLike fullb itemb,
           ListLike result (item, itemb)) =>
           full -> fullb -> result
-zip a b
-        | null a = empty
-        | null b = empty
-        | otherwise = cons (head a, head b) (zip (tail a) (tail b)) 
+zip = zipWith (\a b -> (a, b))
+
+{- | Takes two lists and combines them with a custom combining function -}
+zipWith :: (ListLike full item,
+            ListLike fullb itemb,
+            ListLike result resultitem) =>
+            (item -> itemb -> resultitem) -> full -> fullb -> result
+zipWith f a b
+    | null a = empty
+    | null b = empty
+    | otherwise = cons (f (head a) (head b)) (zipWith f (tail a) (tail b))
 
 instance ListLike [a] a where
     empty = []
