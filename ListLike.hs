@@ -384,7 +384,7 @@ class (F.FoldableLL full item, Monoid full) =>
 
     {- | Generic version of 'intersect' -}
     intersectBy :: (item -> item -> Bool) -> full -> full -> full
-    intersectBy func xs ys = filter (\x -> any (eq x) ys) xs
+    intersectBy func xs ys = filter (\x -> any (func x) ys) xs
 
     {- | Generic version of 'group'. -}
     groupBy :: (ListLike full' full, Eq item) => 
