@@ -258,26 +258,27 @@ lookup k l
                                    else lookup k (tail l)
 -}
 
-data MapLikeV k v = MapLikeV {
-     lookup :: forall m. Monad m => k -> m v
-     }
+data ListT k v = forall full. (Eq k, ListLike full (k, v)) => ListT full
+--data forall full. ListLike full (k, v) => 
+--    ListT k v = ListT full
 
-class MapLike ml k v | ml -> k, ml -> v where
-    toMapLike :: ml -> MapLikeV k v
+class EncapIt a tp b c where
+    mkEncap :: a -> tp b c
 
-instance (Ord k) => MapLike (Map.Map k v) k v where
-    toMapLike m = MapLikeV (\fk -> Map.lookup fk m)
+instance (Eq k, ListLike full (k, v)) => EncapIt full ListT k v where
+    mkEncap = ListT
 
-instance (ListLike full (k, v), Eq k) => MapLike full k v where
-    toMapLike l = MapLikeV {lookup = dolookup l}
-        where dolookup l k
-                | null l = fail "ListLike lookup: Key not found"
-                | otherwise = case head l of
-                                (k', v) -> if k' == k
-                                              then return v
-                                              else dolookup (tail l) k
+class MapLike ml where
+    lookup :: (Eq k, Monad m) => k -> ml k v -> m v
 
-
+instance MapLike ListT where
+    lookup k (ListT l)
+        | null l = fail "ListLike lookup: Key not found"
+        | otherwise = case head l of
+                        (k', v) -> if k' == k
+                                      then return v
+                                      else lookup k (ListT (tail l))
+{- 
 tm = toMapLike testmap
 tl = toMapLike testlist
 
@@ -300,3 +301,4 @@ instance (ListLike full (k, v), Eq k) => MapLike full where
 
 testlist = [(1, "one"), (2, "two"), (3, "three")]
 testmap = Map.fromList testlist
+-}
