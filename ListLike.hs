@@ -25,7 +25,7 @@ module ListLike where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
                        maximum, minimum, iterate, span, break, takeWhile,
-                       dropWhile)
+                       dropWhile, reverse)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -220,7 +220,7 @@ class (F.FoldableLL full item, Monoid full) =>
         | null l = singleton empty
         | otherwise =
             append (singleton empty)
-                   (map (cons (head l)) (inits (tail l)))
+                   (map (cons (head l)) ((inits (tail l))::[full]))
 
     {- | All final segnemts, longest first -}
     tails :: ListLike full' full => full -> full'
@@ -243,7 +243,8 @@ class (F.FoldableLL full item, Monoid full) =>
 
     {- | True when the first list is wholly containted within the second -}
     isInfixOf :: Eq item => full -> full -> Bool
-    isInfixOf needle haystack = any (isPrefixOf needle) (tails haystack)
+    isInfixOf needle haystack = 
+        any (isPrefixOf needle) ((tails haystack)::[full])
 
     ------------------------------ Searching
 
