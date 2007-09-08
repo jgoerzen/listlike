@@ -3,7 +3,7 @@ Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
 All rights reserved.
 
-For liceense and copyright information, see the file COPYRIGHT
+For license and copyright information, see the file COPYRIGHT
 
 -}
 
