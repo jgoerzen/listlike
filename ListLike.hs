@@ -34,6 +34,7 @@ import qualified Data.Traversable as T
 import qualified Data.ByteString as BS
 import Data.Word
 import qualified Data.Map as Map
+import Data.Maybe
 
 {- | The class implementing list-like functions.
 
@@ -324,11 +325,7 @@ class (F.FoldableLL full item, Monoid full) =>
     {- | Take a function and return the index of the first matching element,
          or Nothing if no element matches -}
     findIndex :: (item -> Bool) -> full -> Maybe Int
-    findIndex f l = worker l 0
-        where worker l' accum 
-                | null l' = Nothing
-                | f (head l') = Just accum
-                | otherwise = worker (tail l') (accum + 1)
+    findIndex f = listToMaybe . findIndices f
 
     {- | Returns the indices of all elements satisfying the function -}
     findIndices :: (ListLike result Int) => (item -> Bool) -> full -> result
