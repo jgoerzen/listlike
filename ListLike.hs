@@ -332,6 +332,11 @@ class (F.FoldableLL full item, Monoid full) =>
     findIndices p xs = map snd $ filter (p . fst) $ thezips
         where thezips = asTypeOf (zip xs [0..]) [(head xs, 0::Int)]
 
+    ------------------------------ "Set" operations
+    {- | Removes duplicate elements from the list.  See also 'nubBy' -}
+    nub :: Eq item => full -> full
+    nub = nubBy (==)
+
     {- | Converts the structure to a list.  This is logically equivolent
          to 'fromListLike', but may have a more optimized implementation. -}
     toList :: full -> [item]
@@ -381,6 +386,12 @@ class (F.FoldableLL full item, Monoid full) =>
                             x = head l
                             xs = tail l
 
+    {- | Generic version of 'nub' -}
+    nubBy :: (item -> item -> Bool) -> full -> full
+    nubBy f l
+        | null l = empty
+        | otherwise =
+            cons (head l) (nubBy f (filter (\y -> not (f (head l) y)) (tail l)))
 
 {- | An extension to 'ListLike' for those data types that are capable
 of dealing with infinite lists.  Some 'ListLike' functions are capable
