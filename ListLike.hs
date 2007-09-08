@@ -292,35 +292,6 @@ class (F.FoldableLL full item, Monoid full) =>
     elemIndex e l = findIndex (== e) l
 
 
-    {- | Length of the list -}
-    genericLength :: Num a => full -> a
-    genericLength l = calclen 0 l
-        where calclen accum cl =
-                  if null cl
-                     then accum
-                     else calclen (accum + 1) (tail cl)
-
-    {- | Sorts the list. -}
-    sort :: Ord item => full -> full
-    sort = sortBy compare
-
-    {- | Sort function taking a custom comparison function -}
-    sortBy :: Ord item => (item -> item -> Ordering) -> full -> full 
-    sortBy cmp = F.foldr (insertBy cmp) empty
-
-    {- | Inserts the itement at the last place where it is still less than or
-         equal to the next itement -}
-    insert :: Ord item => item -> full -> full 
-    insert = insertBy compare
-
-    {- | Like 'insert', but with a custom comparison function -}
-    insertBy :: Ord item => (item -> item -> Ordering) -> item ->
-                full -> full 
-    insertBy cmp x ys
-        | null ys = singleton x
-        | otherwise = case cmp x (head ys) of
-                        GT -> cons (head ys) (insertBy cmp x (tail ys))
-                        _ ->  cons x (tail ys)
 
     {- | Take a function and return the index of the first matching element,
          or Nothing if no element matches -}
@@ -347,6 +318,29 @@ class (F.FoldableLL full item, Monoid full) =>
     deleteFirsts :: Eq item => full -> full -> full
     deleteFirsts = F.foldl (flip delete)
 
+    {- | List union: the set of elements that occur in either list.
+         Duplicate elements in the first list will remain duplicate.
+         See also 'unionBy'. -}
+    union :: Eq item => full -> full -> full
+    union = unionBy (==)
+
+    {- | List intersection: the set of elements that occur in both lists.
+         See also 'intersectBy' -}
+    intersect :: Eq item => full -> full -> full
+    intersect = intersectBy (==)
+
+    ------------------------------ Ordered lists
+    {- | Sorts the list.  See also 'sortBy'. -}
+    sort :: Ord item => full -> full
+    sort = sortBy compare
+
+    {- | Inserts the itement at the last place where it is still less than or
+         equal to the next itement.  See also 'insertBy'. -}
+    insert :: Ord item => item -> full -> full 
+    insert = insertBy compare
+
+    ------------------------------ Conversions
+
     {- | Converts the structure to a list.  This is logically equivolent
          to 'fromListLike', but may have a more optimized implementation. -}
     toList :: full -> [item]
@@ -362,40 +356,7 @@ class (F.FoldableLL full item, Monoid full) =>
     fromListLike :: ListLike full' item => full -> full'
     fromListLike = map id
 
-    {- | Generic version of 'replicate' -}
-    genericReplicate :: Integral a => a -> item -> full
-    genericReplicate count x 
-        | count < 0 = error "Replicate called with negative size"
-        | otherwise = map (\_ -> x) [1..count]
-
-    {- | Generic version of 'take' -}
-    genericTake :: Integral a => a -> full -> full
-    genericTake n l
-        | n <= 0 = empty
-        | null l = empty
-        | otherwise = cons (head l) (genericTake (n - 1) (tail l))
-
-    {- | Generic version of 'drop' -}
-    genericDrop :: Integral a => a -> full -> full
-    genericDrop n l 
-        | n <= 0 = l
-        | null l = l
-        | otherwise = genericDrop (n - 1) (tail l)
-
-    {- | Generic version of 'splitAt' -}
-    genericSplitAt :: Integral a => a -> full -> (full, full)
-    genericSplitAt n l = (genericTake n l, genericDrop n l)
-
-    {- | Generic version of 'group'. -}
-    groupBy :: (ListLike full' full, Eq item) => 
-                (item -> item -> Bool) -> full -> full'
-    groupBy eq l
-        | null l = empty
-        | otherwise = cons (cons x ys) (groupBy eq zs)
-                      where (ys, zs) = span (eq x) xs
-                            x = head l
-                            xs = tail l
-
+    ------------------------------ Generalized functions
     {- | Generic version of 'nub' -}
     nubBy :: (item -> item -> Bool) -> full -> full
     nubBy f l
@@ -415,6 +376,71 @@ class (F.FoldableLL full item, Monoid full) =>
     {- | Generic version of 'deleteFirsts' -}
     deleteFirstsBy :: (item -> item -> Bool) -> full -> full -> full
     deleteFirstsBy func = F.foldl (flip (deleteBy func))
+
+    {- | Generic version of 'union' -}
+    unionBy :: (item -> item -> Bool) -> full -> full -> full
+    unionBy func x y =
+        append x $ F.foldl (flip (deleteBy func)) (nubBy func y) x
+
+    {- | Generic version of 'intersect' -}
+    intersectBy :: (item -> item -> Bool) -> full -> full -> full
+    intersectBy func xs ys = filter (\x -> any (eq x) ys) xs
+
+    {- | Generic version of 'group'. -}
+    groupBy :: (ListLike full' full, Eq item) => 
+                (item -> item -> Bool) -> full -> full'
+    groupBy eq l
+        | null l = empty
+        | otherwise = cons (cons x ys) (groupBy eq zs)
+                      where (ys, zs) = span (eq x) xs
+                            x = head l
+                            xs = tail l
+
+    {- | Sort function taking a custom comparison function -}
+    sortBy :: Ord item => (item -> item -> Ordering) -> full -> full 
+    sortBy cmp = F.foldr (insertBy cmp) empty
+
+    {- | Like 'insert', but with a custom comparison function -}
+    insertBy :: Ord item => (item -> item -> Ordering) -> item ->
+                full -> full 
+    insertBy cmp x ys
+        | null ys = singleton x
+        | otherwise = case cmp x (head ys) of
+                        GT -> cons (head ys) (insertBy cmp x (tail ys))
+                        _ ->  cons x (tail ys)
+
+    ------------------------------ Generic Operations
+    {- | Length of the list -}
+    genericLength :: Num a => full -> a
+    genericLength l = calclen 0 l
+        where calclen accum cl =
+                  if null cl
+                     then accum
+                     else calclen (accum + 1) (tail cl)
+
+    {- | Generic version of 'take' -}
+    genericTake :: Integral a => a -> full -> full
+    genericTake n l
+        | n <= 0 = empty
+        | null l = empty
+        | otherwise = cons (head l) (genericTake (n - 1) (tail l))
+
+    {- | Generic version of 'drop' -}
+    genericDrop :: Integral a => a -> full -> full
+    genericDrop n l 
+        | n <= 0 = l
+        | null l = l
+        | otherwise = genericDrop (n - 1) (tail l)
+
+    {- | Generic version of 'splitAt' -}
+    genericSplitAt :: Integral a => a -> full -> (full, full)
+    genericSplitAt n l = (genericTake n l, genericDrop n l)
+
+    {- | Generic version of 'replicate' -}
+    genericReplicate :: Integral a => a -> item -> full
+    genericReplicate count x 
+        | count < 0 = error "Replicate called with negative size"
+        | otherwise = map (\_ -> x) [1..count]
 
 {- | An extension to 'ListLike' for those data types that are capable
 of dealing with infinite lists.  Some 'ListLike' functions are capable
