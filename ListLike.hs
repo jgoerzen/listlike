@@ -439,6 +439,12 @@ zipWith f a b
     | null b = empty
     | otherwise = cons (f (head a) (head b)) (zipWith f (tail a) (tail b))
 
+{- | Converts a list of pairs into two separate lists of elements -}
+unzip :: (ListLike full (itema, itemb),
+          ListLike ra itema,
+          ListLike rb itemb) => full -> (ra, rb)
+unzip inp = F.foldr convert (empty, empty) inp
+    where convert (a, b) (as, bs) = ((cons a as), (cons b bs))
 instance ListLike [a] a where
     empty = []
     singleton x = [x]
