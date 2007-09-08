@@ -337,6 +337,10 @@ class (F.FoldableLL full item, Monoid full) =>
                 | f (head l') = Just accum
                 | otherwise = worker (tail l') (accum + 1)
 
+    {- | Returns the indices of all elements satisfying the function -}
+    findIndices :: (ListLike result Int) => (item -> Bool) -> full -> result
+    findIndices p xs = map snd $ filter (p . fst) $ thezips
+        where thezips = asTypeOf (zip xs [0..]) [(head xs, 0::Int)]
 
     {- | Converts the structure to a list.  This is logically equivolent
          to 'fromListLike', but may have a more optimized implementation. -}
