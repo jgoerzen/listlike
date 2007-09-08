@@ -142,16 +142,14 @@ class (F.FoldableLL full item, Monoid full) =>
         where rev rl a
                 | null rl = a
                 | otherwise = rev (tail rl) (cons (head rl) a)
-{- FIXME
     {- | Add an item between each element in the structure -}
     intersperse :: item -> full -> full
     intersperse sep l
         | null l = empty
-        | null xs = x
+        | null xs = singleton x
         | otherwise = cons x (cons sep (intersperse sep xs))
         where x = head l
               xs = tail l
-              -}
 
     ------------------------------ Reducing Lists (folds)
     -- See also functions in FoldableLLL
