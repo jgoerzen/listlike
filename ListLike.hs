@@ -337,6 +337,11 @@ class (F.FoldableLL full item, Monoid full) =>
     nub :: Eq item => full -> full
     nub = nubBy (==)
 
+    {- | Removes the first instance of the element from the list.
+       See also 'deleteBy' -}
+    delete :: Eq item => item -> full -> full
+    delete = deleteBy (==)
+
     {- | Converts the structure to a list.  This is logically equivolent
          to 'fromListLike', but may have a more optimized implementation. -}
     toList :: full -> [item]
@@ -392,6 +397,15 @@ class (F.FoldableLL full item, Monoid full) =>
         | null l = empty
         | otherwise =
             cons (head l) (nubBy f (filter (\y -> not (f (head l) y)) (tail l)))
+
+    {- | Generic version of 'deleteBy' -}
+    deleteBy :: (item -> item -> Bool) -> item -> full -> full
+    deleteBy func i l
+        | null l = empty
+        | otherwise =
+            if func i (head l)
+               then tail l
+               else cons (head l) (deleteBy func i (tail l))
 
 {- | An extension to 'ListLike' for those data types that are capable
 of dealing with infinite lists.  Some 'ListLike' functions are capable
