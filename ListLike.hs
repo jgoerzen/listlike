@@ -290,13 +290,6 @@ class (F.FoldableLL full item, Monoid full) =>
     elemIndex :: Eq item => item -> full -> Maybe Int
     elemIndex e l = findIndex (== e) l
 
-    ------------------------------ Zipping
-    zip :: (ListLike fullb itemb, ListLike full' (item, itemb)) => 
-        full -> fullb -> full'
-    zip a b 
-        | null a = empty
-        | null b = empty
-        | otherwise = cons (head a, head b) (zip (tail a) (tail b))
 
     {- | Length of the list -}
     genericLength :: Num a => full -> a
@@ -428,6 +421,17 @@ sum = getSum . F.foldMap Sum
 product :: (Num a, ListLike full a) => full -> a
 product = getProduct . F.foldMap Product
 
+------------------------------ Zipping
+{- | Takes two lists and returns a list of corresponding pairs. -}
+zip :: (ListLike full item,
+          ListLike fullb itemb,
+          ListLike result (item, itemb)) =>
+          full -> fullb -> result
+zip a b
+        | null a = empty
+        | null b = empty
+        | otherwise = cons (head a, head b) (zip (tail a) (tail b)) 
+
 instance ListLike [a] a where
     empty = []
     singleton x = [x]
@@ -449,3 +453,4 @@ instance ListLike BS.ByteString Word8 where
     head = BS.head
     tail = BS.tail
     rigidMap = BS.map
+
