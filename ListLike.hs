@@ -220,7 +220,8 @@ class (F.FoldableLL full item, Monoid full) =>
         | null l = singleton empty
         | otherwise =
             append (singleton empty)
-                   (map (cons (head l)) ((inits (tail l))::[full]))
+                   (map (cons (head l)) theinits)
+            where theinits = asTypeOf (inits (tail l)) [l]
 
     {- | All final segnemts, longest first -}
     tails :: ListLike full' full => full -> full'
@@ -244,7 +245,8 @@ class (F.FoldableLL full item, Monoid full) =>
     {- | True when the first list is wholly containted within the second -}
     isInfixOf :: Eq item => full -> full -> Bool
     isInfixOf needle haystack = 
-        any (isPrefixOf needle) ((tails haystack)::[full])
+        any (isPrefixOf needle) thetails
+        where thetails = asTypeOf (tails haystack) [haystack]
 
     ------------------------------ Searching
 
@@ -403,8 +405,6 @@ sum = getSum . F.foldMap Sum
 -- | The product of the list
 product :: (Num a, ListLike full a) => full -> a
 product = getProduct . F.foldMap Product
-
--- | The maximum value of a list
 
 instance ListLike [a] a where
     empty = []
