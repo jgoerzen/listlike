@@ -268,7 +268,18 @@ class MapLike ml k v | ml -> k, ml -> v where
 instance (Ord k) => MapLike (Map.Map k v) k v where
     toMapLike m = MapLikeV (\fk -> Map.lookup fk m)
 
-ml = toMapLike testmap
+instance (ListLike full (k, v), Eq k) => MapLike full k v where
+    toMapLike l = MapLikeV {lookup = dolookup l}
+        where dolookup l k
+                | null l = fail "ListLike lookup: Key not found"
+                | otherwise = case head l of
+                                (k', v) -> if k' == k
+                                              then return v
+                                              else dolookup (tail l) k
+
+
+tm = toMapLike testmap
+tl = toMapLike testlist
 
 --    lookup :: Monad m => k -> ml -> m v
 
