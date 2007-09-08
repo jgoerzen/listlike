@@ -214,6 +214,39 @@ class (F.FoldableLL full item, Monoid full) =>
     group :: (ListLike full' full, Eq item) => full -> full'
     group = groupBy (==)
 
+    {- | All initial segments of the list, shortest first -}
+    inits :: (ListLike full' full) => full -> full'
+    inits l
+        | null l = singleton empty
+        | otherwise =
+            append (singleton empty)
+                   (map (cons (head l)) (inits (tail l)))
+
+    {- | All final segnemts, longest first -}
+    tails :: ListLike full' full => full -> full'
+    tails l
+        | null l = singleton empty
+        | otherwise = cons l (tails (tail l))
+
+    ------------------------------ Predicates
+    {- | True when the first list is at the beginning of the second. -}
+    isPrefixOf :: Eq item => full -> full -> Bool
+    isPrefixOf needle haystack
+        | null needle = True
+        | null haystack = False
+        | otherwise = (head needle) == (head haystack) && 
+                      isPrefixOf (tail needle) (tail haystack)
+
+    {- | True when the first list is at the beginning of the second. -}
+    isSuffixOf :: Eq item => full -> full -> Bool
+    isSuffixOf needle haystack = isPrefixOf (reverse needle) (reverse haystack)
+
+    {- | True when the first list is wholly containted within the second -}
+    isInfixOf :: Eq item => full -> full -> Bool
+    isInfixOf needle haystack = any (isPrefixOf needle) (tails haystack)
+
+    ------------------------------ Searching
+
     {- | Length of the list -}
     genericLength :: Num a => full -> a
     genericLength l = calclen 0 l
