@@ -23,7 +23,9 @@ Written by John Goerzen, jgoerzen\@complete.org
 
 module ListLike where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
-                       any, lookup, init, all)
+                       any, lookup, init, all, foldl, foldr, foldl1, foldr1,
+                       maximum, minimum, iterate, span, break, takeWhile,
+                       dropWhile)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -151,6 +153,66 @@ class (F.FoldableLL full item, Monoid full) =>
     all :: (item -> Bool) -> full -> Bool
     all p = getAll . F.foldMap (All . p)
 
+    {- | The maximum value of the list -}
+    maximum :: Ord item => full -> item
+    maximum = F.foldr1 max
+
+    {- | The minimum value of the list -}
+    minimum :: Ord item => full -> item
+    minimum = F.foldr1 min
+
+    ------------------------------ Infinite lists
+    {- | Generate a structure with the specified length with every element
+    set to the item passed in.  See also 'genericReplicate' -}
+    replicate :: Int -> item -> full
+    replicate = genericReplicate
+
+    ------------------------------ Sublists
+    {- | Takes the first n elements of the list.  See also 'genericTake'. -}
+    take :: Int -> full -> full
+    take = genericTake
+
+    {- | Drops the first n elements of the list.  See also 'genericDrop' -}
+    drop :: Int -> full -> full
+    drop = genericDrop
+
+    {- | Equivalent to @('take' n xs, 'drop' n xs)@.  See also 'genericSplitAt'. -}
+    splitAt :: Int -> full -> (full, full)
+    splitAt = genericSplitAt
+
+    {- | Returns all elements at start of list that satisfy the function. -}
+    takeWhile :: (item -> Bool) -> full -> full
+    takeWhile func l 
+        | null l = empty
+        | func x = cons x (takeWhile func (tail l))
+        | otherwise = empty
+        where x = head l
+
+    {- | Drops all elements form the start of the list that satisfy the
+       function. -}
+    dropWhile :: (item -> Bool) -> full -> full
+    dropWhile func l
+        | null l = empty
+        | func (head l) = dropWhile func (tail l)
+        | otherwise = l
+
+    {- | The equivalent of @('takeWhile' f xs, 'dropWhile' f xs)@ -}
+    span :: (item -> Bool) -> full -> (full, full)
+    span func l
+        | null l = (empty, empty)
+        | func x = (cons x ys, zs) 
+        | otherwise = (empty, l)
+       where (ys, zs) = span func (tail l)
+             x = head l
+    {- | The equivalent of @'span' ('not' . f)@ -}
+    break :: (item -> Bool) -> full -> (full, full)
+    break p = span (not . p)
+
+    {- | Split a list into sublists, each which contains equal arguments.
+       For order-preserving types, concatenating these sublists will produce
+       the original list. See also 'groupBy'. -}
+    group :: (ListLike full' full, Eq item) => full -> full'
+    group = groupBy (==)
 
     {- | Length of the list -}
     genericLength :: Num a => full -> a
@@ -236,6 +298,61 @@ class (F.FoldableLL full item, Monoid full) =>
          Default implementation is @fromListLike = map id@ -}
     fromListLike :: ListLike full' item => full -> full'
     fromListLike = map id
+
+    {- | Generic version of 'replicate' -}
+    genericReplicate :: Integral a => a -> item -> full
+    genericReplicate count x 
+        | count < 0 = error "Replicate called with negative size"
+        | otherwise = map (\_ -> x) [1..count]
+
+    {- | Generic version of 'take' -}
+    genericTake :: Integral a => a -> full -> full
+    genericTake n l
+        | n <= 0 = empty
+        | null l = empty
+        | otherwise = cons (head l) (genericTake (n - 1) (tail l))
+
+    {- | Generic version of 'drop' -}
+    genericDrop :: Integral a => a -> full -> full
+    genericDrop n l 
+        | n <= 0 = l
+        | null l = l
+        | otherwise = genericDrop (n - 1) (tail l)
+
+    {- | Generic version of 'splitAt' -}
+    genericSplitAt :: Integral a => a -> full -> (full, full)
+    genericSplitAt n l = (genericTake n l, genericDrop n l)
+
+    {- | Generic version of 'group'. -}
+    groupBy :: (ListLike full' full, Eq item) => 
+                (item -> item -> Bool) -> full -> full'
+    groupBy eq l
+        | null l = empty
+        | otherwise = cons (cons x ys) (groupBy eq zs)
+                      where (ys, zs) = span (eq x) xs
+                            x = head l
+                            xs = tail l
+
+
+{- | An extension to 'ListLike' for those data types that are capable
+of dealing with infinite lists.  Some 'ListLike' functions are capable
+of working with finite or infinite lists.  The functions here require
+infinite list capability in order to work at all. -}
+class (ListLike full item) => InfiniteListLike full item | full -> item where
+    {- | An infinite list of repeated calls of the function to args -}
+    iterate :: (item -> item) -> item -> full
+    iterate f x = cons x (iterate f (f x))
+
+    {- | An infinite list where each element is the same -}
+    repeat :: item -> full
+    repeat x = xs
+        where xs = cons x xs
+
+    {- | Converts a finite list into a circular one -}
+    cycle :: full -> full
+    cycle xs 
+        | null xs = error "ListLike.cycle: empty list"
+        | otherwise = xs' where xs' = append xs xs'
 
 -- | Returns True if all elements are True
 and :: ListLike full Bool => full -> Bool
