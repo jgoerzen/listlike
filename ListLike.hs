@@ -16,12 +16,40 @@ For license and copyright information, see the file COPYRIGHT
    Stability  : provisional
    Portability: portable
 
-This module provides various helpful utilities for dealing with strings.
+Generic operations over list-like structures
 
 Written by John Goerzen, jgoerzen\@complete.org
 -}
 
-module ListLike where
+module ListLike (-- * Introduction
+                 -- * Creation & Basic Functions
+                 -- * Reducing lists (folds)
+                 -- ** Special folds
+                 -- * Building lists
+                 -- ** Scans
+                 -- ** Accumulating maps
+                 -- ** Infinite lists
+                 -- ** Unfolding
+                 -- * Sublists
+                 -- ** Extracting sublists
+                 -- ** Predicates
+                 -- * Searching lists
+                 -- ** Searching by equality
+                 -- ** Searching with a predicate
+                 -- * Indexing lists
+                 -- * Zipping and unzipping lists
+                 -- * Special lists
+                 -- ** \"Set\" operations
+                 -- ** Ordered lists
+                 -- * Generalized functions
+                 -- ** The \"By\" operations
+                 -- *** User-supplied equality (replacing an Eq context)
+                 -- *** User-supplied comparison (replacing an Ord context)
+                 -- ** The \"generic\" operations
+                 -- * The ListLike class
+                 ListLike(..)
+                )
+       where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
                        maximum, minimum, iterate, span, break, takeWhile,

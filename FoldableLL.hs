@@ -15,12 +15,16 @@ For license and copyright information, see the file COPYRIGHT
    Stability  : provisional
    Portability: portable
 
-This module provides various helpful utilities for dealing with strings.
+Generic tools for data structures that can be folded.
 
 Written by John Goerzen, jgoerzen\@complete.org
--}
 
-module FoldableLL where 
+-}
+module FoldableLL (-- * FoldableLL Class
+                   FoldableLL(..),
+                   -- * Utilities
+                   fold, foldMap
+                   ) where 
 import Prelude hiding (foldl, foldr, foldr1)
 import qualified Data.List as L
 import qualified Data.Foldable as F
@@ -29,10 +33,20 @@ import qualified Data.ByteString as BS
 import Data.Word
 import Data.Maybe
 
+{- | This is the primary class for structures that are to be considered 
+foldable.  A minimum complete definition provides 'foldl' and 'foldr'.
+
+Instances of 'FoldableLL' can be folded, and can be many and varied.
+
+All instances of 'Data.Foldable.Foldable' are automatically instances
+of 'FoldableLL'.  This includes things such as lists, trees, etc.
+    
+These functions are used heavily in "Data.ListLike". -}
 class FoldableLL full item | full -> item where
+    {- | Left-associative fold -}
     foldl :: (a -> item -> a) -> a -> full -> a
 
-    {- | Strict version of foldl. -}
+    {- | Strict version of 'foldl'. -}
     foldl' :: (a -> item -> a) -> a -> full -> a
     -- This implementation from Data.Foldable
     foldl' f z xs = foldr f' id xs z
@@ -46,7 +60,7 @@ class FoldableLL full item | full -> item where
                     (foldl mf Nothing xs)
            where mf Nothing y = Just y
                  mf (Just x) y = Just (f x y)
-
+    {- | Right-associative fold -}
     foldr :: (item -> b -> b) -> b -> full -> b
 
     -- | Strict version of 'foldr'
@@ -63,17 +77,28 @@ class FoldableLL full item | full -> item where
            where mf x Nothing = Just x
                  mf x (Just y) = Just (f x y)
 
+{- | Combine the elements of a structure using a monoid.
+     @'fold' = 'foldMap' id@ -}
 fold :: (FoldableLL full item, Monoid item) => full -> item
 fold = foldMap id
 
+{- | Map each element to a monoid, then combine the results -}
 foldMap :: (FoldableLL full item, Monoid m) => (item -> m) -> full -> m
 foldMap f = foldr (mappend . f) mempty
 
 instance FoldableLL BS.ByteString Word8 where
     foldl = BS.foldl
+    foldl' = BS.foldl'
+    foldl1 = BS.foldl1
     foldr = BS.foldr
+    foldr' = BS.foldr'
+    foldr1 = BS.foldr1
 
 instance (F.Foldable f) => FoldableLL (f a) a where
     foldl = F.foldl
+    foldl1 = F.foldl1
+    foldl' = F.foldl'
     foldr = F.foldr
+    foldr1 = F.foldr1
+    foldr' = F.foldr'
 
