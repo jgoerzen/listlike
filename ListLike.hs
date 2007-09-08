@@ -259,6 +259,7 @@ lookup k l
 -}
 
 data ListT k v = forall full. (Eq k, ListLike full (k, v)) => ListT full
+
 withListT :: forall b k v. ListT k v -> (forall a. ListLike a (k, v) => a -> b) -> b
 withListT s f =
     case s of
@@ -278,6 +279,9 @@ instance Ord k => EncapIt (Map.Map k v) Map.Map k v where
 class MapLike ml where
     lookup :: (Eq k, Ord k, Monad m) => k -> ml k v -> m v
 
+l2 :: (Ord k, Monad m, MapLike ml, EncapIt a ml k v) => (a -> ml k v) -> k -> a -> m v
+l2 me k l = lookup k (me l)
+
 instance MapLike ListT where
     lookup k l' = withListT l' (worker k)
         where worker k l
@@ -289,22 +293,6 @@ instance MapLike ListT where
 
 instance MapLike Map.Map where
     lookup = Map.lookup
-{-
 
-{-
-instance (Ord x) => MapLike (Map.Map x v) where
-    lookup = Map.lookup
--}
-
-{-
-instance (ListLike full (k, v), Eq k) => MapLike full where
-    lookup k l 
-        | null l = fail "ListLike lookup: Key not found"
-        | otherwise = case head l of
-                        (k', v) -> if k' == k
-                                      then return v
-                                      else lookup k (tail l)
--}
--}
 testlist = [(1, "one"), (2, "two"), (3, "three")]
 testmap = Map.fromList testlist
