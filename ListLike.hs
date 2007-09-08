@@ -25,7 +25,7 @@ module ListLike where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
                        maximum, minimum, iterate, span, break, takeWhile,
-                       dropWhile, reverse)
+                       dropWhile, reverse, zip)
 import qualified Data.List as L
 import qualified FoldableLL as F
 import qualified Control.Monad as M
@@ -249,6 +249,54 @@ class (F.FoldableLL full item, Monoid full) =>
         where thetails = asTypeOf (tails haystack) [haystack]
 
     ------------------------------ Searching
+    {- | True if the item occurs in the list -}
+    elem :: Eq item => item -> full -> Bool
+    elem i = any (== i)
+
+    {- | True if the item does not occur in the list -}
+    notElem :: Eq item => item -> full -> Bool
+    notElem i = all (/= i)
+
+    {- | Take a function and return the first matching element, or Nothing
+       if there is no such element. -}
+    find :: (item -> Bool) -> full -> Maybe item
+    find f l = case findIndex f l of
+                    Nothing -> Nothing
+                    Just x -> Just (index l x)
+
+    {- | Returns only the elements that satisfy the function. -}
+    filter :: (item -> Bool) -> full -> full 
+    filter func l 
+        | null l = empty
+        | func (head l) = cons (head l) (filter func (tail l))
+        | otherwise = filter func (tail l)
+
+    {- | Returns the lists that do and do not satisfy the function.
+       Same as @('filter' p xs, 'filter' ('not' . p) xs)@ -}
+    partition :: (item -> Bool) -> full -> (full, full)
+    partition p xs = (filter p xs, filter (not . p) xs)
+
+    ------------------------------ Indexing
+    {- | The element at 0-based index i.  Raises an exception if i is out
+         of bounds.  Like (!!) for lists. -}
+    index :: full -> Int -> item
+    index l i 
+        | null l = error "index: index not found"
+        | i < 0 = error "index: index must be >= 0"
+        | i == 0 = head l
+        | otherwise = index (tail l) (i - 1)
+
+    {- | Returns the index of the element, if it exists. -}
+    elemIndex :: Eq item => item -> full -> Maybe Int
+    elemIndex e l = findIndex (== e) l
+
+    ------------------------------ Zipping
+    zip :: (ListLike fullb itemb, ListLike full' (item, itemb)) => 
+        full -> fullb -> full'
+    zip a b 
+        | null a = empty
+        | null b = empty
+        | otherwise = cons (head a, head b) (zip (tail a) (tail b))
 
     {- | Length of the list -}
     genericLength :: Num a => full -> a
@@ -280,21 +328,6 @@ class (F.FoldableLL full item, Monoid full) =>
                         GT -> cons (head ys) (insertBy cmp x (tail ys))
                         _ ->  cons x (tail ys)
 
-    {- | True if the item occurs in the list -}
-    elem :: Eq item => item -> full -> Bool
-    elem i = any (== i)
-
-    {- | Returns the index of the element, if it exists. -}
-    elemIndex :: Eq item => item -> full -> Maybe Int
-    elemIndex e l = findIndex (== e) l
-
-    {- | Take a function and return the first matching element, or Nothing
-       if there is no such element. -}
-    find :: (item -> Bool) -> full -> Maybe item
-    find f l = case findIndex f l of
-                    Nothing -> Nothing
-                    Just x -> Just (index l x)
-
     {- | Take a function and return the index of the first matching element,
          or Nothing if no element matches -}
     findIndex :: (item -> Bool) -> full -> Maybe Int
@@ -304,21 +337,6 @@ class (F.FoldableLL full item, Monoid full) =>
                 | f (head l') = Just accum
                 | otherwise = worker (tail l') (accum + 1)
 
-    {- | The element at 0-based index i.  Raises an exception if i is out
-         of bounds.  Like (!!) for lists. -}
-    index :: full -> Int -> item
-    index l i 
-        | null l = error "index: index not found"
-        | i < 0 = error "index: index must be >= 0"
-        | i == 0 = head l
-        | otherwise = index (tail l) (i - 1)
-
-    {- | Returns only the elements that satisfy the function. -}
-    filter :: (item -> Bool) -> full -> full 
-    filter func l 
-        | null l = empty
-        | func (head l) = cons (head l) (filter func (tail l))
-        | otherwise = filter func (tail l)
 
     {- | Converts the structure to a list.  This is logically equivolent
          to 'fromListLike', but may have a more optimized implementation. -}
