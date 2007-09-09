@@ -134,8 +134,8 @@ instance ListLike BS.ByteString Word8 where
     --intersect = BS.intersect
     sort = BS.sort
     --insert = BS.insert
-    toList = toString
-    fromList = fromString
+    toList = BS.unpack
+    fromList = BS.pack
     fromListLike = fromList . toList
     --nubBy = BS.nubBy
     --deleteBy = BS.deleteBy
