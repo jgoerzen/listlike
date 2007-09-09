@@ -43,6 +43,12 @@ import Data.Maybe
 
 {- | The class implementing list-like functions.
 
+It is worth noting that types such as 'Data.Map.Map' can be instances of
+'ListLike'.  Due to their specific ways of operating, they may not behave
+in the expected way in some cases.  For instance, 'cons' may not increase
+the size of a map if the key you have given is already in the map; it will
+just replace the value already there.
+
 Implementators must define at least:
 
 * singleton
@@ -377,12 +383,17 @@ class (FoldableLL full item, Monoid full) =>
     intersect = intersectBy (==)
 
     ------------------------------ Ordered lists
-    {- | Sorts the list.  See also 'sortBy'. -}
+    {- | Sorts the list.  On data types that do not preserve ordering,
+         or enforce their own ordering, the result may not be what
+         you expect.  See also 'sortBy'. -}
     sort :: Ord item => full -> full
     sort = sortBy compare
 
     {- | Inserts the itement at the last place where it is still less than or
-         equal to the next itement.  See also 'insertBy'. -}
+         equal to the next itement.  On data types that do not preserve 
+         ordering, or enforce their own ordering, the result may not
+         be what you expect.  On types such as maps, this may result in
+         changing an existing item.  See also 'insertBy'. -}
     insert :: Ord item => item -> full -> full 
     insert = insertBy compare
 

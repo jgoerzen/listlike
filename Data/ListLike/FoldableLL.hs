@@ -37,9 +37,6 @@ foldable.  A minimum complete definition provides 'foldl' and 'foldr'.
 
 Instances of 'FoldableLL' can be folded, and can be many and varied.
 
-All instances of 'Data.Foldable.Foldable' are automatically instances
-of 'FoldableLL'.  This includes things such as lists, trees, etc.
-    
 These functions are used heavily in "Data.ListLike". -}
 class FoldableLL full item | full -> item where
     {- | Left-associative fold -}

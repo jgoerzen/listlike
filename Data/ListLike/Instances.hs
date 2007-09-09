@@ -41,6 +41,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified System.IO as IO
 import Data.Word
+import qualified Data.Map as Map
 
 --------------------------------------------------
 -- []
@@ -288,3 +289,27 @@ instance ListLikeIO BSL.ByteString Word8 where
 instance StringLike BSL.ByteString where
     toString = map (toEnum . fromIntegral) . BSL.unpack
     fromString = BSL.pack . map (fromIntegral . fromEnum)
+
+--------------------------------------------------
+-- Map
+
+instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
+    foldr f start m = Map.foldWithKey func start m
+            where func k v accum = f (k, v) accum
+    foldl f start m = Map.foldWithKey func start m
+            where func k v accum = f accum (k, v)
+
+instance (Ord key) => ListLike (Map.Map key val) (key, val) where
+    empty = Map.empty
+    singleton (k, v) = Map.singleton k v
+    cons (k, v) m = Map.insert k v m
+    snoc = flip cons
+    append = Map.union
+    head = Map.elemAt 0
+    last m = Map.elemAt (Map.size m - 1) m
+    tail = Map.deleteAt 0
+    init m = Map.deleteAt (Map.size m - 1) m
+    null = Map.null
+    length = Map.size
+    --map
+    rigidMap f = Map.fromList . L.map f . Map.toList
