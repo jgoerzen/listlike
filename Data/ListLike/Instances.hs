@@ -299,6 +299,7 @@ instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
     foldl f start m = Map.foldWithKey func start m
             where func k v accum = f accum (k, v)
 
+l2m :: (Ord k, Ord k2) => ([(k, v)], [(k2, v2)]) -> (Map.Map k v, Map.Map k2 v2)
 l2m (l1, l2) = (Map.fromList l1, Map.fromList l2)
 instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     empty = Map.empty
