@@ -60,6 +60,8 @@ module ListLike (-- * Introduction
                  -- * Monadic Operations
                  sequence, sequence_, mapM, mapM_,
                  -- * Special lists
+                 -- ** Strings
+                 toString, fromString,
                  -- ** \"Set\" operations
                  nub, delete, deleteFirsts, union, intersect,
                  -- ** Ordered lists
@@ -77,6 +79,10 @@ module ListLike (-- * Introduction
                  genericReplicate,
                  -- * The ListLike class
                  ListLike,
+                 -- * The StringLike class
+                 StringLike,
+                 -- * The I\/O class
+                 -- ListLikeIO,
                  -- * The InfiniteListLike class
                  InfiniteListLike
                 )
@@ -541,6 +547,15 @@ instance (ListLike full item) => M.MonadPlus full where
     mzero = empty
     mplus = append
 -}
+
+{- | An extension to 'ListLike' for those data types that are similar
+to a 'String'. -}
+class (ListLike full item) => StringLike full item | full -> item where
+    {- | Converts the structure to a 'String' -}
+    toString :: full -> String
+    
+    {- | Converts a 'String' to a list -}
+    fromString :: String -> full
 
 {- | An extension to 'ListLike' for those data types that are capable
 of dealing with infinite lists.  Some 'ListLike' functions are capable
