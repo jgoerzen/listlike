@@ -515,12 +515,51 @@ instance ListLike [a] a where
     singleton x = [x]
     cons x l = x : l
     snoc l x = l ++ [x]
-    append l1 l2 = l1 ++ l2
+    append = (++)
     head = L.head
     last = L.last
     tail = L.tail
+    init = L.init
     null = L.null
     length = L.length
+    toList = id
+    fromList = id
+    -- fromListLike = toList
+    concat = L.concat . toList
+    -- concatMap func = fromList . L.concatMap func
+    any = L.any
+    all = L.all
+    maximum = L.maximum
+    minimum = L.minimum
+    -- fold
+    -- foldMap
+    replicate = L.replicate
+    take = L.take
+    drop = L.drop
+    splitAt = L.splitAt
+    takeWhile = L.takeWhile
+    dropWhile = L.dropWhile
+    span = L.span
+    break = L.break
+    group = fromList . L.group
+    inits = fromList . L.inits
+    tails = fromList . L.tails
+    isPrefixOf = L.isPrefixOf
+    isSuffixOf = L.isSuffixOf
+    isInfixOf = L.isInfixOf
+    elem = L.elem
+    notElem = L.notElem
+    find = L.find
+    filter = L.filter
+    partition = L.partition
+    index = (L.!!)
+    elemIndex = L.elemIndex
+    elemIndices item = fromList . L.elemIndices item
+    findIndex = L.findIndex
+    sequence = M.sequence . toList
+    -- mapM = M.mapM
+    mapM_ = M.mapM_
+
     rigidMap = L.map
     reverse = L.reverse
 
