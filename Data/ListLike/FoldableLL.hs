@@ -27,7 +27,6 @@ module Data.ListLike.FoldableLL
      fold, foldMap
     ) where 
 import Prelude hiding (foldl, foldr, foldr1)
-import qualified Data.List as L
 import qualified Data.Foldable as F
 import Data.Monoid
 import qualified Data.ByteString as BS
@@ -50,7 +49,7 @@ class FoldableLL full item | full -> item where
     {- | Strict version of 'foldl'. -}
     foldl' :: (a -> item -> a) -> a -> full -> a
     -- This implementation from Data.Foldable
-    foldl' f z xs = foldr f' id xs z
+    foldl' f a xs = foldr f' id xs a
         where f' x k z = k $! f z x
 
     -- | A variant of 'foldl' with no base case.  Requires at least 1
@@ -67,7 +66,7 @@ class FoldableLL full item | full -> item where
     -- | Strict version of 'foldr'
     foldr' :: (item -> b -> b) -> b -> full -> b
     -- This implementation from Data.Foldable
-    foldr' f z xs = foldl f' id xs z
+    foldr' f a xs = foldl f' id xs a
         where f' k x z = k $! f x z
 
     -- | Like 'foldr', but with no starting value

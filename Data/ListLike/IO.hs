@@ -34,15 +34,7 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords, putStr, getContents)
 import qualified System.IO as IO
-import qualified Data.List as L
 import Data.ListLike.Base
-import Data.ListLike.Utils
-import Data.ListLike.FoldableLL
-import qualified Control.Monad as M
-import Data.Monoid
-import Data.Word
-import qualified Data.Map as Map
-import Data.Maybe
 
 {- | An extension to 'ListLike' for those data types that support
 I\/O.  These functions mirror those in "System.IO" for the most part.  They

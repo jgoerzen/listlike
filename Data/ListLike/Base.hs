@@ -39,7 +39,6 @@ import qualified Data.List as L
 import Data.ListLike.FoldableLL
 import qualified Control.Monad as M
 import Data.Monoid
-import qualified Data.Map as Map
 import Data.Maybe
 
 {- | The class implementing list-like functions.
@@ -85,7 +84,7 @@ class (FoldableLL full item, Monoid full) =>
     {- | Extracts the last itement of a 'ListLike'. -}
     last :: full -> item
     last l = case genericLength l of
-                  0 -> error "Called last on empty list"
+                  (0::Integer) -> error "Called last on empty list"
                   1 -> head l
                   _ -> last (tail l)
 
@@ -102,7 +101,7 @@ class (FoldableLL full item, Monoid full) =>
 
     {- | Tests whether the list is empty. -}
     null :: full -> Bool
-    null x = genericLength x == 0
+    null x = genericLength x == (0::Integer)
 
     {- | Length of the list.  See also 'genericLength'. -}
     length :: full -> Int
