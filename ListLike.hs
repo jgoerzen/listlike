@@ -61,7 +61,7 @@ module ListLike (-- * Introduction
                  sequence, sequence_, mapM, mapM_,
                  -- * Special lists
                  -- ** Strings
-                 toString, fromString,
+                 toString, fromString, lines, words,
                  -- ** \"Set\" operations
                  nub, delete, deleteFirsts, union, intersect,
                  -- ** Ordered lists
@@ -93,7 +93,8 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        dropWhile, reverse, zip, zipWith, sequence,
                        sequence_, mapM, mapM_, concatMap, and, or, sum,
                        product, repeat, replicate, cycle, take, drop,
-                       splitAt, elem, notElem, unzip)
+                       splitAt, elem, notElem, unzip, lines, words,
+                       unlines, unwords)
 import qualified Data.List as L
 import FoldableLL
 import qualified Control.Monad as M
@@ -549,13 +550,31 @@ instance (ListLike full item) => M.MonadPlus full where
 -}
 
 {- | An extension to 'ListLike' for those data types that are similar
-to a 'String'. -}
+to a 'String'.  Minimal complete definition is 'toString' and
+'fromString'. -}
 class (ListLike full item) => StringLike full item | full -> item where
     {- | Converts the structure to a 'String' -}
     toString :: full -> String
     
     {- | Converts a 'String' to a list -}
     fromString :: String -> full
+
+    {- | Breaks a string into a list of strings -}
+    lines :: ListLike full' full => full -> full'
+    lines = map fromString . L.lines . toString
+
+    {- | Breaks a string into a list of words -}
+    words :: ListLike full' full => full -> full'
+    words = map fromString . L.words . toString
+
+    {- | Joins lines -}
+    unlines :: ListLike full' full => full' -> full
+    unlines = fromString . L.unlines . map toString
+
+    {- | Joins words -}
+    unwords :: ListLike full' full => full' -> full
+    unwords = fromString . L.unwords . map toString
+
 
 {- | An extension to 'ListLike' for those data types that are capable
 of dealing with infinite lists.  Some 'ListLike' functions are capable
@@ -636,6 +655,10 @@ instance ListLike [a] a where
     rigidMap = L.map
     reverse = L.reverse
 
+instance StringLike String Char where
+    toString = id
+    fromString = id
+
 instance ListLike BS.ByteString Word8 where
     empty = BS.empty
     singleton = BS.singleton
@@ -643,6 +666,10 @@ instance ListLike BS.ByteString Word8 where
     head = BS.head
     tail = BS.tail
     rigidMap = BS.map
+
+instance StringLike BS.ByteString Word8 where
+    toString = map (toEnum . fromIntegral) . BS.unpack
+    fromString = BS.pack . map (fromIntegral . fromEnum)
 
 {- $intro
 Welcome to ListLike.
