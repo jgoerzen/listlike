@@ -299,7 +299,8 @@ instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
     foldl f start m = Map.foldWithKey func start m
             where func k v accum = f accum (k, v)
 
-instance (Ord key) => ListLike (Map.Map key val) (key, val) where
+l2m (l1, l2) = (Map.fromList l1, Map.fromList l2)
+instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     empty = Map.empty
     singleton (k, v) = Map.singleton k v
     cons (k, v) m = Map.insert k v m
@@ -311,5 +312,43 @@ instance (Ord key) => ListLike (Map.Map key val) (key, val) where
     init m = Map.deleteAt (Map.size m - 1) m
     null = Map.null
     length = Map.size
-    --map
+    -- map
     rigidMap f = Map.fromList . L.map f . Map.toList
+    reverse = id
+    intersperse = cons
+    -- concat
+    -- concatMap
+    -- rigidConcatMap
+    -- any
+    -- all
+    -- maximum
+    -- minimum
+    replicate _ = singleton
+    take n = Map.fromList . L.take n . Map.toList
+    drop n = Map.fromList . L.drop n . Map.toList
+    splitAt n = l2m . L.splitAt n . Map.toList
+    takeWhile f = Map.fromList . L.takeWhile f . Map.toList
+    dropWhile f = Map.fromList . L.dropWhile f . Map.toList
+    span f = l2m . L.span f . Map.toList
+    break f = span (not . f)
+    -- group
+    -- inits
+    -- tails
+    -- isPrefixOf
+    -- isSuffixOf
+    isInfixOf = Map.isSubmapOf
+    --elem = Map.member
+    --notElem = Map.notMember
+    -- find
+    filter f m = Map.filterWithKey func m
+            where func k v = f (k, v)
+    index = flip Map.elemAt
+    elemIndex (k, v) m =
+        case Map.lookupIndex k m of
+             Nothing -> fail "elemIndex: no matching key"
+             Just i -> if snd (Map.elemAt i m) == v
+                           then Just i
+                           else fail "elemIndex on Map: matched key but not value"
+
+
+
