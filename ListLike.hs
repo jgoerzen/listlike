@@ -57,6 +57,8 @@ module ListLike (-- * Introduction
                  index, elemIndex, elemIndices, findIndex, findIndices,
                  -- * Zipping and unzipping lists
                  zip, zipWith, unzip,
+                 -- * Monadic Operations
+                 sequence, sequence_, mapM, mapM_,
                  -- * Special lists
                  -- ** \"Set\" operations
                  nub, delete, deleteFirsts, union, intersect,
@@ -76,7 +78,7 @@ module ListLike (-- * Introduction
                  -- * The ListLike class
                  ListLike(..),
                  -- * The InfiniteListLike class
-                 InfiniteListLike(..),
+                 InfiniteListLike(..)
                 )
        where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
@@ -162,7 +164,7 @@ class (F.FoldableLL full item, Monoid full) =>
     {- | Apply a function to each element, returning any other
          valid 'ListLike'.  'rigidMap' will always be at least
          as fast, if not faster, than this function and is recommended
-         if it will work for your purposes. -}
+         if it will work for your purposes.  See also 'mapM'. -}
     map :: ListLike full' item' => (item -> item') -> full -> full'
     map func inp  
         | null inp = empty
@@ -362,6 +364,31 @@ class (F.FoldableLL full item, Monoid full) =>
     findIndices :: (ListLike result Int) => (item -> Bool) -> full -> result
     findIndices p xs = map snd $ filter (p . fst) $ thezips
         where thezips = asTypeOf (zip xs [0..]) [(head xs, 0::Int)]
+
+    ------------------------------ Monadic operations
+    {- | Evaluate each action in the sequence and collect the results -}
+    sequence :: (Monad m, ListLike fullinp (m item)) =>
+                fullinp -> m full
+    sequence l = foldr func (return empty) l
+        where func litem results = 
+                do x <- litem
+                   xs <- results
+                   return (cons x xs)
+
+    {- | Evaluate each action, ignoring the results -}
+    sequence_ :: (Monad m, ListLike mfull (m item)) => mfull -> m ()
+    sequence_ l = foldr (>>) (return ()) l
+
+    {- | A map in monad space.  Same as @'sequence' . 'map'@ -}
+    mapM :: (Monad m, ListLike full' item') => 
+            (item -> m item') -> full -> m full'
+    mapM = func l = sequence (map f l)
+            
+    {- | A map in monad space, discarding results.  Same as
+       @'sequence_' . 'map'@ -}
+    mapM_ :: (Monad m) => (item -> m b) -> full -> m ()
+    mapM_ func l = sequence_ (map f l)
+
 
     ------------------------------ "Set" operations
     {- | Removes duplicate elements from the list.  See also 'nubBy' -}
