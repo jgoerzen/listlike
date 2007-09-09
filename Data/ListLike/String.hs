@@ -46,25 +46,40 @@ import Data.Maybe
 {- | An extension to 'ListLike' for those data types that are similar
 to a 'String'.  Minimal complete definition is 'toString' and
 'fromString'. -}
-class (ListLike full item) => StringLike full item | full -> item where
+class StringLike s where
     {- | Converts the structure to a 'String' -}
-    toString :: full -> String
+    toString :: s -> String
     
     {- | Converts a 'String' to a list -}
-    fromString :: String -> full
+    fromString :: String -> s
 
     {- | Breaks a string into a list of strings -}
-    lines :: (ListLike full' full) => full -> full'
+    lines :: (ListLike full s) => s -> full
     --lines = map fromString . L.lines . toString 
+    lines = myLines
 
     {- | Breaks a string into a list of words -}
-    words :: ListLike full' full => full -> full'
-    words = map fromString . L.words . toString
+    words :: ListLike full s => s -> full
+    words = myWords
 
     {- | Joins lines -}
-    unlines :: ListLike full' full => full' -> full
-    unlines = fromString . L.unlines . map toString
+    unlines :: ListLike full s => full -> s
+    unlines = myUnlines
 
     {- | Joins words -}
-    unwords :: ListLike full' full => full' -> full
-    unwords = fromString . L.unwords . map toString
+    unwords :: ListLike full s => full -> s
+    unwords = myUnwords
+
+-- For some reason, Hugs required splitting these out into
+-- separate functions.
+myLines :: (StringLike s, ListLike full s) => s -> full
+myLines = map fromString . L.lines . toString
+
+myWords :: (StringLike s, ListLike full s) => s -> full
+myWords = map fromString . L.words . toString
+
+myUnlines :: (StringLike s, ListLike full s) => full -> s
+myUnlines = fromString . L.unlines . map toString
+
+myUnwords :: (StringLike s, ListLike full s) => full -> s
+myUnwords = fromString . L.unwords . map toString

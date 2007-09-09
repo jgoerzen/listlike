@@ -45,7 +45,7 @@ import qualified Data.Map as Map
 import Data.Maybe
 
 -- Basic list instance is in Base.hs
-instance StringLike String Char where
+instance StringLike String where
     toString = id
     fromString = id
 
@@ -57,6 +57,6 @@ instance ListLike BS.ByteString Word8 where
     tail = BS.tail
     rigidMap = BS.map
 
-instance StringLike BS.ByteString Word8 where
+instance StringLike BS.ByteString where
     toString = map (toEnum . fromIntegral) . BS.unpack
     fromString = BS.pack . map (fromIntegral . fromEnum)
