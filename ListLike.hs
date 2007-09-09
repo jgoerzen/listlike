@@ -76,9 +76,9 @@ module ListLike (-- * Introduction
                  -- genericIndex,
                  genericReplicate,
                  -- * The ListLike class
-                 ListLike(..),
+                 ListLike,
                  -- * The InfiniteListLike class
-                 InfiniteListLike(..)
+                 InfiniteListLike
                 )
        where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
@@ -529,6 +529,18 @@ class (FoldableLL full item, Monoid full) =>
     genericReplicate count x 
         | count < 0 = error "Replicate called with negative size"
         | otherwise = map (\_ -> x) [1..count]
+
+{-
+instance (ListLike full item) => Monad full where
+    m >>= k = foldr (append . k) empty m
+    m >> k = foldr (append . (\_ -> k)) empty m
+    return x = singleton x
+    fail _ = empty
+
+instance (ListLike full item) => M.MonadPlus full where
+    mzero = empty
+    mplus = append
+-}
 
 {- | An extension to 'ListLike' for those data types that are capable
 of dealing with infinite lists.  Some 'ListLike' functions are capable
