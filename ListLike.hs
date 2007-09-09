@@ -27,9 +27,9 @@ module ListLike (-- * Introduction
                  empty, singleton, 
                  cons, snoc, append, head, last, tail, init, null, length,
                  -- ** Conversions
-                 toList, fromList, fromListLike
-                 -- * Reducing lists (folds)
-                 FoldableLL(foldl, foldl', foldl1, foldr, foldr', foldr1),
+                 toList, fromList, fromListLike,
+                 -- * Reducing lists (folds), from "FoldableLL"
+                 foldl, foldl', foldl1, foldr, foldr', foldr1,
                  -- ** Special folds
                  concat, concatMap, 
                  and, or,
@@ -70,7 +70,7 @@ module ListLike (-- * Introduction
                  nubBy, deleteBy, deleteFirstsBy, unionBy, intersectBy,
                  groupBy,
                  -- *** User-supplied comparison (replacing an Ord context)
-                 sortBy, insertBy, maximumBy, minimumBy,
+                 sortBy, insertBy, -- maximumBy, minimumBy,
                  -- ** The \"generic\" operations
                  genericLength, genericTake, genericDrop, genericSplitAt,
                  -- genericIndex,
@@ -84,9 +84,12 @@ module ListLike (-- * Introduction
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
                        maximum, minimum, iterate, span, break, takeWhile,
-                       dropWhile, reverse, zip, zipWith)
+                       dropWhile, reverse, zip, zipWith, sequence,
+                       sequence_, mapM, mapM_, concatMap, and, or, sum,
+                       product, repeat, replicate, cycle, take, drop,
+                       splitAt, elem, notElem, unzip)
 import qualified Data.List as L
-import qualified FoldableLL as F
+import FoldableLL
 import qualified Control.Monad as M
 import Data.Monoid
 import qualified Data.Traversable as T
@@ -105,7 +108,7 @@ Implementators must define at least:
 * null or genericLength
 
 -}
-class (F.FoldableLL full item, Monoid full) =>
+class (FoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
 
     ------------------------------ Creation
@@ -198,28 +201,28 @@ class (F.FoldableLL full item, Monoid full) =>
     ------------------------------ Special folds
     {- | Flatten the structure. -}
     concat :: (ListLike full' full, Monoid full) => full' -> full
-    concat = F.fold
+    concat = fold
 
     {- | Map a function over the items and concatenate the results. -}
     concatMap :: (ListLike full' item') =>
                  (item -> full') -> full -> full'
-    concatMap = F.foldMap
+    concatMap = foldMap
 
     {- | True if any items satisfy the function -}
     any :: (item -> Bool) -> full -> Bool
-    any p = getAny . F.foldMap (Any . p)
+    any p = getAny . foldMap (Any . p)
 
     {- | True if all items satisfy the function -}
     all :: (item -> Bool) -> full -> Bool
-    all p = getAll . F.foldMap (All . p)
+    all p = getAll . foldMap (All . p)
 
     {- | The maximum value of the list -}
     maximum :: Ord item => full -> item
-    maximum = F.foldr1 max
+    maximum = foldr1 max
 
     {- | The minimum value of the list -}
     minimum :: Ord item => full -> item
-    minimum = F.foldr1 min
+    minimum = foldr1 min
 
     ------------------------------ Infinite lists
     {- | Generate a structure with the specified length with every element
@@ -375,19 +378,17 @@ class (F.FoldableLL full item, Monoid full) =>
                    xs <- results
                    return (cons x xs)
 
-    {- | Evaluate each action, ignoring the results -}
-    sequence_ :: (Monad m, ListLike mfull (m item)) => mfull -> m ()
-    sequence_ l = foldr (>>) (return ()) l
-
     {- | A map in monad space.  Same as @'sequence' . 'map'@ -}
     mapM :: (Monad m, ListLike full' item') => 
             (item -> m item') -> full -> m full'
-    mapM = func l = sequence (map f l)
+    mapM func l = sequence mapresult
+            where mapresult = asTypeOf (map func l) []
             
     {- | A map in monad space, discarding results.  Same as
        @'sequence_' . 'map'@ -}
     mapM_ :: (Monad m) => (item -> m b) -> full -> m ()
-    mapM_ func l = sequence_ (map f l)
+    mapM_ func l = sequence_ mapresult
+            where mapresult = asTypeOf (map func l) []
 
 
     ------------------------------ "Set" operations
@@ -403,7 +404,7 @@ class (F.FoldableLL full item, Monoid full) =>
     {- | List difference.  Removes from the first list the first instance
        of each element of the second list.  See '(\\)' and 'deleteFirstsBy' -}
     deleteFirsts :: Eq item => full -> full -> full
-    deleteFirsts = F.foldl (flip delete)
+    deleteFirsts = foldl (flip delete)
 
     {- | List union: the set of elements that occur in either list.
          Duplicate elements in the first list will remain duplicate.
@@ -462,12 +463,12 @@ class (F.FoldableLL full item, Monoid full) =>
 
     {- | Generic version of 'deleteFirsts' -}
     deleteFirstsBy :: (item -> item -> Bool) -> full -> full -> full
-    deleteFirstsBy func = F.foldl (flip (deleteBy func))
+    deleteFirstsBy func = foldl (flip (deleteBy func))
 
     {- | Generic version of 'union' -}
     unionBy :: (item -> item -> Bool) -> full -> full -> full
     unionBy func x y =
-        append x $ F.foldl (flip (deleteBy func)) (nubBy func y) x
+        append x $ foldl (flip (deleteBy func)) (nubBy func y) x
 
     {- | Generic version of 'intersect' -}
     intersectBy :: (item -> item -> Bool) -> full -> full -> full
@@ -485,7 +486,7 @@ class (F.FoldableLL full item, Monoid full) =>
 
     {- | Sort function taking a custom comparison function -}
     sortBy :: Ord item => (item -> item -> Ordering) -> full -> full 
-    sortBy cmp = F.foldr (insertBy cmp) empty
+    sortBy cmp = foldr (insertBy cmp) empty
 
     {- | Like 'insert', but with a custom comparison function -}
     insertBy :: Ord item => (item -> item -> Ordering) -> item ->
@@ -559,11 +560,11 @@ or = any (== True)
 
 -- | The sum of the list
 sum :: (Num a, ListLike full a) => full -> a
-sum = getSum . F.foldMap Sum
+sum = getSum . foldMap Sum
 
 -- | The product of the list
 product :: (Num a, ListLike full a) => full -> a
-product = getProduct . F.foldMap Product
+product = getProduct . foldMap Product
 
 ------------------------------ Zipping
 {- | Takes two lists and returns a list of corresponding pairs. -}
@@ -587,8 +588,13 @@ zipWith f a b
 unzip :: (ListLike full (itema, itemb),
           ListLike ra itema,
           ListLike rb itemb) => full -> (ra, rb)
-unzip inp = F.foldr convert (empty, empty) inp
+unzip inp = foldr convert (empty, empty) inp
     where convert (a, b) (as, bs) = ((cons a as), (cons b bs))
+
+{- | Evaluate each action, ignoring the results -}
+sequence_ :: (Monad m, ListLike mfull (m item)) => mfull -> m ()
+sequence_ l = foldr (>>) (return ()) l
+
 instance ListLike [a] a where
     empty = []
     singleton x = [x]
