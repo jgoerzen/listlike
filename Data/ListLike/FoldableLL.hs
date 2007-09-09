@@ -30,6 +30,7 @@ import Prelude hiding (foldl, foldr, foldr1)
 import qualified Data.Foldable as F
 import Data.Monoid
 import Data.Maybe
+import qualified Data.List as L
 
 {- | This is the primary class for structures that are to be considered 
 foldable.  A minimum complete definition provides 'foldl' and 'foldr'.
@@ -84,6 +85,14 @@ fold = foldMap id
 foldMap :: (FoldableLL full item, Monoid m) => (item -> m) -> full -> m
 foldMap f = foldr (mappend . f) mempty
 
+instance FoldableLL [a] a where
+    foldl = L.foldl
+    foldl1 = L.foldl1
+    foldl' = L.foldl'
+    foldr = L.foldr
+    foldr1 = L.foldr1
+    foldr' = F.foldr'
+{-
 instance (F.Foldable f) => FoldableLL (f a) a where
     foldl = F.foldl
     foldl1 = F.foldl1
@@ -91,4 +100,4 @@ instance (F.Foldable f) => FoldableLL (f a) a where
     foldr = F.foldr
     foldr1 = F.foldr1
     foldr' = F.foldr'
-
+-}
