@@ -102,20 +102,12 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        product, repeat, replicate, cycle, take, drop,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
-import qualified Data.List as L
 import Data.ListLike.Base
 import Data.ListLike.FoldableLL
-import Data.ListLike.Instances
+import Data.ListLike.Instances()
 import Data.ListLike.String
 import Data.ListLike.Utils
-import Data.ListLike.FoldableLL
 import Data.ListLike.IO
-import qualified Control.Monad as M
-import Data.Monoid
-import qualified Data.ByteString as BS
-import Data.Word
-import qualified Data.Map as Map
-import Data.Maybe
 
 {- $intro
 #intro#

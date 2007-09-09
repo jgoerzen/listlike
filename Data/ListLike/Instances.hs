@@ -44,10 +44,20 @@ import Data.Word
 import qualified Data.Map as Map
 import Data.Maybe
 
+--------------------------------------------------
+-- []
+
 -- Basic list instance is in Base.hs
+-- FoldableLL instance implied by Foldable
+
 instance StringLike String where
     toString = id
     fromString = id
+
+instance InfiniteListLike [a] a where
+    iterate = L.iterate
+    repeat = L.repeat
+    cycle = L.cycle
 
 instance ListLike BS.ByteString Word8 where
     empty = BS.empty
