@@ -33,16 +33,9 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        unlines, unwords)
 import qualified Data.List as L
 import Data.ListLike.Base
-import Data.ListLike.Utils
 import Data.ListLike.String
-import Data.ListLike.FoldableLL
-import qualified Control.Monad as M
-import Data.Monoid
-import qualified Data.Traversable as T
 import qualified Data.ByteString as BS
 import Data.Word
-import qualified Data.Map as Map
-import Data.Maybe
 
 --------------------------------------------------
 -- []

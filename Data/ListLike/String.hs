@@ -35,13 +35,6 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        unlines, unwords)
 import qualified Data.List as L
 import Data.ListLike.Base
-import Data.ListLike.Utils
-import Data.ListLike.FoldableLL
-import qualified Control.Monad as M
-import Data.Monoid
-import Data.Word
-import qualified Data.Map as Map
-import Data.Maybe
 
 {- | An extension to 'ListLike' for those data types that are similar
 to a 'String'.  Minimal complete definition is 'toString' and
