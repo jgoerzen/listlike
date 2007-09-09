@@ -51,7 +51,8 @@ instance ListLikeIO String Char where
     hGetLine = IO.hGetLine
     hGetContents = IO.hGetContents
     -- FIXME: change to BSL
-    hGet h c = BS.hGet h c >>= toString
+    hGet h c = BS.hGet h c >>= (return . toString)
+    hGetNonBlocking h i = BS.hGetNonBlocking h i >>= (return . toString)
     hPutStr = IO.hPutStr
     hPutStrLn = IO.hPutStrLn
     getLine = IO.getLine
@@ -94,8 +95,13 @@ instance ListLike BS.ByteString Word8 where
     init = BS.init
     null = BS.null
     length = BS.length
-    concat = BS.concat
-    concatMap = BS.concatMap
+    -- map = BS.map
+    rigidMap = BS.map
+    reverse = BS.reverse
+    intersperse = BS.intersperse
+    concat = BS.concat . toList
+    --concatMap = BS.concatMap
+    rigidConcatMap = BS.concatMap
     any = BS.any
     all = BS.all
     maximum = BS.maximum
@@ -108,9 +114,9 @@ instance ListLike BS.ByteString Word8 where
     dropWhile = BS.dropWhile
     span = BS.span
     break = BS.break
-    group = BS.group
-    inits = BS.inits
-    tails = BS.tails
+    group = fromList . BS.group
+    inits = fromList . BS.inits
+    tails = fromList . BS.tails
     isPrefixOf = BS.isPrefixOf
     isSuffixOf = BS.isSuffixOf
     --isInfixOf = BS.isInfixOf
@@ -121,9 +127,9 @@ instance ListLike BS.ByteString Word8 where
     --partition = BS.partition
     index = BS.index
     elemIndex = BS.elemIndex
-    elemIndices = BS.elemIndices
+    elemIndices x = fromList . BS.elemIndices x
     findIndex = BS.findIndex
-    findIndices = BS.findIndices
+    findIndices x = fromList . BS.findIndices x
     --sequence = BS.sequence
     --mapM = BS.mapM
     --mapM_ = BS.mapM_
@@ -142,7 +148,7 @@ instance ListLike BS.ByteString Word8 where
     --deleteFirstsBy = BS.deleteFirstsBy
     --unionBy = BS.unionBy
     --intersectBy = BS.intersectBy
-    groupBy = BS.groupBy
+    groupBy f = fromList . BS.groupBy f
     --sortBy = BS.sortBy
     --insertBy = BS.insertBy
     genericLength = fromInteger . fromIntegral . BS.length

@@ -148,10 +148,17 @@ class (FoldableLL full item, Monoid full) =>
     concat :: (ListLike full' full, Monoid full) => full' -> full
     concat = fold
 
-    {- | Map a function over the items and concatenate the results. -}
+    {- | Map a function over the items and concatenate the results.
+         See also 'rigidConcatMap'.-}
     concatMap :: (ListLike full' item') =>
                  (item -> full') -> full -> full'
     concatMap = foldMap
+
+    {- | Like 'concatMap', but without the possibility of changing
+         the type of the item.  This can have performance benefits
+         for some things such as ByteString. -}
+    rigidConcatMap :: (item -> full) -> full -> full
+    rigidConcatMap = concatMap
 
     {- | True if any items satisfy the function -}
     any :: (item -> Bool) -> full -> Bool
@@ -323,11 +330,18 @@ class (FoldableLL full item, Monoid full) =>
                    xs <- results
                    return (cons x xs)
 
-    {- | A map in monad space.  Same as @'sequence' . 'map'@ -}
+    {- | A map in monad space.  Same as @'sequence' . 'map'@ 
+         
+         See also 'rigidMapM' -}
     mapM :: (Monad m, ListLike full' item') => 
             (item -> m item') -> full -> m full'
     mapM func l = sequence mapresult
             where mapresult = asTypeOf (map func l) []
+
+    {- | Like 'mapM', but without the possibility of changing the type
+         of the item.  This can have performance benefits with some types. -}
+    rigidMapM :: Monad m => (item -> m item) -> full -> m full
+    rigidMapM = mapM
             
     {- | A map in monad space, discarding results.  Same as
        @'sequence_' . 'map'@ -}
@@ -522,11 +536,16 @@ instance ListLike [a] a where
     init = L.init
     null = L.null
     length = L.length
+    -- FIXME: map = L.map
+    rigidMap = L.map
+    reverse = L.reverse
+    intersperse = L.intersperse
     toList = id
     fromList = id
     -- fromListLike = toList
     concat = L.concat . toList
     -- concatMap func = fromList . L.concatMap func
+    rigidConcatMap = L.concatMap
     any = L.any
     all = L.all
     maximum = L.maximum
@@ -559,9 +578,6 @@ instance ListLike [a] a where
     sequence = M.sequence . toList
     -- mapM = M.mapM
     mapM_ = M.mapM_
-
-    rigidMap = L.map
-    reverse = L.reverse
 
 --------------------------------------------------
 -- These utils are here instead of in Utils.hs because they are needed

@@ -30,12 +30,14 @@ module Data.ListLike
                  -- * Creation & Basic Functions
                  empty, singleton, 
                  cons, snoc, append, head, last, tail, init, null, length,
+                 -- * List transformations
+                 map, rigidMap, reverse, intersperse,
                  -- ** Conversions
                  toList, fromList, fromListLike,
                  -- * Reducing lists (folds), from "FoldableLL"
                  foldl, foldl', foldl1, foldr, foldr', foldr1,
                  -- ** Special folds
-                 concat, concatMap, 
+                 concat, concatMap, rigidConcatMap,
                  and, or,
                  any, all,
                  sum, product,
@@ -63,7 +65,7 @@ module Data.ListLike
                  -- * Zipping and unzipping lists
                  zip, zipWith, unzip,
                  -- * Monadic Operations
-                 sequence, sequence_, mapM, mapM_,
+                 sequence, sequence_, mapM, rigidMapM, mapM_,
                  -- * Input and Output
                  ListLikeIO(..),
                  -- * Special lists
