@@ -35,7 +35,7 @@ import qualified Data.List as L
 import Data.ListLike.Base
 import Data.ListLike.Utils
 import Data.ListLike.String
-import FoldableLL
+import Data.ListLike.FoldableLL
 import qualified Control.Monad as M
 import Data.Monoid
 import qualified Data.Traversable as T
@@ -44,20 +44,7 @@ import Data.Word
 import qualified Data.Map as Map
 import Data.Maybe
 
-instance ListLike [a] a where
-    empty = []
-    singleton x = [x]
-    cons x l = x : l
-    snoc l x = l ++ [x]
-    append l1 l2 = l1 ++ l2
-    head = L.head
-    last = L.last
-    tail = L.tail
-    null = L.null
-    length = L.length
-    rigidMap = L.map
-    reverse = L.reverse
-
+-- Basic list instance is in Base.hs
 instance StringLike String Char where
     toString = id
     fromString = id

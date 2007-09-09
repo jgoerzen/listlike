@@ -24,7 +24,8 @@ Written by John Goerzen, jgoerzen\@complete.org
 module Data.ListLike.Base 
     (
     ListLike(..),
-    InfiniteListLike(..)
+    InfiniteListLike(..),
+    zip, zipWith, sequence_
     ) where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
@@ -504,4 +505,47 @@ class (ListLike full item) => InfiniteListLike full item | full -> item where
     cycle xs 
         | null xs = error "ListLike.cycle: empty list"
         | otherwise = xs' where xs' = append xs xs'
+
+--------------------------------------------------
+-- This instance is here due to some default class functions
+
+instance ListLike [a] a where
+    empty = []
+    singleton x = [x]
+    cons x l = x : l
+    snoc l x = l ++ [x]
+    append l1 l2 = l1 ++ l2
+    head = L.head
+    last = L.last
+    tail = L.tail
+    null = L.null
+    length = L.length
+    rigidMap = L.map
+    reverse = L.reverse
+
+--------------------------------------------------
+-- These utils are here instead of in Utils.hs because they are needed
+-- by default class functions
+
+{- | Takes two lists and returns a list of corresponding pairs. -}
+zip :: (ListLike full item,
+          ListLike fullb itemb,
+          ListLike result (item, itemb)) =>
+          full -> fullb -> result
+zip = zipWith (\a b -> (a, b))
+
+{- | Takes two lists and combines them with a custom combining function -}
+zipWith :: (ListLike full item,
+            ListLike fullb itemb,
+            ListLike result resultitem) =>
+            (item -> itemb -> resultitem) -> full -> fullb -> result
+zipWith f a b
+    | null a = empty
+    | null b = empty
+    | otherwise = cons (f (head a) (head b)) (zipWith f (tail a) (tail b))
+
+{- | Evaluate each action, ignoring the results -}
+sequence_ :: (Monad m, ListLike mfull (m item)) => mfull -> m ()
+sequence_ l = foldr (>>) (return ()) l
+
 

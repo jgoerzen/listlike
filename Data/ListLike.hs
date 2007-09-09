@@ -36,6 +36,7 @@ module ListLike (-- * Introduction
                  any, all,
                  sum, product,
                  maximum, minimum,
+                 fold, foldMap,
                  -- * Building lists
                  -- ** Scans
                  -- ** Accumulating maps
@@ -79,6 +80,8 @@ module ListLike (-- * Introduction
                  genericReplicate,
                  -- * The ListLike class
                  ListLike,
+                 -- * The FoldableLL class
+                 FoldableLL,
                  -- * The StringLike class
                  StringLike,
                  -- * The I\/O class
@@ -101,7 +104,7 @@ import Data.ListLike.FoldableLL
 import Data.ListLike.Instances
 import Data.ListLike.String
 import Data.ListLike.Utils
-import FoldableLL
+import Data.ListLike.FoldableLL
 import qualified Control.Monad as M
 import Data.Monoid
 import qualified Data.ByteString as BS

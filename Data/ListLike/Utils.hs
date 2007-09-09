@@ -60,30 +60,10 @@ product :: (Num a, ListLike full a) => full -> a
 product = getProduct . foldMap Product
 
 ------------------------------ Zipping
-{- | Takes two lists and returns a list of corresponding pairs. -}
-zip :: (ListLike full item,
-          ListLike fullb itemb,
-          ListLike result (item, itemb)) =>
-          full -> fullb -> result
-zip = zipWith (\a b -> (a, b))
-
-{- | Takes two lists and combines them with a custom combining function -}
-zipWith :: (ListLike full item,
-            ListLike fullb itemb,
-            ListLike result resultitem) =>
-            (item -> itemb -> resultitem) -> full -> fullb -> result
-zipWith f a b
-    | null a = empty
-    | null b = empty
-    | otherwise = cons (f (head a) (head b)) (zipWith f (tail a) (tail b))
-
+-- zip, zipWith  in Base
 {- | Converts a list of pairs into two separate lists of elements -}
 unzip :: (ListLike full (itema, itemb),
           ListLike ra itema,
           ListLike rb itemb) => full -> (ra, rb)
 unzip inp = foldr convert (empty, empty) inp
     where convert (a, b) (as, bs) = ((cons a as), (cons b bs))
-
-{- | Evaluate each action, ignoring the results -}
-sequence_ :: (Monad m, ListLike mfull (m item)) => mfull -> m ()
-sequence_ l = foldr (>>) (return ()) l
