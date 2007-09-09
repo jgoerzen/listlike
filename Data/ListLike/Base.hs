@@ -536,7 +536,7 @@ instance ListLike [a] a where
     init = L.init
     null = L.null
     length = L.length
-    -- FIXME: map = L.map
+    map f = fromList . L.map f
     rigidMap = L.map
     reverse = L.reverse
     intersperse = L.intersperse

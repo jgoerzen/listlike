@@ -157,6 +157,22 @@ instance ListLike BS.ByteString Word8 where
     genericSplitAt i = BS.splitAt (fromIntegral i)
     genericReplicate i = BS.replicate (fromIntegral i)
 
+instance ListLikeIO BS.ByteString Word8 where
+    hGetLine = BS.hGetLine
+    hGetContents = BS.hGetContents
+    hGet = BS.hGet
+    hGetNonBlocking = BS.hGetNonBlocking
+    hPutStr = BS.hPutStr
+    hPutStrLn = BS.hPutStrLn
+    getLine = BS.getLine
+    getContents = BS.getContents
+    putStr = BS.putStr
+    putStrLn = BS.putStrLn
+    interact = BS.interact
+    readFile = BS.readFile
+    writeFile = BS.writeFile
+    appendFile = BS.appendFile
+
 instance StringLike BS.ByteString where
     toString = map (toEnum . fromIntegral) . BS.unpack
     fromString = BS.pack . map (fromIntegral . fromEnum)

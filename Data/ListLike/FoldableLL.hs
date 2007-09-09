@@ -29,8 +29,6 @@ module Data.ListLike.FoldableLL
 import Prelude hiding (foldl, foldr, foldr1)
 import qualified Data.Foldable as F
 import Data.Monoid
-import qualified Data.ByteString as BS
-import Data.Word
 import Data.Maybe
 
 {- | This is the primary class for structures that are to be considered 
