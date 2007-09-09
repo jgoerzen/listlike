@@ -288,4 +288,3 @@ instance ListLikeIO BSL.ByteString Word8 where
 instance StringLike BSL.ByteString where
     toString = map (toEnum . fromIntegral) . BSL.unpack
     fromString = BSL.pack . map (fromIntegral . fromEnum)
-
