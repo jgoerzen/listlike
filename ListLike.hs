@@ -560,8 +560,8 @@ class (ListLike full item) => StringLike full item | full -> item where
     fromString :: String -> full
 
     {- | Breaks a string into a list of strings -}
-    lines :: ListLike full' full => full -> full'
-    lines = map fromString . L.lines . toString
+    lines :: (ListLike full' full) => full -> full'
+    --lines = map fromString . L.lines . toString 
 
     {- | Breaks a string into a list of words -}
     words :: ListLike full' full => full -> full'
