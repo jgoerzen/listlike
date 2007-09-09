@@ -7,7 +7,7 @@ For license and copyright information, see the file COPYRIGHT
 -}
 
 {- |
-   Module     : FoldableLL
+   Module     : Data.ListLike.FoldableLL
    Copyright  : Copyright (C) 2007 John Goerzen
    License    : LGPL
 
@@ -20,11 +20,12 @@ Generic tools for data structures that can be folded.
 Written by John Goerzen, jgoerzen\@complete.org
 
 -}
-module FoldableLL (-- * FoldableLL Class
-                   FoldableLL(..),
-                   -- * Utilities
-                   fold, foldMap
-                   ) where 
+module Data.ListLike.FoldableLL 
+    (-- * FoldableLL Class
+     FoldableLL(..),
+     -- * Utilities
+     fold, foldMap
+    ) where 
 import Prelude hiding (foldl, foldr, foldr1)
 import qualified Data.List as L
 import qualified Data.Foldable as F
