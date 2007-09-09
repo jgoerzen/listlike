@@ -22,7 +22,7 @@ Re-exported by "Data.ListLike".
 Written by John Goerzen, jgoerzen\@complete.org
 -}
 
-module Data.ListLike.Instances where
+module Data.ListLike.Instances () where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
                        maximum, minimum, iterate, span, break, takeWhile,
@@ -36,6 +36,7 @@ import Data.ListLike.Base
 import Data.ListLike.String
 import Data.ListLike.IO
 import Data.ListLike.FoldableLL
+import Data.Int
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified System.IO as IO
@@ -176,3 +177,115 @@ instance ListLikeIO BS.ByteString Word8 where
 instance StringLike BS.ByteString where
     toString = map (toEnum . fromIntegral) . BS.unpack
     fromString = BS.pack . map (fromIntegral . fromEnum)
+
+--------------------------------------------------
+-- ByteString.Lazy
+
+instance FoldableLL BSL.ByteString Word8 where
+    foldl = BSL.foldl
+    foldl' = BSL.foldl'
+    foldl1 = BSL.foldl1
+    foldr = BSL.foldr
+    --foldr' = BSL.foldr'
+    foldr1 = BSL.foldr1
+
+mi64toi :: Maybe Int64 -> Maybe Int
+mi64toi Nothing = Nothing
+mi64toi (Just x) = Just (fromIntegral x)
+
+instance ListLike BSL.ByteString Word8 where
+    empty = BSL.empty
+    singleton = BSL.singleton
+    cons = BSL.cons
+    snoc = BSL.snoc
+    append = BSL.append
+    head = BSL.head
+    last = BSL.last
+    tail = BSL.tail
+    init = BSL.init
+    null = BSL.null
+    length = fromIntegral . BSL.length
+    -- map = BSL.map
+    rigidMap = BSL.map
+    reverse = BSL.reverse
+    --intersperse = BSL.intersperse
+    concat = BSL.concat . toList
+    --concatMap = BSL.concatMap
+    rigidConcatMap = BSL.concatMap
+    any = BSL.any
+    all = BSL.all
+    maximum = BSL.maximum
+    minimum = BSL.minimum
+    replicate i = BSL.replicate (fromIntegral i)
+    take i = BSL.take (fromIntegral i)
+    drop i = BSL.drop (fromIntegral i)
+    splitAt i = BSL.splitAt (fromIntegral i)
+    takeWhile = BSL.takeWhile
+    dropWhile = BSL.dropWhile
+    span = BSL.span
+    break = BSL.break
+    group = fromList . BSL.group
+    inits = fromList . BSL.inits
+    tails = fromList . BSL.tails
+    isPrefixOf = BSL.isPrefixOf
+    --isSuffixOf = BSL.isSuffixOf
+    --isInfixOf = BSL.isInfixOf
+    elem = BSL.elem
+    notElem = BSL.notElem
+    find = BSL.find
+    filter = BSL.filter
+    --partition = BSL.partition
+    index l i = BSL.index l (fromIntegral i)
+    elemIndex i = mi64toi . BSL.elemIndex i 
+    elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
+    findIndex f = mi64toi . BSL.findIndex f
+    findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
+    --sequence = BSL.sequence
+    --mapM = BSL.mapM
+    --mapM_ = BSL.mapM_
+    --nub = BSL.nub
+    --delete = BSL.delete
+    --deleteFirsts = BSL.deleteFirsts
+    --union = BSL.union
+    --intersect = BSL.intersect
+    --sort = BSL.sort
+    --insert = BSL.insert
+    toList = BSL.unpack
+    fromList = BSL.pack
+    fromListLike = fromList . toList
+    --nubBy = BSL.nubBy
+    --deleteBy = BSL.deleteBy
+    --deleteFirstsBy = BSL.deleteFirstsBy
+    --unionBy = BSL.unionBy
+    --intersectBy = BSL.intersectBy
+    groupBy f = fromList . BSL.groupBy f
+    --sortBy = BSL.sortBy
+    --insertBy = BSL.insertBy
+    genericLength = fromInteger . fromIntegral . BSL.length
+    genericTake i = BSL.take (fromIntegral i)
+    genericDrop i = BSL.drop (fromIntegral i)
+    genericSplitAt i = BSL.splitAt (fromIntegral i)
+    genericReplicate i = BSL.replicate (fromIntegral i)
+
+strict2lazy :: BS.ByteString -> IO BSL.ByteString
+strict2lazy b = return (BSL.fromChunks [b])
+instance ListLikeIO BSL.ByteString Word8 where
+    hGetLine h = BS.hGetLine h >>= strict2lazy
+    hGetContents = BSL.hGetContents
+    hGet = BSL.hGet
+    hGetNonBlocking = BSL.hGetNonBlocking
+    hPutStr = BSL.hPut
+    --hPutStrLn = BSL.hPutStrLn
+    getLine = BS.getLine >>= strict2lazy
+    getContents = BSL.getContents
+    putStr = BSL.putStr
+    putStrLn = BSL.putStrLn
+    interact = BSL.interact
+    readFile = BSL.readFile
+    writeFile = BSL.writeFile
+    appendFile = BSL.appendFile
+
+instance StringLike BSL.ByteString where
+    toString = map (toEnum . fromIntegral) . BSL.unpack
+    fromString = BSL.pack . map (fromIntegral . fromEnum)
+
