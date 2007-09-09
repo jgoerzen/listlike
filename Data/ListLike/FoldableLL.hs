@@ -86,14 +86,6 @@ fold = foldMap id
 foldMap :: (FoldableLL full item, Monoid m) => (item -> m) -> full -> m
 foldMap f = foldr (mappend . f) mempty
 
-instance FoldableLL BS.ByteString Word8 where
-    foldl = BS.foldl
-    foldl' = BS.foldl'
-    foldl1 = BS.foldl1
-    foldr = BS.foldr
-    foldr' = BS.foldr'
-    foldr1 = BS.foldr1
-
 instance (F.Foldable f) => FoldableLL (f a) a where
     foldl = F.foldl
     foldl1 = F.foldl1
