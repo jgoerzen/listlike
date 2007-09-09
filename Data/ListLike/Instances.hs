@@ -237,9 +237,9 @@ instance ListLike BSL.ByteString Word8 where
     --partition = BSL.partition
     index l i = BSL.index l (fromIntegral i)
     elemIndex i = mi64toi . BSL.elemIndex i 
-    elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
+    --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
     findIndex f = mi64toi . BSL.findIndex f
-    findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
+    --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
     --sequence = BSL.sequence
     --mapM = BSL.mapM
     --mapM_ = BSL.mapM_
