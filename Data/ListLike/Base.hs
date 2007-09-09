@@ -47,10 +47,12 @@ import Data.Maybe
 Implementators must define at least:
 
 * singleton
-* head
-* tail
-* null or genericLength
 
+* head
+
+* tail
+
+* null or genericLength
 -}
 class (FoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
@@ -90,7 +92,7 @@ class (FoldableLL full item, Monoid full) =>
     {- | Gives all itements after the head. -}
     tail :: full -> full 
 
-    {- | All elements of the list except the last one. -}
+    {- | All elements of the list except the last one.  See also 'inits'. -}
     init :: full -> full
     init l
         | null l = error "init: empty list"
@@ -102,7 +104,7 @@ class (FoldableLL full item, Monoid full) =>
     null :: full -> Bool
     null x = genericLength x == 0
 
-    {- | Length of the list. -}
+    {- | Length of the list.  See also 'genericLength'. -}
     length :: full -> Int
     length = genericLength
 

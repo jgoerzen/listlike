@@ -19,10 +19,14 @@ For license and copyright information, see the file COPYRIGHT
 Generic operations over list-like structures
 
 Written by John Goerzen, jgoerzen\@complete.org
+
+Please start with the introduction at "Data.ListLike#intro".
 -}
 
-module ListLike (-- * Introduction
+module Data.ListLike 
+                (-- * Introduction
                  -- $intro
+                 
                  -- * Creation & Basic Functions
                  empty, singleton, 
                  cons, snoc, append, head, last, tail, init, null, length,
@@ -60,6 +64,8 @@ module ListLike (-- * Introduction
                  zip, zipWith, unzip,
                  -- * Monadic Operations
                  sequence, sequence_, mapM, mapM_,
+                 -- * Input and Output
+                 ListLikeIO(..),
                  -- * Special lists
                  -- ** Strings
                  toString, fromString, lines, words,
@@ -84,8 +90,6 @@ module ListLike (-- * Introduction
                  FoldableLL,
                  -- * The StringLike class
                  StringLike,
-                 -- * The I\/O class
-                 -- ListLikeIO,
                  -- * The InfiniteListLike class
                  InfiniteListLike
                 )
@@ -105,6 +109,7 @@ import Data.ListLike.Instances
 import Data.ListLike.String
 import Data.ListLike.Utils
 import Data.ListLike.FoldableLL
+import Data.ListLike.IO
 import qualified Control.Monad as M
 import Data.Monoid
 import qualified Data.ByteString as BS
@@ -113,6 +118,7 @@ import qualified Data.Map as Map
 import Data.Maybe
 
 {- $intro
+#intro#
 Welcome to ListLike.
 
 This module provides abstractions over typical list operations.
@@ -121,7 +127,8 @@ sequences of data.  It works with lists, various types of ByteStrings,
 and much more.
 
 In this module, you'll find generic versions of most of the functions
-you're used to using in the "Prelude" or from "Data.List".  They carry the
+you're used to using in the "Prelude", "Data.List", and "System.IO".
+They carry the
 same names, too.  Therefore, you'll want to be careful how you import
 the module.  I suggest using:
 
@@ -134,6 +141,7 @@ from Prelude and import specific generic functions from here, such as:
 >import Prelude hiding (map)
 >import ListLike (map)
 
+The I\/O features of ListLike may a
 The module "Data.ListLike" actually simply re-exports the items found
 in a number of its sub-modules.  If you want a smaller subset of
 "Data.ListLike", look at the documentation for its sub-modules and import
