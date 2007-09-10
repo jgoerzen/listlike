@@ -393,7 +393,7 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
 --------------------------------------------------
 -- Arrays
 
-instance (Ix i, F.Foldable (a i), IArray a e) => FoldableLL (Array i e) e where
+instance (Ix i) => FoldableLL (Array i e) e where
     foldl = F.foldl
     foldl1 = F.foldl1
     foldl' = F.foldl'
@@ -401,7 +401,7 @@ instance (Ix i, F.Foldable (a i), IArray a e) => FoldableLL (Array i e) e where
     foldr1 = F.foldr1
     foldr' = F.foldr'
 
-instance (Num i, Enum i, Integral i, Ix i, F.Foldable (a i), IArray a e) => Monoid (Array i e) where
+instance (Integral i, Ix i) => Monoid (Array i e) where
     mempty = listArray (0, 0) []
     mappend l1 l2 =
         array (blow, newbhigh)
@@ -411,8 +411,7 @@ instance (Num i, Enum i, Integral i, Ix i, F.Foldable (a i), IArray a e) => Mono
               newbhigh = bhigh + newlen
               (blow, bhigh) = bounds l1
 
-instance (Enum i, Integral i, Ix i, FoldableLL (Array i e) e,
-          F.Foldable (a i), IArray a e) => ListLike (Array i e) e where
+instance (Integral i, Ix i) => ListLike (Array i e) e where
     empty = mempty
     {-
     singleton i = listArray (0, 1) [i]
