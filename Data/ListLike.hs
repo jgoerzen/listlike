@@ -86,6 +86,16 @@ module Data.ListLike
                  genericLength, genericTake, genericDrop, genericSplitAt,
                  -- genericIndex,
                  genericReplicate,
+                 -- * Notes on specific instances
+                 -- ** Lists
+                 -- $noteslist
+
+                 -- ** Maps
+                 -- $notesmap
+
+                 -- ** ByteStrings
+                 -- $notesbytestring
+                 
                  -- * The ListLike class
                  ListLike,
                  -- * The FoldableLL class
@@ -149,3 +159,47 @@ You can make your own types instances of 'ListLike' as well.  For more
 details, see the notes for the 'ListLike' typeclass.
 -}
 
+{- $noteslist
+
+Functions for operating on regular lists almost all use the native
+implementations in "Data.List", "Prelude", or similar standard
+modules.  The exceptions are:
+
+* 'mapM' uses the default 'ListLike' implementation
+
+* 'hGet' does not exist for 'String' in the Haskell modules.
+  It is implemented in terms of "Data.ByteString" and thus is not lazy.
+
+* 'hGetNonBlocking' is the same way. -}
+
+{- $notesmap
+
+'Data.Map.Map' is an instance of 'ListLike' and is a rather interesting one at
+that.  The \"item\" for the Map instance is a @(key, value)@ pair.  This
+permits you to do folds, maps, etc. over a Map just like you would on a list.
+
+The nature of a Map -- that every key is unique, and that it is internally
+sorted -- means that there are some special things to take note of:
+
+* 'cons' may or may not actually increase the size of the Map.  If the given
+   key is already in the map, its value will simply be updated.  Since
+   a Map has a set internal ordering, it is also not guaranteed that cons
+   will add something to the beginning of the Map.
+
+* 'snoc' is the same operation as 'cons'.
+
+* 'append' is 'Data.Map.union'
+
+* 'nub', 'nubBy',
+  'reverse', 'sort', 'sortBy', etc. are the identity function and don\'t
+  actually perform any computation
+
+* 'insert' is the same as 'cons'.
+
+* 'replicate' and 'genericReplicate' ignore the count and return a Map
+  with a single element.
+-}
+
+{- $notesbytestring
+
+ByteString notes -}
