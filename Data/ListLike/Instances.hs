@@ -40,8 +40,8 @@ import Data.Int
 import Data.Monoid
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as F
-import Data.Ix
-import Data.Array.IArray
+import qualified Data.Array.IArray as A
+import Data.Array.IArray((!), (//), Ix(..))
 import qualified Data.ByteString.Lazy as BSL
 import qualified System.IO as IO
 import Data.Word
@@ -393,7 +393,7 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
 --------------------------------------------------
 -- Arrays
 
-instance (Ix i) => FoldableLL (Array i e) e where
+instance (Ix i) => FoldableLL (A.Array i e) e where
     foldl = F.foldl
     foldl1 = F.foldl1
     foldl' = F.foldl'
@@ -401,38 +401,36 @@ instance (Ix i) => FoldableLL (Array i e) e where
     foldr1 = F.foldr1
     foldr' = F.foldr'
 
-instance (Integral i, Ix i) => Monoid (Array i e) where
-    mempty = listArray (0, 0) []
+instance (Integral i, Ix i) => Monoid (A.Array i e) where
+    mempty = A.listArray (0, 0) []
     mappend l1 l2 =
-        array (blow, newbhigh)
-              (assocs l1 ++ zip [(bhigh + 1)..newbhigh] (elems l2))
+        A.array (blow, newbhigh)
+              (A.assocs l1 ++ zip [(bhigh + 1)..newbhigh] (A.elems l2))
         where newlen = genericLength newelems
-              newelems = elems l2
+              newelems = A.elems l2
               newbhigh = bhigh + newlen
-              (blow, bhigh) = bounds l1
+              (blow, bhigh) = A.bounds l1
 
-instance (Integral i, Ix i) => ListLike (Array i e) e where
+instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     empty = mempty
-    {-
-    singleton i = listArray (0, 1) [i]
+    singleton i = A.listArray (0, 1) [i]
     cons i l = 
         -- To add something to the beginning of an array, we must
         -- change the bounds and set the first element.
-        (ixmap (blow - 1, bhigh) id l) // [(blow - 1, i)]
-        where (blow, bhigh) = bounds l
+        (A.ixmap (blow - 1, bhigh) id l) // [(blow - 1, i)]
+        where (blow, bhigh) = A.bounds l
     snoc l i = 
         -- Here we must change the bounds and set the last element
-        (ixmap (blow, bhigh + 1) id l) // [(bhigh + 1, i)]
-        where (blow, bhigh) = bounds l
+        (A.ixmap (blow, bhigh + 1) id l) // [(bhigh + 1, i)]
+        where (blow, bhigh) = A.bounds l
     append = mappend
-    head l = l ! (fst (bounds l))
-    last l = l ! (snd (bounds l))
-    tail l = array (blow + 1, bhigh) (tail (assocs l))
-            where (blow, bhigh) = bounds l
-    init l = array (blow, bhigh - 1) (init (assocs l))
-            where (blow, bhigh) = bounds l
-    null l = length l == 0
-    length = fromIntegral . genericLength
+    head l = l ! (fst (A.bounds l))
+    last l = l ! (snd (A.bounds l))
+    tail l = A.array (blow + 1, bhigh) (tail (A.assocs l))
+            where (blow, bhigh) = A.bounds l
+    init l = A.array (blow, bhigh - 1) (init (A.assocs l))
+            where (blow, bhigh) = A.bounds l
+    null l = genericLength l == (0::Integer)
+    length = genericLength
     genericLength l = fromIntegral (bhigh - blow)
-        where (blow, bhigh) = bounds l
--}
+        where (blow, bhigh) = A.bounds l
