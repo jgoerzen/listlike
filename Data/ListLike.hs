@@ -194,7 +194,10 @@ modules.  The exceptions are:
 
 * Functions that change the length of the array by an amount not known
   in advance, such as 'filter', will generate a new array with the lower
-  bound set to 0.
+  bound set to 0.  Furthermore, these functions cannot operate on infinite
+  lists because they must know their length in order to generate the
+  array.  'hGetContents' and its friends will therefore require the
+  entire file to be read into memory before processing is possible.
 
 * 'empty', 'singleton', and 'fromList' also generate an array with the
   lower bound set to 0.
@@ -249,4 +252,5 @@ exceptions:
   ByteStream module.  In some cases, default implementations are used.
   In others, notably related to I\/O, the lazy ByteStreams are converted
   back and forth to strict ones as appropriate.
+
 -}
