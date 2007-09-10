@@ -168,7 +168,7 @@ modules.  The exceptions are:
 * 'mapM' uses the default 'ListLike' implementation
 
 * 'hGet' does not exist for 'String' in the Haskell modules.
-  It is implemented in terms of "Data.ByteString" and thus is not lazy.
+  It is implemented in terms of "Data.ByteString.Lazy".
 
 * 'hGetNonBlocking' is the same way. -}
 
@@ -202,4 +202,20 @@ sorted -- means that there are some special things to take note of:
 
 {- $notesbytestring
 
-ByteString notes -}
+Both strict and lazy ByteStreams can be used with 'ListLike'.
+
+Most 'ListLike' operations map directly to ByteStream options.  Notable
+exceptions:
+
+* 'map' uses the 'ListLike' implementation.  'rigidMap' is more efficient.
+  The same goes for 'concatMap' vs. 'rigidConcatMap'.
+
+* 'isInfixOf', 'sequence', 'mapM' and similar monad operations, 'insert', 
+  'union', 'intersect', 'sortBy', and similar functions are not implemented
+  in 'ByteStream' and use a naive default implementation.
+
+* The lazy ByteStream module implements fewer funtions than the strict
+  ByteStream module.  In some cases, default implementations are used.
+  In others, notably related to I\/O, the lazy ByteStreams are converted
+  back and forth to strict ones as appropriate.
+-}

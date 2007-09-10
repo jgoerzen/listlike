@@ -52,9 +52,8 @@ import qualified Data.Map as Map
 instance ListLikeIO String Char where
     hGetLine = IO.hGetLine
     hGetContents = IO.hGetContents
-    -- FIXME: change to BSL
-    hGet h c = BS.hGet h c >>= (return . toString)
-    hGetNonBlocking h i = BS.hGetNonBlocking h i >>= (return . toString)
+    hGet h c = BSL.hGet h c >>= (return . toString)
+    hGetNonBlocking h i = BSL.hGetNonBlocking h i >>= (return . toString)
     hPutStr = IO.hPutStr
     hPutStrLn = IO.hPutStrLn
     getLine = IO.getLine
