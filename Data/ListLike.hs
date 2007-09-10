@@ -90,19 +90,23 @@ module Data.ListLike
                  -- ** Lists
                  -- $noteslist
 
+                 -- ** Arrays
+                 -- $notesarray
+
                  -- ** Maps
                  -- $notesmap
 
                  -- ** ByteStrings
                  -- $notesbytestring
                  
-                 -- * The ListLike class
+                 -- * Base Typeclasses
+                 -- ** The ListLike class
                  ListLike,
-                 -- * The FoldableLL class
+                 -- ** The FoldableLL class
                  FoldableLL,
-                 -- * The StringLike class
+                 -- ** The StringLike class
                  StringLike,
-                 -- * The InfiniteListLike class
+                 -- ** The InfiniteListLike class
                  InfiniteListLike
                 )
        where
@@ -171,6 +175,33 @@ modules.  The exceptions are:
   It is implemented in terms of "Data.ByteString.Lazy".
 
 * 'hGetNonBlocking' is the same way. -}
+
+{- $notesarray
+
+'Data.Array.Array' is an instance of 'ListLike'.  Here are some notes about it:
+
+* The index you use must be an integral
+
+* 'ListLike' functions that take an index always take a 0-based index
+  for compatibility with other 'ListLike' instances.
+  This is translated by the instance functions into the proper offset from
+  the bounds in the Array.
+
+* 'ListLike' functions preserve the original Array index numbers when
+  possible.  Functions such as 'cons' will reduce the lower bound to do
+  their job.  'snoc' and 'append' increase the upper bound.  'drop' raises
+  the lower bound and 'take' lowers the upper bound.
+
+* Functions that change the length of the array by an amount not known
+  in advance, such as 'filter', will generate a new array with the lower
+  bound set to 0.
+
+* 'empty', 'singleton', and 'fromList' also generate an array with the
+  lower bound set to 0.
+
+* Many of these functions will generate runtime exceptions if you have
+  not assigned a value to every slot in the array.
+-}
 
 {- $notesmap
 

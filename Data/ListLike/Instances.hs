@@ -500,3 +500,26 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     -- geneicSplitAt
     genericReplicate count i = A.listArray (0, (fromIntegral count) - 1) 
                                            (L.genericReplicate count i)
+
+
+instance (Integral i, Ix i) => StringLike (A.Array i Char) where
+    toString = toList
+    fromString = fromList
+    -- lines
+    -- words
+
+instance (Integral i, Ix i) => ListLikeIO (A.Array i Char) Char where
+    hGetLine h = IO.hGetLine h >>= (return . fromList)
+    hGetContents h = IO.hGetContents h >>= (return . fromList)
+    hGet h i = ((hGet h i)::IO String) >>= (return . fromList)
+    hGetNonBlocking h i = ((hGetNonBlocking h i):: IO String) >>= (return . fromList)
+    hPutStr h = hPutStr h . toString
+    hPutStrLn h = hPutStrLn h . toString
+    getLine = IO.getLine >>= (return . fromString)
+    getContents = IO.getContents >>= (return . fromString)
+    putStr = IO.putStr . toString
+    putStrLn = IO.putStrLn . toString
+    -- interact
+    -- readFile
+    -- writeFile
+    -- appendFile
