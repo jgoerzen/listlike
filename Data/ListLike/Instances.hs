@@ -432,5 +432,71 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
             where (blow, bhigh) = A.bounds l
     null l = genericLength l == (0::Integer)
     length = genericLength
+    -- map
+    rigidMap = A.amap
+    reverse l = A.listArray (A.bounds l) (L.reverse (A.elems l)) 
+    -- intersperse
+    -- concat
+    -- concatMap
+    -- rigidConcatMap
+    any x = L.any x . A.elems
+    all x = L.all x . A.elems
+    maximum = L.maximum . A.elems
+    minimum = L.minimum . A.elems
+    replicate = genericReplicate
+    take = genericTake
+    drop = genericDrop
+    -- splitAt
+    -- takeWhile
+    -- dropWhile
+    -- span
+    -- break
+    -- group
+    -- inits
+    -- tails
+    isPrefixOf l1 l2 = L.isPrefixOf (toList l1) (toList l2)
+    isSuffixOf l1 l2 = L.isSuffixOf (toList l1) (toList l2)
+    isInfixOf l1 l2 = L.isInfixOf (toList l1) (toList l2)
+    elem i l = L.elem i (toList l)
+    -- notElem
+    filter f = fromList . L.filter f . toList
+    -- partition
+    index l i = l ! ((fromIntegral i) + offset)
+        where offset = (fst $ A.bounds l)
+    elemIndex i = L.elemIndex i . toList
+    elemIndices i = fromList . L.elemIndices i . toList
+    findIndex f = L.findIndex f . toList
+    findIndices f = fromList . L.findIndices f . toList
+    -- sequence = M.sequence . toList
+    -- mapM f = M.mapM f . toList
+    -- rigidMapM = mapM
+    -- mapM_ f = M.mapM_ f . toList
+    nub = fromList . L.nub . toList
+    -- delete
+    -- deleteFirsts
+    -- union
+    -- intersect
+    sort l = A.listArray (A.bounds l) (L.sort (A.elems l))
+    -- insert
+    toList = A.elems
+    fromList l = A.listArray (0, genericLength l - 1) l
+    -- fromListLike
+    nubBy f = fromList . L.nubBy f . toList
+    -- deleteBy
+    -- deleteFirstsBy
+    -- unionBy
+    -- intersectBy
+    -- groupBy
+    sortBy f l = A.listArray (A.bounds l) (L.sortBy f (A.elems l))
+    -- insertBy
     genericLength l = fromIntegral (bhigh - blow)
         where (blow, bhigh) = A.bounds l
+    genericTake count l = A.listArray (blow, blow + (fromIntegral count))
+                          (L.genericTake count (A.elems l))
+        where (blow, _) = A.bounds l
+    genericDrop count l = A.listArray (blow + (fromIntegral count), bhigh)
+                          (L.genericDrop count (A.elems l))
+        where (blow, bhigh) = A.bounds l
+    -- geneicSplitAt
+    genericReplicate count i = A.listArray (0, (fromIntegral count) - 1) 
+                                           (L.genericReplicate count i)
