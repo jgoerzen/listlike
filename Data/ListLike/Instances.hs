@@ -325,11 +325,11 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     -- maximum
     -- minimum
     replicate _ = singleton
-    take n = Map.fromList . L.take n . Map.toList
-    drop n = Map.fromList . L.drop n . Map.toList
+    take n = Map.fromAscList . L.take n . Map.toAscList
+    drop n = Map.fromAscList . L.drop n . Map.toAscList
     splitAt n = l2m . L.splitAt n . Map.toList
-    takeWhile f = Map.fromList . L.takeWhile f . Map.toList
-    dropWhile f = Map.fromList . L.dropWhile f . Map.toList
+    takeWhile f = Map.fromAscList . L.takeWhile f . Map.toAscList
+    dropWhile f = Map.fromAscList . L.dropWhile f . Map.toAscList
     span f = l2m . L.span f . Map.toList
     break f = span (not . f)
     -- group
@@ -350,6 +350,47 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
              Just i -> if snd (Map.elemAt i m) == v
                            then Just i
                            else fail "elemIndex on Map: matched key but not value"
+    elemIndices i m = 
+        case elemIndex i m of
+             Nothing -> empty
+             Just x -> singleton x
+    -- findIndex
+    -- findIndices
+    -- sequence
+    -- mapM
+    -- rigidMapM
+    -- mapM_
+    nub = id
+    delete (k, v) m =
+        case Map.lookup k m of
+             Nothing -> m
+             Just x -> if x == v
+                          then Map.delete k m
+                          else m
+    union = Map.union
+    -- intersect
+    sort = id
+    insert = cons
+    toList = Map.toList
+    fromList = Map.fromList
+    nubBy _ = id
+    --deleteBy
+    --deleteFirstsBy
+    --unionBy
+    --intersectBy
+    --groupBy
+    sortBy _ = id
+    insertBy _ = insert
+    genericLength = fromIntegral . Map.size
+    genericTake n = Map.fromAscList . L.genericTake n . Map.toAscList
+    genericDrop n = Map.fromAscList . L.genericDrop n . Map.toAscList
+    genericSplitAt n = l2m . L.genericSplitAt n . Map.toList
+    genericReplicate _ = singleton
+
+
+
+
+
 
 
 
