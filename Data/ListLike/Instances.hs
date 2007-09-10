@@ -37,7 +37,11 @@ import Data.ListLike.String
 import Data.ListLike.IO
 import Data.ListLike.FoldableLL
 import Data.Int
+import Data.Monoid
 import qualified Data.ByteString as BS
+import qualified Data.Foldable as F
+import Data.Ix
+import Data.Array.IArray
 import qualified Data.ByteString.Lazy as BSL
 import qualified System.IO as IO
 import Data.Word
@@ -386,10 +390,50 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     genericSplitAt n = l2m . L.genericSplitAt n . Map.toList
     genericReplicate _ = singleton
 
+--------------------------------------------------
+-- Arrays
 
+instance (Ix i, F.Foldable (a i), IArray a e) => FoldableLL (Array i e) e where
+    foldl = F.foldl
+    foldl1 = F.foldl1
+    foldl' = F.foldl'
+    foldr = F.foldr
+    foldr1 = F.foldr1
+    foldr' = F.foldr'
 
+instance (Num i, Enum i, Integral i, Ix i, F.Foldable (a i), IArray a e) => Monoid (Array i e) where
+    mempty = listArray (0, 0) []
+    mappend l1 l2 =
+        array (blow, newbhigh)
+              (assocs l1 ++ zip [(bhigh + 1)..newbhigh] (elems l2))
+        where newlen = genericLength newelems
+              newelems = elems l2
+              newbhigh = bhigh + newlen
+              (blow, bhigh) = bounds l1
 
-
-
-
-
+instance (Enum i, Integral i, Ix i, FoldableLL (Array i e) e,
+          F.Foldable (a i), IArray a e) => ListLike (Array i e) e where
+    empty = mempty
+    {-
+    singleton i = listArray (0, 1) [i]
+    cons i l = 
+        -- To add something to the beginning of an array, we must
+        -- change the bounds and set the first element.
+        (ixmap (blow - 1, bhigh) id l) // [(blow - 1, i)]
+        where (blow, bhigh) = bounds l
+    snoc l i = 
+        -- Here we must change the bounds and set the last element
+        (ixmap (blow, bhigh + 1) id l) // [(bhigh + 1, i)]
+        where (blow, bhigh) = bounds l
+    append = mappend
+    head l = l ! (fst (bounds l))
+    last l = l ! (snd (bounds l))
+    tail l = array (blow + 1, bhigh) (tail (assocs l))
+            where (blow, bhigh) = bounds l
+    init l = array (blow, bhigh - 1) (init (assocs l))
+            where (blow, bhigh) = bounds l
+    null l = length l == 0
+    length = fromIntegral . genericLength
+    genericLength l = fromIntegral (bhigh - blow)
+        where (blow, bhigh) = bounds l
+-}
