@@ -10,6 +10,7 @@ For license and copyright information, see the file COPYRIGHT
 import Test.QuickCheck
 import Test.QuickCheck.Batch
 import qualified Data.ByteString as BS
+import qualified Data.Array as A
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
 import qualified Data.Map as Map
@@ -23,20 +24,31 @@ import Data.List
 import Data.Monoid
 import TestInfrastructure
 
-prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
+-- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
 prop_singleton f x = (LL.toList $ asTypeOf (LL.singleton x) f) == [x]
 
-allprops :: (forall f i. (Eq i, LL.ListLike f i) => (f -> i -> Bool)) -> Test
-allprops x = TestList $
-    [t "singleton" $ x (LL.empty::[Int]),
-     t "singleton" $ x (LL.empty::MyList Int)]
+allprops :: String -> (forall f i. (Eq i, LL.ListLike f i) => (f -> i -> Bool)) -> Test
+allprops msg x = TestList $
+    [t (msg ++ " [Int]") $ x (LL.empty::[Int]),
+     t (msg ++ " MyList Int") $ x (LL.empty::MyList Int),
+     t (msg ++ " [Bool]") $ x (LL.empty::[Bool]),
+     t (msg ++ " MyList Bool") $ x (LL.empty::MyList Bool),
+     t (msg ++ " Map Int Int") $ x (LL.empty::Map.Map Int Int),
+     t (msg ++ " Map Bool Int") $ x (LL.empty::Map.Map Bool Int),
+     t (msg ++ " Map Int Bool") $ x (LL.empty::Map.Map Int Bool),
+     t (msg ++ " Map Bool Bool") $ x (LL.empty::Map.Map Bool Bool),
+     t (msg ++ " ByteString") $ x (LL.empty::BS.ByteString),
+     t (msg ++ " ByteString.Lazy") $ x (LL.empty::BSL.ByteString),
+     t (msg ++ " Array Int Int") $ x (LL.empty::A.Array Int Int),
+     t (msg ++ " Array Int Bool") $ x (LL.empty::A.Array Int Bool)]
+
     
 allt = map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
         -- tase "empty2" (\_ -> LL.empty) (\_ -> []),
         -- tase "singleton" LL.singleton (\x -> [x]),
         ++ map (t2 "to/fromList") (ta (LL.fromList . LL.toList) id)
         --ta "cons" LL.cons (:)
-        ++ [allprops prop_singleton]
+        ++ [allprops "singleton" prop_singleton]
 
 testh = runTestTT (TestList allt)
 
