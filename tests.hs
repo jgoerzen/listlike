@@ -25,18 +25,88 @@ Please start with the introduction at "Data.ListLike#intro".
 
 import Test.QuickCheck
 import Test.QuickCheck.Batch
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
+import qualified Data.Map as Map
+import qualified Data.Array as A
+import System.Random
 import Test.HUnit
-import Test.HUnit.Utils
 import Text.Printf
+import Data.Word
+import Data.List
 
-prop_empty :: Bool
-prop_empty = LL.empty == ([]::[Int])
+class (LL.ListLike a b, Eq b) => TestLL a b where
+    tl :: a -> [b]
+    fl :: [b] -> a
+    cl :: (a -> a) -> ([b] -> [b]) -> [b] -> Bool
+    cl nativefunc listfunc listdata =
+        tl (nativefunc (fl listdata)) == listfunc listdata
+
+instance (Eq a) => TestLL [a] a where
+    tl = LL.toList
+    fl = LL.fromList
+
+instance (Ord v, Ord k, Eq v) => TestLL (Map.Map k v) (k, v) where
+    fl = LL.fromList
+    tl = LL.toList
+    cl nativefunc listfunc listdata =
+        (sort . tl . nativefunc . fl $ listdata) ==
+        (sort . convl . listfunc . convl $ listdata)
+        where convl = foldl myinsert [] 
+              myinsert [] newval = [newval]
+              myinsert ((ak, av):as) (nk, nv)
+                | ak == nk = (nk, nv) : as
+                | otherwise = (ak, av) : myinsert as (nk, nv)
+                  
+instance TestLL BS.ByteString Word8 where
+    tl = LL.toList
+    fl = LL.fromList
+
+instance TestLL BSL.ByteString Word8 where
+    tl = LL.toList
+    fl = LL.fromList
+
+instance TestLL (A.Array Int Int) Int where
+    tl = LL.toList
+    fl = LL.fromList
+
+instance Arbitrary (Map.Map Int Int) where
+    arbitrary = fmap fl arbitrary
+    coarbitrary a b = coarbitrary (tl a) b
+
+instance Arbitrary Word8 where
+    arbitrary = choose (0, maxBound)
+    coarbitrary n = variant (2 * fromIntegral n)
+
+instance Random Word8 where
+    randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
+                       randomR (toInteger a, toInteger b) g
+    random g = randomR (minBound, maxBound) g
+
+ta :: (TestLL f l, LL.ListLike f l, Arbitrary f,
+       Arbitrary l, Show l) => 
+      String -> (f -> f) -> ([l] -> [l]) -> Test
+ta msg nativetest listtest =
+    TestList [t (msg ++ " [Word8]") 
+                (cl nativetest listtest)]
+                {-
+              t (msg ++ " ByteString")
+                (cl (nativetest::BS.ByteString -> BS.ByteString) listtest),
+              t (msg ++ " ByteString.Lazy")
+                (cl (nativetest::BSL.ByteString -> BSL.ByteString)
+                    listtest),
+              t (msg ++ " Map")
+                (cl (nativetest::Map.Map Word8 Word8 -> Map.Map Word8 Word8) listtest),
+              t (msg ++ " Array")
+                (cl (nativetest::A.Array Int Word8 -> A.Array Int Word8) listtest)]
+
+-}
 
 prop_singleton :: Int -> Bool
 prop_singleton i = LL.singleton i == [i]
 
-allt = [t "empty" prop_empty,
+allt = [--t "empty" prop_empty,
         t "singleton" prop_singleton]
 
 {-
@@ -54,7 +124,7 @@ t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
                                       ++ " cases)")
 
 --t msg test = TestLabel msg $ qctest msg test
-testh = runTestTT (TestList (concat $ replicate 200 allt))
+testh = runTestTT (TestList allt)
 
 main = testh
 
