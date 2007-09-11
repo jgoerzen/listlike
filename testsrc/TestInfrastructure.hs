@@ -47,6 +47,20 @@ instance LL.ListLike (MyList a) a where
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
 
+data Eq a => TBoth a = TBoth a a 
+data (Eq a, LL.ListLike a b) => TBothLL a b = TBothLL a [b]
+
+{-
+instance (Eq a, LL.ListLike a b) => Test.QuickCheck.Testable (TBoth a) where
+    property (TBoth x y) = property (x == y)
+-}
+instance (Eq a, Eq b, LL.ListLike a b, TestLL a b) => 
+         Test.QuickCheck.Testable (TBothLL a b) where
+    property (TBothLL ll l) = property (tl ll == l)
+
+mktb :: forall x a b.  (Eq a, LL.ListLike a b) => 
+    (x -> a) -> (x -> [b]) -> x -> TBothLL a b
+mktb f1 f2 i = TBothLL (f1 i) (f2 i)
 class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
     fl :: [b] -> a
@@ -158,11 +172,24 @@ tase msg nativetest listtest =
      t (msg ++ " Array")
        (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
+ta ::
+    String ->
+    (forall x f i. (Eq f, LL.ListLike f i) => (x -> f)) ->
+    (forall l z. (Arbitrary l, Show l) => (z -> [l])) ->
+    x ->
+    Test
+ta msg nativetest listtest i = TestList
+    [
+     t (msg ++ " [Int]") ((mktb nativetest listtest i)::TBothLL [Int] Int),
+     t (msg ++ " MyList Int") ((mktb nativetest listtest i)::TBothLL (MyList Int) Int)
+    ]
+{-
+
 {- | Test with All types. -}
 ta :: 
-      String -> (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
-                 Arbitrary i, Show i) => (f -> f)) 
-             -> (forall l. (Arbitrary l, Show l) => ([l] -> [l])) 
+      String -> (forall x f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
+                 Arbitrary i, Show i) => (x -> f -> Bool)) 
+             -> (forall l z. (Arbitrary l, Show l) => (z -> [l] -> Bool)) 
              -> Test
 ta msg nativetest listtest = 
     TestList 
@@ -172,7 +199,7 @@ ta msg nativetest listtest =
      t (msg ++ " ByteString") (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest),
      t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
      t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
-
+-}
 t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
