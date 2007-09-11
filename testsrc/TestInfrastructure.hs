@@ -148,14 +148,15 @@ tase msg nativetest listtest =
     [t (msg ++ " [Int]") 
        (\(input::[Int]) -> fl (nativetest input) == listtest input),
      t (msg ++ " MyList Int")
-       (\(input::MyList Int) -> fl (nativetest input) == listtest input)]
-    {-
-     t (msg ++ " MyList Int") (cl (nativetest::(MyList Int -> MyList Int)) listtest),
-     t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest),
-     t (msg ++ " ByteString") (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest),
-     t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
-     t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
-     -}
+       (\(input::MyList Int) -> fl (nativetest input) == listtest input),
+     t (msg ++ " Map")
+       (\(input::Map.Map Int Int) -> fl (nativetest input) == listtest input),
+     t (msg ++ " ByteString")
+       (\(input::BS.ByteString) -> fl (nativetest input) == listtest input),
+     t (msg ++ " ByteString.Lazy")
+       (\(input::BSL.ByteString) -> fl (nativetest input) == listtest input),
+     t (msg ++ " Array")
+       (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
 {- | Test with All types. -}
 ta :: 
