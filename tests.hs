@@ -36,18 +36,25 @@ import Text.Printf
 import Data.Word
 import Data.List
 
-class (LL.ListLike a b, Eq b) => TestLL a b where
+class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
     fl :: [b] -> a
+
     cl :: (a -> a) -> ([b] -> [b]) -> [b] -> Bool
     cl nativefunc listfunc listdata =
         tl (nativefunc (fl listdata)) == listfunc listdata
 
-instance (Eq a) => TestLL [a] a where
+    {-
+    tr :: String -> (a -> a) -> ([b] -> [b]) -> Test
+    tr msg nativetest listtest =
+        t msg (cl nativetest listtest)
+    -}
+
+instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
     tl = LL.toList
     fl = LL.fromList
 
-instance (Ord v, Ord k, Eq v) => TestLL (Map.Map k v) (k, v) where
+instance (Arbitrary k, Show k, Show v, Arbitrary v, Ord v, Ord k, Eq v) => TestLL (Map.Map k v) (k, v) where
     fl = LL.fromList
     tl = LL.toList
     cl nativefunc listfunc listdata =
@@ -84,12 +91,18 @@ instance Random Word8 where
                        randomR (toInteger a, toInteger b) g
     random g = randomR (minBound, maxBound) g
 
-ta :: (TestLL f l, LL.ListLike f l, Arbitrary f,
+{-
+ta :: forall f l. (TestLL f l, LL.ListLike f l, Arbitrary f,
        Arbitrary l, Show l) => 
       String -> (f -> f) -> ([l] -> [l]) -> Test
+-}
+tr msg nativetest listtest =
+    t msg (cl nativetest listtest)
+
 ta msg nativetest listtest =
-    TestList [t (msg ++ " [Word8]") 
-                (cl nativetest listtest)]
+    TestList [tr (msg ++ " [Int]") nativetest listtest,
+              tr (msg ++ " ByteString") nativetest listtest BS.empty]
+
                 {-
               t (msg ++ " ByteString")
                 (cl (nativetest::BS.ByteString -> BS.ByteString) listtest),
@@ -108,6 +121,7 @@ prop_singleton i = LL.singleton i == [i]
 
 allt = [--t "empty" prop_empty,
         t "singleton" prop_singleton]
+        --ta "to/fromList" (LL.fromList . LL.toList) id]
 
 {-
 t msg test = runTests msg defOpt [run test]
