@@ -23,11 +23,8 @@ import Data.List
 import Data.Monoid
 import TestInfrastructure
 
-prop_singleton :: Int -> Bool
-prop_singleton i = LL.singleton i == [i]
-
-allt = [--t "empty" prop_empty,
-        t "singleton" prop_singleton,
+allt = [ta "empty" (\_ -> LL.fromList []) (\_ -> []),
+        ta "singleton" LL.singleton (\x -> [x]),
         ta "to/fromList" (LL.fromList . LL.toList) id]
 
 testh = runTestTT (TestList allt)
