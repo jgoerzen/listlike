@@ -60,9 +60,9 @@ instance (Eq a, LL.ListLike a b, TestLL a b) =>
     property (TBothLL ll l) = property (tl ll == l)
 
 
-mktb :: forall x a b.  (Arbitrary x, Show x, Eq a, LL.ListLike a b, TestLL a b) => 
+mktb :: forall x a b.  (Arbitrary x, Show x, Eq a, LL.ListLike a b) => 
     (x -> a) -> (x -> [b]) -> x -> TBoth a
-mktb f1 f2 i = TBoth (f1 i) (fl (f2 i))
+mktb f1 f2 i = TBoth (f1 i) (LL.fromList (f2 i))
 
 class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
@@ -177,7 +177,7 @@ tase msg nativetest listtest =
 
 ta :: forall a. (Test.QuickCheck.Testable a, Arbitrary a, Show a)  => 
     String ->
-    (forall b. (a -> TBoth b)) -> 
+    (forall b c. (Eq b, LL.ListLike b c, Show c, Arbitrary c) => (a -> TBoth b)) -> 
     Test
 ta msg tests = TestList
     [

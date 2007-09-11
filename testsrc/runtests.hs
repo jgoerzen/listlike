@@ -24,10 +24,10 @@ import Data.Monoid
 import TestInfrastructure
 
 allt = 
-       [--ta "empty" (\_ -> LL.fromList []) (\_ -> []),
+       [ta "empty" (mktb (\() -> LL.empty) (\() -> []))
         --tase "empty2" (\_ -> LL.empty) (\_ -> []),
         --tase "singleton" LL.singleton (\x -> [x])
-        ta "singleton" (mktb LL.singleton (\x -> [x]))
+        --ta "singleton" (mktb LL.singleton (\x -> [x]))
         --ta "to/fromList" (LL.toList . LL.fromList) id 
         -- ta "cons" LL.cons (:)
        ]
