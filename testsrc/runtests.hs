@@ -26,12 +26,11 @@ import TestInfrastructure
 prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
 prop_singleton f x = (LL.toList $ asTypeOf (LL.singleton x) f) == [x]
 
-allprops :: (forall ignore inp. (Eq inp, LL.ListLike ignore inp) => 
-                 (ignore -> inp -> Bool))
-            -> (forall inp. (Arbitrary inp, Eq inp) => inp) -> [Bool]
-allprops x y = 
-    [x (LL.empty::[Int]) y,
-     x (LL.empty::MyList Int) y]
+allprops :: Int -> (forall ignore inp. (Eq inp, LL.ListLike ignore inp) => 
+                 (ignore -> inp -> Bool) -> [(inp -> Bool)])
+allprops _ x = 
+    [x (LL.empty::[Int]),
+     x (LL.empty::MyList Int)]
     
 allt = map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
         -- tase "empty2" (\_ -> LL.empty) (\_ -> []),
