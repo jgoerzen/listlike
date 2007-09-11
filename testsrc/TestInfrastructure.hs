@@ -60,7 +60,7 @@ instance (Eq a, LL.ListLike a b, TestLL a b) =>
     property (TBothLL ll l) = property (tl ll == l)
 
 
-mktb :: forall x a b.  (Arbitrary x, Eq a, LL.ListLike a b, TestLL a b) => 
+mktb :: forall x a b.  (Arbitrary x, Show x, Eq a, LL.ListLike a b, TestLL a b) => 
     (x -> a) -> (x -> [b]) -> x -> TBoth a
 mktb f1 f2 i = TBoth (f1 i) (fl (f2 i))
 
@@ -175,21 +175,15 @@ tase msg nativetest listtest =
      t (msg ++ " Array")
        (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
-ta :: 
+ta :: forall a. (Test.QuickCheck.Testable a, Arbitrary a, Show a)  => 
     String ->
-    (forall f i x. (Eq f, LL.ListLike f i, Arbitrary x, Typeable x, Show x) 
-                    => (x -> f)) ->
-    (forall l y. (Arbitrary y, Show l, Typeable y, Show y) 
-                  => (y -> [l])) ->
+    (forall b. (a -> TBoth b)) -> 
     Test
-ta msg nativetest listtest = TestList
+ta msg tests = TestList
     [
-     t (msg ++ " [Int]") (mktb ntint (fromJust $ cast ltint)),
-     t (msg ++ " MyList Int") (mktb ntmyint listtest)
+     t (msg ++ " [Int]") (tests :: a -> TBoth [Int])
+     -- t (msg ++ " MyList Int") (mktb ntmyint listtest)
     ]
-    where ntint x = (nativetest x)::[Int]
-          ltint x = (listtest x)::[Int]
-          ntmyint = asTypeOf nativetest (\x -> (nativetest x)::(MyList Int))
 {-
 
 {- | Test with All types. -}
@@ -207,6 +201,8 @@ ta msg nativetest listtest =
      t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
      t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
 -}
+
+t :: Test.QuickCheck.Testable a => String -> a -> Test
 t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
