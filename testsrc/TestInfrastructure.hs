@@ -173,19 +173,18 @@ tase msg nativetest listtest =
      t (msg ++ " Array")
        (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
-ta :: Arbitrary x => 
+ta :: forall x. (Show x, Arbitrary x) => 
     String ->
-    (forall f i. (Eq f, LL.ListLike f i, Arbitrary f) 
+    (forall f i. (Eq f, LL.ListLike f i) 
                     => (x -> f)) ->
     (forall l. (Arbitrary l, Show l) 
                   => (x -> [l])) ->
-    x ->
     Test
-ta msg nativetest listtest i = TestList
+ta msg nativetest listtest = TestList
     [
      t (msg ++ " [Int]") 
-       ((mktb nativetest listtest i)::TBoth [Int]),
-     t (msg ++ " MyList Int") ((mktb nativetest listtest i)::TBoth (MyList Int))
+       ((mktb nativetest listtest)::x -> TBoth [Int]),
+     t (msg ++ " MyList Int") ((mktb nativetest listtest)::x -> TBoth (MyList Int))
     ]
 {-
 

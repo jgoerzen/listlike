@@ -23,7 +23,7 @@ import Data.List
 import Data.Monoid
 import TestInfrastructure
 
-allt = TestList $ 
+allt = 
        [--ta "empty" (\_ -> LL.fromList []) (\_ -> []),
         --tase "empty2" (\_ -> LL.empty) (\_ -> []),
         --tase "singleton" LL.singleton (\x -> [x])
