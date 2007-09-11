@@ -50,10 +50,9 @@ instance LL.ListLike (MyList a) a where
 data Eq a => TBoth a = TBoth a a 
 data (Eq a, LL.ListLike a b) => TBothLL a b = TBothLL a [b]
 
-{-
-instance (Eq a, LL.ListLike a b) => Test.QuickCheck.Testable (TBoth a) where
+instance (Eq a) => Test.QuickCheck.Testable (TBoth a) where
     property (TBoth x y) = property (x == y)
--}
+
 instance (Eq a, LL.ListLike a b, TestLL a b) => 
          Test.QuickCheck.Testable (TBothLL a b) where
     property (TBothLL ll l) = property (tl ll == l)
