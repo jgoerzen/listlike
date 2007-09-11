@@ -99,10 +99,10 @@ ta :: forall f l. (TestLL f l, LL.ListLike f l, Arbitrary f,
 tr msg nativetest listtest =
     t msg (cl nativetest listtest)
 
-ta msg nativetest listtest =
-    TestList [tr (msg ++ " [Int]") nativetest listtest,
-              tr (msg ++ " ByteString") nativetest listtest BS.empty]
-
+ta msg nativetest listtest = 
+    TestList 
+    [t (msg ++ " [Int]") ((cl nativetest listtest)::[Int] -> Bool)]
+     -- t (msg ++ " ByteString") ((cl nativetest listtest)::BS.ByteString -> Bool)]
                 {-
               t (msg ++ " ByteString")
                 (cl (nativetest::BS.ByteString -> BS.ByteString) listtest),
