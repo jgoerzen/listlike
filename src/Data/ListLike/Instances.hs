@@ -402,7 +402,7 @@ instance (Ix i) => FoldableLL (A.Array i e) e where
     foldr' = F.foldr'
 
 instance (Integral i, Ix i) => Monoid (A.Array i e) where
-    mempty = A.listArray (0, 0) []
+    mempty = A.listArray (0, -1) []
     mappend l1 l2 =
         A.array (blow, newbhigh)
               (A.assocs l1 ++ zip [(bhigh + 1)..newbhigh] (A.elems l2))
@@ -489,7 +489,7 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     -- groupBy
     sortBy f l = A.listArray (A.bounds l) (L.sortBy f (A.elems l))
     -- insertBy
-    genericLength l = fromIntegral (bhigh - blow)
+    genericLength l = fromIntegral (bhigh - blow + 1)
         where (blow, bhigh) = A.bounds l
     genericTake count l = A.listArray (blow, blow + (fromIntegral count))
                           (L.genericTake count (A.elems l))
