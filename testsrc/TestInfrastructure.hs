@@ -23,6 +23,8 @@ import Text.Printf
 import Data.Word
 import Data.List
 import Data.Monoid
+import Data.Typeable
+import Data.Maybe
 
 data MyList a = MyList [a]
 
@@ -173,19 +175,21 @@ tase msg nativetest listtest =
      t (msg ++ " Array")
        (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
-ta :: forall x. (Show x, Arbitrary x) => 
+ta :: 
     String ->
-    (forall f i. (Eq f, LL.ListLike f i) 
+    (forall f i x. (Eq f, LL.ListLike f i, Arbitrary x, Typeable x, Show x) 
                     => (x -> f)) ->
-    (forall l. (Arbitrary l, Show l) 
-                  => (x -> [l])) ->
+    (forall l y. (Arbitrary y, Show l, Typeable y, Show y) 
+                  => (y -> [l])) ->
     Test
 ta msg nativetest listtest = TestList
     [
-     t (msg ++ " [Int]") 
-       ((mktb nativetest listtest)::x -> TBoth [Int]),
-     t (msg ++ " MyList Int") ((mktb nativetest listtest)::x -> TBoth (MyList Int))
+     t (msg ++ " [Int]") (mktb ntint (fromJust $ cast ltint)),
+     t (msg ++ " MyList Int") (mktb ntmyint listtest)
     ]
+    where ntint x = (nativetest x)::[Int]
+          ltint x = (listtest x)::[Int]
+          ntmyint = asTypeOf nativetest (\x -> (nativetest x)::(MyList Int))
 {-
 
 {- | Test with All types. -}
