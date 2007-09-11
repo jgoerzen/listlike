@@ -27,8 +27,18 @@ import TestInfrastructure
 -- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
 prop_singleton f x = (LL.toList $ asTypeOf (LL.singleton x) f) == [x]
 
-allprops :: String -> (forall f i. (Eq i, LL.ListLike f i) => (f -> i -> Bool)) -> Test
-allprops msg x = TestList $
+prop_empty f x = (LL.toList l == []) && (LL.null l) && (LL.length l == 0)
+    where l = asTypeOf LL.empty f
+
+prop_tofromlist f x = 
+    LL.toList f == l && 
+    LL.length f == length l &&
+    f == (LL.fromList . LL.toList $ f)
+    where l = asTypeOf (LL.toList f) [x]
+
+-- | all props, 2 args: full and item
+apfi :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> i -> Bool)) -> Test
+apfi msg x = TestList $
     [t (msg ++ " [Int]") $ x (LL.empty::[Int]),
      t (msg ++ " MyList Int") $ x (LL.empty::MyList Int),
      t (msg ++ " [Bool]") $ x (LL.empty::[Bool]),
@@ -43,12 +53,14 @@ allprops msg x = TestList $
      t (msg ++ " Array Int Bool") $ x (LL.empty::A.Array Int Bool)]
 
     
-allt = map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
+allt = [apfi "empty" prop_empty,
+        apfi "to/fromList" prop_tofromlist,
+    -- map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
         -- tase "empty2" (\_ -> LL.empty) (\_ -> []),
         -- tase "singleton" LL.singleton (\x -> [x]),
-        ++ map (t2 "to/fromList") (ta (LL.fromList . LL.toList) id)
+        -- ++ map (t2 "to/fromList") (ta (LL.fromList . LL.toList) id)
         --ta "cons" LL.cons (:)
-        ++ [allprops "singleton" prop_singleton]
+        apfi "singleton" prop_singleton]
 
 testh = runTestTT (TestList allt)
 
