@@ -158,22 +158,31 @@ tase msg nativetest listtest =
      t (msg ++ " Array")
        (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
+data TEncap = forall t. Test.QuickCheck.Testable t => TEncap t
+
 {- | Test with All types. -}
-ta :: 
-      String -> (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
+ta :: (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
                  Arbitrary i, Show i) => (f -> f)) 
              -> (forall l. (Arbitrary l, Show l) => ([l] -> [l])) 
-             -> Test
-ta msg nativetest listtest = 
-    TestList 
-    [t (msg ++ " [Int]") (cl (nativetest::([Int] -> [Int])) listtest),
-     t (msg ++ " MyList Int") (cl (nativetest::(MyList Int -> MyList Int)) listtest),
-     t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest),
-     t (msg ++ " ByteString") (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest),
-     t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
-     t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
+             -> [TEncap]
+ta nativetest listtest = 
+    [ TEncap (cl (nativetest::([Int] -> [Int])) listtest) ,
+      TEncap (cl (nativetest::(MyList Int -> MyList Int)) listtest) ,
+      TEncap (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest) ,
+      TEncap (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest) ,
+      TEncap (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest) ,
+      TEncap (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest) ]
 
 t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
+    where checResult (TestOk x y z) = printmsg x y >> return ()
+          checResult (TestExausted x y z) = assertFailure (show (x, y, z))
+          checResult (TestFailed x y) = assertFailure (show (x, y))
+          checResult (TestAborted x) = assertFailure (show x)
+          printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
+                                      ++ " cases)")
+
+t2 msg (TEncap test) = 
+    TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
           checResult (TestFailed x y) = assertFailure (show (x, y))
