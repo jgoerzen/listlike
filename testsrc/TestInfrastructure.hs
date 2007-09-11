@@ -47,22 +47,12 @@ instance LL.ListLike (MyList a) a where
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
 
-class Convertable x y where
-    convert :: x -> y
-
-instance (LL.ListLike a b) => Convertable [b] a where
-    convert = LL.fromList
-
-instance (Ord k) => Convertable [(k, v)] (Map.Map k v) where
-    convert = Map.fromList
-    
-
 class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
     fl :: [b] -> a
 
-    cl :: (Arbitrary x, Show x, Arbitrary y, Show y, Convertable x y) => 
-          (y -> a) -> (x -> [b]) -> x -> Bool
+    cl :: (Arbitrary x, Show x) => 
+          (x -> a) -> (x -> [b]) -> x -> Bool
     cl nativefunc listfunc listdata =
         tl (nativefunc (convert listdata)) == listfunc listdata
 
