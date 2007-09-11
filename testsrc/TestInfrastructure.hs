@@ -58,9 +58,9 @@ instance (Eq a, LL.ListLike a b, TestLL a b) =>
     property (TBothLL ll l) = property (tl ll == l)
 
 
-mktb :: forall x a b.  (Arbitrary x, Eq a, LL.ListLike a b) => 
-    (x -> a) -> (x -> [b]) -> x -> TBothLL a b
-mktb f1 f2 i = TBothLL (f1 i) (f2 i)
+mktb :: forall x a b.  (Arbitrary x, Eq a, LL.ListLike a b, TestLL a b) => 
+    (x -> a) -> (x -> [b]) -> x -> TBoth a
+mktb f1 f2 i = TBoth (f1 i) (fl (f2 i))
 
 class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
@@ -177,16 +177,15 @@ ta ::
     String ->
     (forall x f i. (Eq f, LL.ListLike f i, Arbitrary f, Arbitrary x) 
                     => (x -> f)) ->
-    (forall l ll z. (Arbitrary l, Show l, LL.ListLike ll l, Arbitrary z,
-                     Arbitrary ll) 
+    (forall l z. (Arbitrary l, Show l, Arbitrary z) 
                   => (z -> [l])) ->
     (forall q. Arbitrary q => q) -> 
     Test
 ta msg nativetest listtest i = TestList
     [
      t (msg ++ " [Int]") 
-       ((mktb nativetest listtest i)::TBothLL [Int] Int),
-     t (msg ++ " MyList Int") ((mktb nativetest listtest i)::TBothLL (MyList Int) Int)
+       ((mktb nativetest listtest i)::TBoth [Int]) 
+     --t (msg ++ " MyList Int") ((mktb nativetest listtest i)::TBoth (MyList Int))
     ]
 {-
 
