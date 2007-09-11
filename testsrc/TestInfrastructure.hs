@@ -48,19 +48,23 @@ instance LL.ListLike (MyList a) a where
     null (MyList x) = null x
 
 data Eq a => TBoth a = TBoth a a 
-data (Eq a, LL.ListLike a b) => TBothLL a b = TBothLL a [b]
+data (Eq a) => TBothLL a = 
+    forall b. LL.ListLike a b => TBothLL a [b]
+    -- forall c. LL.ListLike a c => TBothLL a [c]
 
 {-
 instance (Eq a, LL.ListLike a b) => Test.QuickCheck.Testable (TBoth a) where
     property (TBoth x y) = property (x == y)
 -}
-instance (Eq a, Eq b, LL.ListLike a b, TestLL a b) => 
-         Test.QuickCheck.Testable (TBothLL a b) where
+instance (Eq a, LL.ListLike a b, TestLL a b) => 
+         Test.QuickCheck.Testable (TBothLL a) where
     property (TBothLL ll l) = property (tl ll == l)
 
-mktb :: forall x a b.  (Eq a, LL.ListLike a b) => 
+
+mktb :: forall x a b.  (Arbitrary x, Eq a, LL.ListLike a b) => 
     (x -> a) -> (x -> [b]) -> x -> TBothLL a b
 mktb f1 f2 i = TBothLL (f1 i) (f2 i)
+
 class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
     fl :: [b] -> a
@@ -174,17 +178,18 @@ tase msg nativetest listtest =
 
 ta ::
     String ->
-    (forall x f i. (Eq f, LL.ListLike f i,
-                    Test.QuickCheck.Testable (x -> f -> Bool))
+    (forall x f i. (Eq f, LL.ListLike f i, Arbitrary f, Arbitrary x) 
                     => (x -> f)) ->
-    (forall l z. (Test.QuickCheck.Testable (z -> [l] -> Bool),
-                  Arbitrary l, Show l) 
+    (forall l ll z. (Arbitrary l, Show l, LL.ListLike ll l, Arbitrary z,
+                     Arbitrary ll) 
                   => (z -> [l])) ->
+    (forall q. Arbitrary q => q) -> 
     Test
-ta msg nativetest listtest = TestList
+ta msg nativetest listtest i = TestList
     [
-     t (msg ++ " [Int]") ((mktb nativetest listtest)::TBothLL [Int] Int),
-     t (msg ++ " MyList Int") ((mktb nativetest listtest)::(Arbitrary q, Show q) => q -> TBothLL (MyList Int) Int)
+     t (msg ++ " [Int]") 
+       ((mktb nativetest listtest i)::TBothLL [Int] Int),
+     t (msg ++ " MyList Int") ((mktb nativetest listtest i)::TBothLL (MyList Int) Int)
     ]
 {-
 
