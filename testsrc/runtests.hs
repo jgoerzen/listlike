@@ -43,7 +43,7 @@ prop_length f x =
 -- | all props, 2 args: full and item
 apfi :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> i -> Bool)) -> Test
 apfi msg x = TestList $
-    [t (msg ++ " [Int]") $ x (LL.empty::[Int]),
+    [t (msg ++ " [Int]") $ asTypeOf x (\y z -> x (y::[Int]) (z::Int)),
      t (msg ++ " MyList Int") $ x (LL.empty::MyList Int),
      t (msg ++ " [Bool]") $ x (LL.empty::[Bool]),
      t (msg ++ " MyList Bool") $ x (LL.empty::MyList Bool),
@@ -56,15 +56,15 @@ apfi msg x = TestList $
      t (msg ++ " Array Int Int") $ x (LL.empty::A.Array Int Int),
      t (msg ++ " Array Int Bool") $ x (LL.empty::A.Array Int Bool)]
 
+{-
+-- | all props, 1 arg: full
+apf :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> Bool) -> Test
+apf msg x = 
+-}
     
 allt = [apfi "empty" prop_empty,
         apfi "length" prop_length,
         apfi "to/fromList" prop_tofromlist,
-    -- map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
-        -- tase "empty2" (\_ -> LL.empty) (\_ -> []),
-        -- tase "singleton" LL.singleton (\x -> [x]),
-        -- ++ map (t2 "to/fromList") (ta (LL.fromList . LL.toList) id)
-        --ta "cons" LL.cons (:)
         apfi "singleton" prop_singleton]
 
 testh = runTestTT (TestList allt)
