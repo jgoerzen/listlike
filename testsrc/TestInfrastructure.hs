@@ -137,6 +137,25 @@ instance Random Word8 where
 tr msg nativetest listtest =
     t msg (cl nativetest listtest)
 
+{- | Test with All types, No Convert -}
+tanc :: forall l. (Eq l, Arbitrary l, Show l) => 
+      String -> (forall f x. (TestLL f l, LL.ListLike f l, Arbitrary f) 
+                 => (x -> f)) 
+             -> (forall z. (z -> [l])) 
+             -> Test
+tanc msg nativetest listtest = 
+    TestList 
+    [t (msg ++ " [Int]") 
+       (\(input::[Int]) -> fl (nativetest input) == listtest input)]
+    {-
+     t (msg ++ " MyList Int") (cl (nativetest::(MyList Int -> MyList Int)) listtest),
+     t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest),
+     t (msg ++ " ByteString") (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest),
+     t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
+     t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
+     -}
+
+{- | Test with All types. -}
 ta :: 
       String -> (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
                  Arbitrary i, Show i) => (f -> f)) 
