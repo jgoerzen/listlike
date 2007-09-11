@@ -69,5 +69,5 @@ allt = [apfi "empty" prop_empty,
 
 testh = runTestTT (TestList allt)
 
-main = testh
+main = testh 
 

@@ -178,8 +178,9 @@ t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
           checResult (TestFailed x y) = assertFailure (show (x, y))
           checResult (TestAborted x) = assertFailure (show x)
-          printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
-                                      ++ " cases)")
+          printmsg _ _ = return ()
+          --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
+          --                            ++ " cases)")
 
 t2 msg (TEncap test) = 
     TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
@@ -187,6 +188,7 @@ t2 msg (TEncap test) =
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
           checResult (TestFailed x y) = assertFailure (show (x, y))
           checResult (TestAborted x) = assertFailure (show x)
-          printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
-                                      ++ " cases)")
+          printmsg _ _ = return ()
+          --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
+          --                           ++ " cases)")
 
