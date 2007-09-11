@@ -51,10 +51,9 @@ class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
     fl :: [b] -> a
 
-    cl :: (Arbitrary x, Show x) => 
-          (x -> a) -> (x -> [b]) -> x -> Bool
+    cl :: (a -> a) -> ([b] -> [b]) -> [b] -> Bool
     cl nativefunc listfunc listdata =
-        tl (nativefunc (convert listdata)) == listfunc listdata
+        tl (nativefunc (fl listdata)) == listfunc listdata
 
 instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
     tl = LL.toList
@@ -68,8 +67,8 @@ instance (Arbitrary k, Show k, Show v, Arbitrary v, Ord v, Ord k, Eq v) => TestL
     fl = LL.fromList
     tl = LL.toList
     cl nativefunc listfunc listdata =
-        (sort . tl . nativefunc . convert $ listdata) ==
-        (sort . convl . listfunc $ listdata)
+        (sort . tl . nativefunc . Map.fromList $ listdata) ==
+        (sort . convl . listfunc . convl $ listdata)
         where convl = foldl myinsert [] 
               myinsert [] newval = [newval]
               myinsert ((ak, av):as) (nk, nv)

@@ -24,7 +24,7 @@ import Data.Monoid
 import TestInfrastructure
 
 allt = [ta "empty" (\_ -> LL.fromList []) (\_ -> []),
-        ta "singleton" LL.singleton (\x -> [x]),
+        -- ta "singleton" LL.singleton (\x -> [x]),
         ta "to/fromList" (LL.fromList . LL.toList) id]
 
 testh = runTestTT (TestList allt)
