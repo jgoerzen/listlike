@@ -137,9 +137,10 @@ instance Random Word8 where
 tr msg nativetest listtest =
     t msg (cl nativetest listtest)
 
-{- | Test with All types, No Convert -}
+{- | Test with All types, Not List input -}
 tanc :: forall l. (Eq l, Arbitrary l, Show l) => 
-      String -> (forall f x. (TestLL f l, LL.ListLike f l, Arbitrary f) 
+      String -> (forall f x. (TestLL f l, LL.ListLike f l, Arbitrary f,
+                              Arbitrary x, Show x) 
                  => (x -> f)) 
              -> (forall z. (z -> [l])) 
              -> Test
