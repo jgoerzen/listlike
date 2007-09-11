@@ -174,14 +174,17 @@ tase msg nativetest listtest =
 
 ta ::
     String ->
-    (forall x f i. (Eq f, LL.ListLike f i) => (x -> f)) ->
-    (forall l z. (Arbitrary l, Show l) => (z -> [l])) ->
-    x ->
+    (forall x f i. (Eq f, LL.ListLike f i,
+                    Test.QuickCheck.Testable (x -> f -> Bool))
+                    => (x -> f)) ->
+    (forall l z. (Test.QuickCheck.Testable (z -> [l] -> Bool),
+                  Arbitrary l, Show l) 
+                  => (z -> [l])) ->
     Test
-ta msg nativetest listtest i = TestList
+ta msg nativetest listtest = TestList
     [
-     t (msg ++ " [Int]") ((mktb nativetest listtest i)::TBothLL [Int] Int),
-     t (msg ++ " MyList Int") ((mktb nativetest listtest i)::TBothLL (MyList Int) Int)
+     t (msg ++ " [Int]") ((mktb nativetest listtest)::TBothLL [Int] Int),
+     t (msg ++ " MyList Int") ((mktb nativetest listtest)::(Arbitrary q, Show q) => q -> TBothLL (MyList Int) Int)
     ]
 {-
 
