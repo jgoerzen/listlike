@@ -23,8 +23,6 @@ import Text.Printf
 import Data.Word
 import Data.List
 import Data.Monoid
-import Data.Typeable
-import Data.Maybe
 
 data MyList a = MyList [a]
 
@@ -48,21 +46,6 @@ instance LL.ListLike (MyList a) a where
     head (MyList x) = head x
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
-
-data Eq a => TBoth a = TBoth a a 
-data (Eq a, LL.ListLike a b) => TBothLL a b = TBothLL a [b]
-
-instance (Eq a) => Test.QuickCheck.Testable (TBoth a) where
-    property (TBoth x y) = property (x == y)
-
-instance (Eq a, LL.ListLike a b, TestLL a b) => 
-         Test.QuickCheck.Testable (TBothLL a b) where
-    property (TBothLL ll l) = property (tl ll == l)
-
-
-mktb :: forall x a b.  (Arbitrary x, Show x, Eq a, LL.ListLike a b) => 
-    (x -> a) -> (x -> [b]) -> x -> TBoth a
-mktb f1 f2 i = TBoth (f1 i) (LL.fromList (f2 i))
 
 class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     tl :: a -> [b]
@@ -175,22 +158,11 @@ tase msg nativetest listtest =
      t (msg ++ " Array")
        (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
 
-ta :: forall a. (Test.QuickCheck.Testable a, Arbitrary a, Show a)  => 
-    String ->
-    (forall b c. (Eq b, LL.ListLike b c, Show c, Arbitrary c) => (a -> TBoth b)) -> 
-    Test
-ta msg tests = TestList
-    [
-     t (msg ++ " [Int]") (tests :: a -> TBoth [Int])
-     -- t (msg ++ " MyList Int") (mktb ntmyint listtest)
-    ]
-{-
-
 {- | Test with All types. -}
 ta :: 
-      String -> (forall x f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
-                 Arbitrary i, Show i) => (x -> f -> Bool)) 
-             -> (forall l z. (Arbitrary l, Show l) => (z -> [l] -> Bool)) 
+      String -> (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
+                 Arbitrary i, Show i) => (f -> f)) 
+             -> (forall l. (Arbitrary l, Show l) => ([l] -> [l])) 
              -> Test
 ta msg nativetest listtest = 
     TestList 
@@ -200,9 +172,7 @@ ta msg nativetest listtest =
      t (msg ++ " ByteString") (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest),
      t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
      t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
--}
 
-t :: Test.QuickCheck.Testable a => String -> a -> Test
 t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
