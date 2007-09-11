@@ -36,6 +36,10 @@ prop_tofromlist f x =
     f == (LL.fromList . LL.toList $ f)
     where l = asTypeOf (LL.toList f) [x]
 
+prop_length f x =
+    LL.length f == length l
+    where l = asTypeOf (LL.toList f) [x]
+
 -- | all props, 2 args: full and item
 apfi :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> i -> Bool)) -> Test
 apfi msg x = TestList $
@@ -54,6 +58,7 @@ apfi msg x = TestList $
 
     
 allt = [apfi "empty" prop_empty,
+        apfi "length" prop_length,
         apfi "to/fromList" prop_tofromlist,
     -- map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
         -- tase "empty2" (\_ -> LL.empty) (\_ -> []),
