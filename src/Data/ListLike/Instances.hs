@@ -413,7 +413,7 @@ instance (Integral i, Ix i) => Monoid (A.Array i e) where
 
 instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     empty = mempty
-    singleton i = A.listArray (0, 1) [i]
+    singleton i = A.listArray (0, 0) [i]
     cons i l = 
         -- To add something to the beginning of an array, we must
         -- change the bounds and set the first element.
