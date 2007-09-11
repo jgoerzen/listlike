@@ -48,16 +48,14 @@ instance LL.ListLike (MyList a) a where
     null (MyList x) = null x
 
 data Eq a => TBoth a = TBoth a a 
-data (Eq a) => TBothLL a = 
-    forall b. LL.ListLike a b => TBothLL a [b]
-    -- forall c. LL.ListLike a c => TBothLL a [c]
+data (Eq a, LL.ListLike a b) => TBothLL a b = TBothLL a [b]
 
 {-
 instance (Eq a, LL.ListLike a b) => Test.QuickCheck.Testable (TBoth a) where
     property (TBoth x y) = property (x == y)
 -}
 instance (Eq a, LL.ListLike a b, TestLL a b) => 
-         Test.QuickCheck.Testable (TBothLL a) where
+         Test.QuickCheck.Testable (TBothLL a b) where
     property (TBothLL ll l) = property (tl ll == l)
 
 
