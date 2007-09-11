@@ -43,12 +43,12 @@ prop_length f x =
 -- | all props, 2 args: full and item
 apfi :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> i -> Bool)) -> Test
 apfi msg x = TestList $
-    [t (msg ++ " [Int]") $ asTypeOf x (\y z -> x (y::[Int]) (z::Int)),
-     t (msg ++ " MyList Int") $ x (LL.empty::MyList Int),
-     t (msg ++ " [Bool]") $ x (LL.empty::[Bool]),
-     t (msg ++ " MyList Bool") $ x (LL.empty::MyList Bool),
-     t (msg ++ " Map Int Int") $ x (LL.empty::Map.Map Int Int),
-     t (msg ++ " Map Bool Int") $ x (LL.empty::Map.Map Bool Int),
+    [t (msg ++ " [Int]") (x::[Int] -> Int -> Bool),
+     t (msg ++ " MyList Int") (x::MyList Int -> Int -> Bool),
+     t (msg ++ " [Bool]") (x::[Bool] -> Bool -> Bool),
+     t (msg ++ " MyList Bool") (x::MyList Bool -> Bool -> Bool),
+     t (msg ++ " Map Int Int") (x::Map.Map Int Int -> (Int, Int) -> Bool),
+     --t (msg ++ " Map Bool Int") (x::Map.Map Bool Int -> (Bool, Int) -> Bool),
      t (msg ++ " Map Int Bool") $ x (LL.empty::Map.Map Int Bool),
      t (msg ++ " Map Bool Bool") $ x (LL.empty::Map.Map Bool Bool),
      t (msg ++ " ByteString") $ x (LL.empty::BS.ByteString),

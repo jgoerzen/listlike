@@ -122,7 +122,7 @@ instance Arbitrary (A.Array Int Int) where
                      return $ A.listArray (0, n - 1) arblist
     coarbitrary a = coarbitrary (A.elems a)
      
-instance Arbitrary (MyList Int) where
+instance (Arbitrary a) => Arbitrary (MyList a) where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
                   do arblist <- vector n
