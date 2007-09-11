@@ -146,7 +146,9 @@ tanc :: forall l. (Eq l, Arbitrary l, Show l) =>
 tanc msg nativetest listtest = 
     TestList 
     [t (msg ++ " [Int]") 
-       (\(input::[Int]) -> fl (nativetest input) == listtest input)]
+       (\(input::[Int]) -> fl (nativetest input) == listtest input),
+     t (msg ++ " MyList Int")
+       (\(input::MyList Int) -> fl (nativetest input) == listtest input)]
     {-
      t (msg ++ " MyList Int") (cl (nativetest::(MyList Int -> MyList Int)) listtest),
      t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest),
