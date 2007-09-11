@@ -21,24 +21,13 @@ import Text.Printf
 import Data.Word
 import Data.List
 import Data.Monoid
-import TestInfrastructure 
-import QuickCheckUtils
+import TestInfrastructure
 
-{-
-instance (LL.ListLike a Int) => Model a [Int] where
-    model = LL.toList
-    -}
-allt = [t "empty" $ (LL.cons :: Int -> [Int] -> [Int]) `eq2` 
-        ((:) :: Int -> [Int] -> [Int])]
-
-
-{-
-    map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
+allt = map (t2 "empty") (ta (\_ -> LL.fromList []) (\_ -> []))
         -- tase "empty2" (\_ -> LL.empty) (\_ -> []),
         -- tase "singleton" LL.singleton (\x -> [x]),
-        -- ++ map (t2 "to/fromList") (ta (LL.fromList . LL.toList) id)
-        ++ map (t2 "cons") (ta LL.cons (:))
-        -}
+        ++ map (t2 "to/fromList") (ta (LL.fromList . LL.toList) id)
+        --ta "cons" LL.cons (:)
 
 testh = runTestTT (TestList allt)
 
