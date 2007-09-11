@@ -80,16 +80,38 @@ instance Arbitrary Word8 where
     arbitrary = choose (0, maxBound)
     coarbitrary n = variant (2 * fromIntegral n)
 
+instance Arbitrary BS.ByteString where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n = 
+                do arblist <- vector n
+                   return (BS.pack arblist)
+    coarbitrary bs
+        | BS.null bs = variant 0
+        | otherwise = coarbitrary (BS.head bs) . variant 1 . 
+                        coarbitrary (BS.tail bs)
+
+instance Arbitrary BSL.ByteString where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n = 
+                do arblist <- vector n
+                   return (BSL.pack arblist)
+    coarbitrary bs
+        | BSL.null bs = variant 0
+        | otherwise = coarbitrary (BSL.head bs) . variant 1 . 
+                        coarbitrary (BSL.tail bs)
+
+instance Arbitrary (A.Array Int Int) where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- vector n
+                     return $ A.listArray (0, n - 1) arblist
+    coarbitrary a = coarbitrary (A.elems a)
+     
 instance Random Word8 where
     randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
                        randomR (toInteger a, toInteger b) g
     random g = randomR (minBound, maxBound) g
 
-{-
-ta :: forall f l. (TestLL f l, LL.ListLike f l, Arbitrary f,
-       Arbitrary l, Show l) => 
-      String -> (f -> f) -> ([l] -> [l]) -> Test
--}
 tr msg nativetest listtest =
     t msg (cl nativetest listtest)
 
@@ -101,8 +123,10 @@ ta ::
 ta msg nativetest listtest = 
     TestList 
     [t (msg ++ " [Int]") (cl (nativetest::([Int] -> [Int])) listtest),
-     t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest)]
-     -- t (msg ++ " ByteString") ((cl nativetest listtest)::BS.ByteString -> Bool)]
+     t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest),
+     t (msg ++ " ByteString") (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest),
+     t (msg ++ " ByteString.Lazy") (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest),
+     t (msg ++ " Array") (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest)]
                 {-
               t (msg ++ " ByteString")
                 (cl (nativetest::BS.ByteString -> BS.ByteString) listtest),

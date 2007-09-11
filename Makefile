@@ -63,8 +63,8 @@ local-pkg: all
 	cat .installed-pkg-config >> local-pkg
 	echo "]" >> local-pkg
 
-testsrc/runtests: all $(wildcard testsrc/*.hs) $(wildcard testsrc/*/*.hs) $(wildcard testsrc/*/*/*.hs)
-	cd testsrc && ghc --make -package HUnit -package QuickCheck -package mtl $(GHCPARMS) -o runtests  -i../dist/build:../src runtests.hs
+testsrc/runtests: $(wildcard testsrc/*.hs) $(wildcard testsrc/*/*.hs) $(wildcard testsrc/*/*/*.hs)
+	cd testsrc && ghc --make -package HUnit -package QuickCheck -package mtl $(GHCPARAMS) -o runtests  -i../dist/build:../src runtests.hs
 
 test-ghc6: testsrc/runtests
 	testsrc/runtests
