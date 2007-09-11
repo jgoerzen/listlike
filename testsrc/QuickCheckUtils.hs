@@ -101,11 +101,6 @@ instance Arbitrary Int64 where
   arbitrary     = sized $ \n -> choose (-fromIntegral n,fromIntegral n)
   coarbitrary n = variant (fromIntegral (if n >= 0 then 2*n else 2*(-n) + 1))
 
-instance Arbitrary a => Arbitrary (Maybe a) where
-  arbitrary           = do a <- arbitrary ; elements [Nothing, Just a]
-  coarbitrary Nothing = variant 0
-  coarbitrary _       = variant 1 -- ok?
-
 instance Arbitrary a => Arbitrary (MaybeS a) where
   arbitrary            = do a <- arbitrary ; elements [NothingS, JustS a]
   coarbitrary NothingS = variant 0
@@ -141,16 +136,6 @@ instance Arbitrary L.ByteString where
 instance Arbitrary P.ByteString where
   arbitrary = P.pack `fmap` arbitrary
   coarbitrary s = coarbitrary (P.unpack s)
-
-instance Functor ((->) r) where
-    fmap = (.)
-
-instance Monad ((->) r) where
-    return = const
-    f >>= k = \ r -> k (f r) r
-
-instance Functor ((,) a) where
-    fmap f (x,y) = (x, f y)
 
 ------------------------------------------------------------------------
 --
