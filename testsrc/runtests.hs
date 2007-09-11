@@ -49,12 +49,13 @@ apfi msg x = TestList $
      t (msg ++ " MyList Bool") (x::MyList Bool -> Bool -> Bool),
      t (msg ++ " Map Int Int") (x::Map.Map Int Int -> (Int, Int) -> Bool),
      t (msg ++ " Map Bool Int") (x::Map.Map Bool Int -> (Bool, Int) -> Bool),
-     t (msg ++ " Map Int Bool") $ x (LL.empty::Map.Map Int Bool),
-     t (msg ++ " Map Bool Bool") $ x (LL.empty::Map.Map Bool Bool),
-     t (msg ++ " ByteString") $ x (LL.empty::BS.ByteString),
-     t (msg ++ " ByteString.Lazy") $ x (LL.empty::BSL.ByteString),
-     t (msg ++ " Array Int Int") $ x (LL.empty::A.Array Int Int),
-     t (msg ++ " Array Int Bool") $ x (LL.empty::A.Array Int Bool)]
+     t (msg ++ " Map Int Bool") (x::Map.Map Int Bool -> (Int, Bool) -> Bool),
+     t (msg ++ " Map Bool Bool") (x::Map.Map Bool Bool -> (Bool, Bool) -> Bool),
+     t (msg ++ " ByteString") (x::BS.ByteString -> Word8 -> Bool),
+     t (msg ++ " ByteString.Lazy") (x::BSL.ByteString -> Word8 -> Bool),
+     t (msg ++ " Array Int Int") (x::A.Array Int Int -> Int -> Bool),
+     t (msg ++ " Array Int Bool") (x::A.Array Int Bool -> Bool -> Bool)
+    ]
 
 {-
 -- | all props, 1 arg: full

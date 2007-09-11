@@ -115,7 +115,7 @@ instance Arbitrary BSL.ByteString where
         | otherwise = coarbitrary (BSL.head bs) . variant 1 . 
                         coarbitrary (BSL.tail bs)
 
-instance Arbitrary (A.Array Int Int) where
+instance (Arbitrary a) => Arbitrary (A.Array Int a) where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
                   do arblist <- vector n
