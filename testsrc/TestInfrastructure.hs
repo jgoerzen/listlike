@@ -161,9 +161,9 @@ tase msg nativetest listtest =
 data TEncap = forall t. Test.QuickCheck.Testable t => TEncap t
 
 {- | Test with All types. -}
-ta :: (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
-                 Arbitrary i, Show i) => (f -> f)) 
-             -> (forall l. (Arbitrary l, Show l) => ([l] -> [l])) 
+ta :: (forall f i x. (TestLL f i, LL.ListLike f i, Arbitrary f,
+                 Arbitrary i, Show i, Arbitrary x, Arbitrary (x -> f)) => (x -> f)) 
+             -> (forall l x. (Arbitrary (x -> [l]), Arbitrary l, Show l) => (x -> [l])) 
              -> [TEncap]
 ta nativetest listtest = 
     [ TEncap (cl (nativetest::([Int] -> [Int])) listtest) ,
