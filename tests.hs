@@ -44,12 +44,6 @@ class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
     cl nativefunc listfunc listdata =
         tl (nativefunc (fl listdata)) == listfunc listdata
 
-    {-
-    tr :: String -> (a -> a) -> ([b] -> [b]) -> Test
-    tr msg nativetest listtest =
-        t msg (cl nativetest listtest)
-    -}
-
 instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
     tl = LL.toList
     fl = LL.fromList
@@ -99,9 +93,15 @@ ta :: forall f l. (TestLL f l, LL.ListLike f l, Arbitrary f,
 tr msg nativetest listtest =
     t msg (cl nativetest listtest)
 
+ta :: 
+      String -> (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
+                 Arbitrary i, Show i) => (f -> f)) 
+             -> (forall l. (Arbitrary l, Show l) => ([l] -> [l])) 
+             -> Test
 ta msg nativetest listtest = 
     TestList 
-    [t (msg ++ " [Int]") ((cl nativetest listtest)::[Int] -> Bool)]
+    [t (msg ++ " [Int]") (cl (nativetest::([Int] -> [Int])) listtest),
+     t (msg ++ " Map") (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest)]
      -- t (msg ++ " ByteString") ((cl nativetest listtest)::BS.ByteString -> Bool)]
                 {-
               t (msg ++ " ByteString")
@@ -120,8 +120,8 @@ prop_singleton :: Int -> Bool
 prop_singleton i = LL.singleton i == [i]
 
 allt = [--t "empty" prop_empty,
-        t "singleton" prop_singleton]
-        --ta "to/fromList" (LL.fromList . LL.toList) id]
+        t "singleton" prop_singleton,
+        ta "to/fromList" (LL.fromList . LL.toList) id]
 
 {-
 t msg test = runTests msg defOpt [run test]
