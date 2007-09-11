@@ -48,7 +48,7 @@ apfi msg x = TestList $
      t (msg ++ " [Bool]") (x::[Bool] -> Bool -> Bool),
      t (msg ++ " MyList Bool") (x::MyList Bool -> Bool -> Bool),
      t (msg ++ " Map Int Int") (x::Map.Map Int Int -> (Int, Int) -> Bool),
-     --t (msg ++ " Map Bool Int") (x::Map.Map Bool Int -> (Bool, Int) -> Bool),
+     t (msg ++ " Map Bool Int") (x::Map.Map Bool Int -> (Bool, Int) -> Bool),
      t (msg ++ " Map Int Bool") $ x (LL.empty::Map.Map Int Bool),
      t (msg ++ " Map Bool Bool") $ x (LL.empty::Map.Map Bool Bool),
      t (msg ++ " ByteString") $ x (LL.empty::BS.ByteString),
@@ -69,5 +69,9 @@ allt = [apfi "empty" prop_empty,
 
 testh = runTestTT (TestList allt)
 
-main = testh 
+main = 
+    do printf "Running %d test functions * %d types under test = %d cases\n"
+              (length allt) (12::Int) (12 * length allt)
+       testh 
+       return ()
 

@@ -87,7 +87,7 @@ instance TestLL (A.Array Int Int) Int where
     tl = LL.toList
     fl = LL.fromList
 
-instance Arbitrary (Map.Map Int Int) where
+instance (Ord a, Ord b, Show a, Show b, Arbitrary a, Arbitrary b) => Arbitrary (Map.Map a b) where
     arbitrary = fmap fl arbitrary
     coarbitrary a b = coarbitrary (tl a) b
 
