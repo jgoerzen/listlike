@@ -23,10 +23,12 @@ import Data.List
 import Data.Monoid
 import TestInfrastructure
 
-allt = [--ta "empty" (\_ -> LL.fromList []) (\_ -> []),
-        tase "empty2" (\_ -> LL.empty) (\_ -> []),
-        tase "singleton" LL.singleton (\x -> [x]),
-        ta "to/fromList" (LL.fromList . LL.toList) id 
+allt = TestList $ 
+       [--ta "empty" (\_ -> LL.fromList []) (\_ -> []),
+        --tase "empty2" (\_ -> LL.empty) (\_ -> []),
+        --tase "singleton" LL.singleton (\x -> [x])
+        ta "singleton" LL.singleton (\x -> [x])
+        --ta "to/fromList" (LL.toList . LL.fromList) id 
         -- ta "cons" LL.cons (:)
        ]
 
