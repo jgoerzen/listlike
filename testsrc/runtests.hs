@@ -47,19 +47,21 @@ prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
-allt = [apf "empty" $ T prop_empty,
-        apf "length" $ T prop_length,
-        apf "to/fromList" $ T prop_tofromlist,
-        apf "singleton" $ T prop_singleton,
-        apf "cons" $ T prop_cons,
-        apf "append" $ T prop_append,
-        apf "head" $ T prop_head,
-        apf "last" $ T prop_last,
-        apf "tail" $ T prop_tail,
-        apf "init" $ T prop_init,
-        apf "null" $ T prop_null,
-        apf "length2" $ T prop_length2,
-        apf "length3" $ T prop_length3]
+{-
+allt = [apf "empty" $ w "" prop_empty,
+        apf "length" $ w "" prop_length,
+        --apf "to/fromList" $ T prop_tofromlist,
+        --apf "singleton" $ T prop_singleton,
+        apf "cons" $ w "" prop_cons 
+        --apf "append" $ T prop_append,
+        --apf "head" $ T prop_head,
+        --apf "last" $ T prop_last,
+        --apf "tail" $ T prop_tail,
+        --apf "init" $ T prop_init,
+        --apf "null" $ T prop_null,
+        --apf "length2" $ T prop_length2,
+        --apf "length3" $ T prop_length3
+        ]
 
 testh = runTestTT (TestList allt)
 
@@ -68,4 +70,4 @@ main =
               (length allt) (12::Int) (12 * length allt)
        testh 
        return ()
-
+-}

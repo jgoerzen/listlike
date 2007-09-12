@@ -24,6 +24,23 @@ import Data.Word
 import Data.List
 import Data.Monoid
 
+instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- ((vector n)::Gen [i])
+                     return (LL.fromList (arblist::[i]))
+    {-
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- sequence [ arbitrary | i <- [1..n] ]
+                     return (LL.fromList arblist)
+                     -}
+                  
+    coarbitrary l
+        | LL.null l = variant 0
+        | otherwise = coarbitrary (LL.head l) . variant 1 .
+                        coarbitrary (LL.tail l)
+
 class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
     -- | Compare a ListLike to a list using any local conversions needed
     llcmp :: a -> [b] -> Bool
@@ -81,14 +98,16 @@ instance LL.ListLike (MyList a) a where
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
 
+{-
 instance (Ord a, Ord b, Show a, Show b, Arbitrary a, Arbitrary b) => Arbitrary (Map.Map a b) where
     arbitrary = fmap Map.fromList arbitrary
     coarbitrary a b = coarbitrary (Map.toList a) b
-
+-}
 instance Arbitrary Word8 where
     arbitrary = choose (0, maxBound)
     coarbitrary n = variant (2 * fromIntegral n)
 
+{-
 instance Arbitrary BS.ByteString where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n = 
@@ -122,6 +141,7 @@ instance (Arbitrary a) => Arbitrary (MyList a) where
                   do arblist <- vector n
                      return (MyList arblist)
     coarbitrary (MyList x) = coarbitrary x
+    -}
 
 instance Random Word8 where
     randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
@@ -137,12 +157,18 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
           --                            ++ " cases)")
 
-data (LL.ListLike f i, TestLL f i, Eq i, Eq f) => LLTest f i = 
-    forall t. Test.QuickCheck.Testable t => T t
+data (LL.ListLike f i, Arbitrary f, Arbitrary i, TestLL f i, Eq i, Eq f) => LLTest f i = 
+    forall t. Test.QuickCheck.Testable t => LLTest t
 
 t :: String -> LLTest f i -> Test
 t msg f = case f of
-                    T theTest -> mkTest msg theTest
+                    LLTest theTest -> mkTest msg theTest
+
+instance Test.QuickCheck.Testable (LLTest f i) where
+    property (LLTest x) = property x
+
+w :: (Eq i, Eq f, TestLL f i, LL.ListLike f i, Arbitrary f, Arbitrary i) => String -> (forall t. Test.QuickCheck.Testable t => t) -> LLTest f i
+w _ t = t
 
 -- | all props, 3 args: full, full, and item
 apf :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => LLTest f i) -> Test 
