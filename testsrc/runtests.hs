@@ -25,7 +25,7 @@ import Data.Monoid
 import TestInfrastructure
 
 -- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
-prop_singleton :: (Eq i, LL.ListLike f i, Arbitrary f, Show f, Show i, Arbitrary i) => f -> i -> Bool
+--prop_singleton :: (Eq i, LL.ListLike f i, Arbitrary f, Show f, Show i, Arbitrary i) => f -> i -> Bool
 prop_singleton f x = (LL.toList $ asTypeOf (LL.singleton x) f) == [x]
 
 prop_empty f = (LL.toList l == []) && (LL.null l) && (LL.length l == 0)
@@ -47,13 +47,12 @@ prop_init f = if LL.null f then True else  llcmp (LL.init f) (init (LL.toList f)
 prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
-
 {-
-allt = [apf "empty" $ w "" prop_empty,
-        apf "length" $ w "" prop_length,
+allt = [apf "empty" $ w prop_empty,
+        apf "length" $ w prop_length,
         --apf "to/fromList" $ T prop_tofromlist,
         --apf "singleton" $ T prop_singleton,
-        apf "cons" $ w "" prop_cons 
+        apf "cons" $ w prop_cons 
         --apf "append" $ T prop_append,
         --apf "head" $ T prop_head,
         --apf "last" $ T prop_last,

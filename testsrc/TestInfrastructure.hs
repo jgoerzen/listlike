@@ -160,20 +160,20 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --                            ++ " cases)")
 
 data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, TestLL f i, Eq i, Eq f) => LLTest f i = 
-    forall t. Test.QuickCheck.Testable t => LLTest t
+    forall t. Test.QuickCheck.Testable t => LLTest (f -> t)
 
-t :: String -> LLTest f i -> Test
+t :: TestLL f i => String -> LLTest f i -> Test
 t msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
-instance Test.QuickCheck.Testable (LLTest f i) where
+instance TestLL f i => Test.QuickCheck.Testable (LLTest f i) where
     property (LLTest x) = property x
 
-w :: (Eq i, Eq f, TestLL f i, LL.ListLike f i, Show f, Show i, Arbitrary f, Arbitrary i) => String -> (forall t. Test.QuickCheck.Testable t => t) -> LLTest f i
-w _ t = t
+w :: forall f t i. (TestLL f i, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
+w = LLTest
 
 -- | all props, 3 args: full, full, and item
-apf :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => LLTest f i) -> Test 
+apf :: String -> (forall f i. TestLL f i => LLTest f i) -> Test 
 apf msg x = TestLabel msg $ TestList $
     [t "[Int]" (x::LLTest [Int] Int),
      t "MyList Int" (x::LLTest (MyList Int) Int)
