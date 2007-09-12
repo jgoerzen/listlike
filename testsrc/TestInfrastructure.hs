@@ -24,6 +24,25 @@ import Data.Word
 import Data.List
 import Data.Monoid
 
+class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
+    llcmp :: a -> [b] -> Bool
+
+    llcmp f l = (LL.toList f) == l
+
+instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
+    llcmp x y = x == y
+
+instance (Arbitrary a, Show a, Eq a) => TestLL (MyList a) a where
+    llcmp (MyList x) l = x == l
+
+instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
+    llcmp m l = (sort (LL.toList m)) == (sort $ convl $ l)
+        where convl = foldl myinsert [] 
+              myinsert [] newval = [newval]
+              myinsert ((ak, av):as) (nk, nv)
+                | ak == nk = (nk, nv) : as
+                | otherwise = (ak, av) : myinsert as (nk, nv)
+
 data MyList a = MyList [a]
 
 instance (Show a) => Show (MyList a) where
@@ -104,7 +123,7 @@ t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --                            ++ " cases)")
 
 -- | all props, 2 args: full and item
-apfi :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> i -> Bool)) -> Test
+apfi :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> i -> Bool)) -> Test
 apfi msg x = TestLabel msg $ TestList $
     [t "[Int]" (x::[Int] -> Int -> Bool),
      t "MyList Int" (x::MyList Int -> Int -> Bool),
@@ -121,7 +140,7 @@ apfi msg x = TestLabel msg $ TestList $
     ]
 
 -- | all props, 1 arg: full
-apf :: String -> (forall f i. (Eq i, Eq f, LL.ListLike f i) => (f -> Bool)) -> Test
+apf :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> Bool)) -> Test
 apf msg func = 
     apfi msg newfunc
     where newfunc x y = func (asTypeOf x (LL.singleton y))
