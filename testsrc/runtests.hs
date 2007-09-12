@@ -64,6 +64,11 @@ prop_concatmap f func =
     llcmp (LL.concatMap func f)
           (concatMap func (LL.toList f))
 
+prop_rigidConcatMap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> full) -> Result
+prop_rigidConcatMap f func =
+    llcmp (LL.rigidConcatMap func f)
+          (concatMap (LL.toList . func) (LL.toList f))
+
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
         apf "to/fromList" (t prop_tofromlist),
@@ -82,7 +87,8 @@ allt = [apf "empty" (t prop_empty),
         apf "reverse" (t prop_reverse),
         apf "intersperse" (t prop_intersperse),
         apw "concat" (LLWrap prop_concat),
-        apf "concatMap" (t prop_concatmap)
+        apf "concatMap" (t prop_concatmap),
+        apf "rigidConcatMap" (t prop_rigidConcatMap)
         ]
 
 testh = runTestTT (TestList allt)
