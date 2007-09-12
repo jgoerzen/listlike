@@ -35,11 +35,13 @@ instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
                   do arblist <- sequence [ arbitrary | i <- [1..n] ]
                      return (LL.fromList arblist)
                      -}
-                  
+    coarbitrary l = coarbitrary (LL.toList l)
+    {-              
     coarbitrary l
         | LL.null l = variant 0
         | otherwise = coarbitrary (LL.head l) . variant 1 .
                         coarbitrary (LL.tail l)
+                        -}
 
 class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
     -- | Compare a ListLike to a list using any local conversions needed
