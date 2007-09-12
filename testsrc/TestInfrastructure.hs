@@ -138,15 +138,15 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --                            ++ " cases)")
 
 data (LL.ListLike f i, TestLL f i, Eq i, Eq f) => LLTest f i = 
-    forall t. Test.QuickCheck.Testable t => LLTest t
+    forall t. Test.QuickCheck.Testable t => T t
 
 t :: String -> LLTest f i -> Test
 t msg f = case f of
-                    LLTest theTest -> mkTest msg theTest
+                    T theTest -> mkTest msg theTest
 
 -- | all props, 3 args: full, full, and item
-apffi :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => LLTest f i) -> Test 
-apffi msg x = TestLabel msg $ TestList $
+apf :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => LLTest f i) -> Test 
+apf msg x = TestLabel msg $ TestList $
     [t "[Int]" (x::LLTest [Int] Int),
      t "MyList Int" (x::LLTest (MyList Int) Int)
     ]
@@ -179,4 +179,4 @@ apf :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL 
 apf msg func = 
     apfi msg newfunc
     where newfunc x y = func (asTypeOf x (LL.singleton y))
- -}   
+          -}
