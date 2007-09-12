@@ -30,6 +30,9 @@ expected @=? actual =
                 arguments = ["Result: expected " ++ show expected ++ ", got " ++ show actual],
                 stamp = []}
     
+(@?=) :: (Eq a, Show a) => a -> a -> Result
+(@?=) = flip (@=?)
+
 instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
