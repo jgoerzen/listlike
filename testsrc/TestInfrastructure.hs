@@ -129,19 +129,28 @@ instance Show (a -> b) where
 data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, Eq i, Eq f) => LLTest f i = 
     forall t. Testable t => LLTest (f -> t)
 
+data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, Eq i, Eq f, LL.ListLike f' f, TestLL f' f, Show f', Eq f', Arbitrary f') =>
+     LLWrap f' f i =
+         forall t. Testable t => LLWrap (f' -> t)
+
 w :: TestLL f i => String -> LLTest f i -> HU.Test
 w msg f = case f of
                     LLTest theTest -> mkTest msg theTest
+
+wwrap :: (TestLL f i, TestLL f' f) => String -> LLWrap f' f i -> HU.Test
+wwrap msg f = case f of
+                   LLWrap theTest -> mkTest msg theTest
 
 t :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Testable t) => (f -> t) -> LLTest f i
 t = LLTest
 
 -- | all props, wrapped list
-apw :: forall f i t. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i, Testable t) => String -> (forall f'. (LL.ListLike f' f, TestLL f' f, Show f', Eq f', Arbitrary f') => (f' -> t)) -> HU.Test 
+apw :: String -> (forall f' f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i, LL.ListLike f' f, Show f', TestLL f' f, Arbitrary f', Eq f') => LLWrap f' f i) -> HU.Test
 apw msg x = HU.TestLabel msg $ HU.TestList $
-    [w "wrap []" ((LLTest x)::LLTest [f] f),
-     w "wrap MyList" ((LLTest x)::LLTest (MyList f) f),
-     w "wrap Array" ((LLTest x)::LLTest (A.Array Int f) f)]
+    [wwrap "wrap []" (x::LLWrap [[Int]] [Int] Int),
+     wwrap "wrap MyList" (x::LLWrap (MyList (MyList Int)) (MyList Int) Int),
+     wwrap "wrap Array" (x::LLWrap (A.Array Int (A.Array Int Int)) (A.Array Int Int) Int)
+     ]
 
 -- | all props, 3 args: full, full, and item
 apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
