@@ -320,7 +320,7 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     rigidMap f = Map.fromList . L.map f . Map.toList
     reverse = id
     intersperse i f
-        | Map.size f == 0 = f
+        | Map.size f <= 1 = f
         | otherwise = cons i f
     -- concat
     -- concatMap
