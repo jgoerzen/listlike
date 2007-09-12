@@ -40,6 +40,10 @@ prop_length f = LL.length f == length (LL.toList f)
 prop_cons f i = llcmp (LL.cons i f) (i : (LL.toList f))
 prop_append f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 prop_head f = not (LL.null f) ==> LL.head f == head (LL.toList f)
+prop_last f = not (LL.null f) ==> LL.last f == last (LL.toList f)
+prop_tail f = not (LL.null f) ==> llcmp (LL.tail f) (tail (LL.toList f))
+prop_init f = not (LL.null f) ==> llcmp (LL.init f) (init (LL.toList f))
+prop_null f = LL.null f == null (LL.toList f)
 
 allt = [apf "empty" prop_empty,
         apf "length" prop_length,
@@ -47,7 +51,11 @@ allt = [apf "empty" prop_empty,
         apfi "singleton" prop_singleton,
         apfi "cons" prop_cons,
         apff "append" prop_append,
-        apf "head" prop_head]
+        apf "head" prop_head,
+        apf "last" prop_last,
+        apf "tail" prop_tail,
+        apf "init" prop_init,
+        apf "null" prop_null]
 
 testh = runTestTT (TestList allt)
 
