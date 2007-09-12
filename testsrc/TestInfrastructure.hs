@@ -18,7 +18,7 @@ import qualified Data.Map as Map
 import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
-import Test.HUnit
+import qualified Test.HUnit as HU
 import Text.Printf
 import Data.Word
 import Data.List
@@ -97,11 +97,11 @@ instance Random Word8 where
                        randomR (toInteger a, toInteger b) g
     random g = randomR (minBound, maxBound) g
 
-mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
+mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
-          checResult (TestExausted x y z) = assertFailure (show (x, y, z))
-          checResult (TestFailed x y) = assertFailure (show (x, y))
-          checResult (TestAborted x) = assertFailure (show x)
+          checResult (TestExausted x y z) = HU.assertFailure (show (x, y, z))
+          checResult (TestFailed x y) = HU.assertFailure (show (x, y))
+          checResult (TestAborted x) = HU.assertFailure (show x)
           printmsg _ _ = return ()
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
           --                            ++ " cases)")
@@ -111,18 +111,18 @@ instance Show (a -> b) where
     show _ = "(a -> b)"
 
 data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, Eq i, Eq f) => LLTest f i = 
-    forall t. Test.QuickCheck.Testable t => LLTest (f -> t)
+    forall t. Testable t => LLTest (f -> t)
 
-w :: TestLL f i => String -> LLTest f i -> Test
+w :: TestLL f i => String -> LLTest f i -> HU.Test
 w msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
-t :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
+t :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Testable t) => (f -> t) -> LLTest f i
 t = LLTest
 
 -- | all props, 3 args: full, full, and item
-apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> Test 
-apf msg x = TestLabel msg $ TestList $
+apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
+apf msg x = HU.TestLabel msg $ HU.TestList $
     [w "[Int]" (x::LLTest [Int] Int),
      w "MyList Int" (x::LLTest (MyList Int) Int),
      w "[Bool]" (x::LLTest [Bool] Bool),
