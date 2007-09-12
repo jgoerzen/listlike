@@ -329,7 +329,9 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     -- all
     -- maximum
     -- minimum
-    replicate _ = singleton
+    replicate count item 
+        | count <= 0 = empty
+        | otherwise = singleton item
     take n = Map.fromAscList . L.take n . Map.toAscList
     drop n = Map.fromAscList . L.drop n . Map.toAscList
     splitAt n = l2m . L.splitAt n . Map.toList

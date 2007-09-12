@@ -497,7 +497,7 @@ class (FoldableLL full item, Monoid full) =>
     {- | Generic version of 'replicate' -}
     genericReplicate :: Integral a => a -> item -> full
     genericReplicate count x 
-        | count < 0 = error "Replicate called with negative size"
+        | count <= 0 = empty
         | otherwise = map (\_ -> x) [1..count]
 
 {-
