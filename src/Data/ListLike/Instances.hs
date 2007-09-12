@@ -316,7 +316,7 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     init m = Map.deleteAt (Map.size m - 1) m
     null = Map.null
     length = Map.size
-    -- map
+    map f = fromList . map f . Map.toList
     rigidMap f = Map.fromList . L.map f . Map.toList
     reverse = id
     intersperse = cons
