@@ -47,49 +47,9 @@ instance LL.ListLike (MyList a) a where
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
 
-class (Arbitrary b, Show b, LL.ListLike a b, Eq b) => TestLL a b where
-    tl :: a -> [b]
-    fl :: [b] -> a
-
-    cl :: (a -> a) -> ([b] -> [b]) -> [b] -> Bool
-    cl nativefunc listfunc listdata =
-        tl (nativefunc (fl listdata)) == listfunc listdata
-
-instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
-    tl = LL.toList
-    fl = LL.fromList
-
-instance (Arbitrary a, Show a, Eq a) => TestLL (MyList a) a where
-    tl = LL.toList
-    fl = LL.fromList
-
-instance (Arbitrary k, Show k, Show v, Arbitrary v, Ord v, Ord k, Eq v) => TestLL (Map.Map k v) (k, v) where
-    fl = LL.fromList
-    tl = LL.toList
-    cl nativefunc listfunc listdata =
-        (sort . tl . nativefunc . Map.fromList $ listdata) ==
-        (sort . convl . listfunc . convl $ listdata)
-        where convl = foldl myinsert [] 
-              myinsert [] newval = [newval]
-              myinsert ((ak, av):as) (nk, nv)
-                | ak == nk = (nk, nv) : as
-                | otherwise = (ak, av) : myinsert as (nk, nv)
-                  
-instance TestLL BS.ByteString Word8 where
-    tl = LL.toList
-    fl = LL.fromList
-
-instance TestLL BSL.ByteString Word8 where
-    tl = LL.toList
-    fl = LL.fromList
-
-instance TestLL (A.Array Int Int) Int where
-    tl = LL.toList
-    fl = LL.fromList
-
 instance (Ord a, Ord b, Show a, Show b, Arbitrary a, Arbitrary b) => Arbitrary (Map.Map a b) where
-    arbitrary = fmap fl arbitrary
-    coarbitrary a b = coarbitrary (tl a) b
+    arbitrary = fmap Map.fromList arbitrary
+    coarbitrary a b = coarbitrary (Map.toList a) b
 
 instance Arbitrary Word8 where
     arbitrary = choose (0, maxBound)
@@ -134,45 +94,6 @@ instance Random Word8 where
                        randomR (toInteger a, toInteger b) g
     random g = randomR (minBound, maxBound) g
 
-tr msg nativetest listtest =
-    t msg (cl nativetest listtest)
-
-{- | Test with All types, Single Element input -}
-tase :: 
-      String -> (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
-                 Arbitrary i, Show i) => (i -> f)) 
-             -> (forall l. (Arbitrary l, Show l) => (l -> [l])) 
-             -> Test
-tase msg nativetest listtest = 
-    TestList 
-    [t (msg ++ " [Int]") 
-       (\(input::[Int]) -> fl (nativetest input) == listtest input),
-     t (msg ++ " MyList Int")
-       (\(input::MyList Int) -> fl (nativetest input) == listtest input),
-     t (msg ++ " Map")
-       (\(input::Map.Map Int Int) -> fl (nativetest input) == listtest input),
-     t (msg ++ " ByteString")
-       (\(input::BS.ByteString) -> fl (nativetest input) == listtest input),
-     t (msg ++ " ByteString.Lazy")
-       (\(input::BSL.ByteString) -> fl (nativetest input) == listtest input),
-     t (msg ++ " Array")
-       (\(input::A.Array Int Int) -> fl (nativetest input) == listtest input)]
-
-data TEncap = forall t. Test.QuickCheck.Testable t => TEncap t
-
-{- | Test with All types. -}
-ta :: (forall f i. (TestLL f i, LL.ListLike f i, Arbitrary f,
-                 Arbitrary i, Show i) => (f -> f)) 
-             -> (forall l. (Arbitrary l, Show l) => ([l] -> [l])) 
-             -> [TEncap]
-ta nativetest listtest = 
-    [ TEncap (cl (nativetest::([Int] -> [Int])) listtest) ,
-      TEncap (cl (nativetest::(MyList Int -> MyList Int)) listtest) ,
-      TEncap (cl (nativetest::(Map.Map Int Int -> Map.Map Int Int)) listtest) ,
-      TEncap (cl (nativetest::(BS.ByteString -> BS.ByteString)) listtest) ,
-      TEncap (cl (nativetest::(BSL.ByteString -> BSL.ByteString)) listtest) ,
-      TEncap (cl (nativetest::(A.Array Int Int -> A.Array Int Int)) listtest) ]
-
 t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = assertFailure (show (x, y, z))
@@ -181,14 +102,4 @@ t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           printmsg _ _ = return ()
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
           --                            ++ " cases)")
-
-t2 msg (TEncap test) = 
-    TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
-    where checResult (TestOk x y z) = printmsg x y >> return ()
-          checResult (TestExausted x y z) = assertFailure (show (x, y, z))
-          checResult (TestFailed x y) = assertFailure (show (x, y))
-          checResult (TestAborted x) = assertFailure (show x)
-          printmsg _ _ = return ()
-          --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
-          --                           ++ " cases)")
 
