@@ -173,7 +173,7 @@ w :: forall f t i. (TestLL f i, Test.QuickCheck.Testable t) => (f -> t) -> LLTes
 w = LLTest
 
 -- | all props, 3 args: full, full, and item
-apf :: String -> (forall f i. TestLL f i => LLTest f i) -> Test 
+apf :: String -> (forall f i. (Show i, TestLL f i) => LLTest f i) -> Test 
 apf msg x = TestLabel msg $ TestList $
     [t "[Int]" (x::LLTest [Int] Int),
      t "MyList Int" (x::LLTest (MyList Int) Int)

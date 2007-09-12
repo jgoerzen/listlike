@@ -47,12 +47,12 @@ prop_init f = if LL.null f then True else  llcmp (LL.init f) (init (LL.toList f)
 prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
-{-
-allt = [apf "empty" $ w prop_empty,
-        apf "length" $ w prop_length,
+
+allt = [apf "empty" (w prop_empty),
+        apf "length" (w prop_length) 
         --apf "to/fromList" $ T prop_tofromlist,
         --apf "singleton" $ T prop_singleton,
-        apf "cons" $ w prop_cons 
+        --apf "cons" (w prop_cons) 
         --apf "append" $ T prop_append,
         --apf "head" $ T prop_head,
         --apf "last" $ T prop_last,
@@ -70,4 +70,3 @@ main =
               (length allt) (12::Int) (12 * length allt)
        testh 
        return ()
-       -}
