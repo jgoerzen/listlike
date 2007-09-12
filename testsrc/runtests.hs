@@ -80,7 +80,19 @@ prop_drop f count = count >= 0 ==> llcmp (LL.drop count f) (drop count (LL.toLis
 prop_splitAt f count = count >= 0 ==>
     llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.splitAt count $ f] 
           [LL.splitAt count (LL.toList f)]
-
+prop_takeWhile f func = llcmp (LL.takeWhile func f) 
+                              (takeWhile func (LL.toList f))
+prop_dropWhile f func = llcmp (LL.dropWhile func f) 
+                              (dropWhile func (LL.toList f))
+prop_span f func = 
+    llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.span func $ f]
+          [span func (LL.toList f)]
+prop_break f func = 
+    llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.break func $ f]
+          [break func (LL.toList f)]
+prop_group f =
+    llcmp res (group (LL.toList f))
+    where res = asTypeOf (LL.group f) [f]
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -109,7 +121,12 @@ allt = [apf "empty" (t prop_empty),
         apf "replicate" (t prop_replicate),
         apf "take" (t prop_take),
         apf "drop" (t prop_drop),
-        apf "splitAt" (t prop_splitAt)
+        apf "splitAt" (t prop_splitAt),
+        apf "takeWhile" (t prop_takeWhile),
+        apf "dropWhile" (t prop_dropWhile),
+        apf "span" (t prop_span),
+        apf "break" (t prop_break),
+        apf "group" (t prop_group)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
