@@ -127,34 +127,34 @@ t msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --                            ++ " cases)")
 
 -- | all props, 3 args: full, full, and item
-apffi :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> f -> i -> Bool)) -> Test
+apffi :: forall t. Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> f -> i -> t)) -> Test
 apffi msg x = TestLabel msg $ TestList $
-    [t "[Int]" (x::[Int] -> [Int] -> Int -> Bool),
-     t "MyList Int" (x::MyList Int -> MyList Int -> Int -> Bool),
-     t "[Bool]" (x::[Bool] -> [Bool] -> Bool -> Bool),
-     t "MyList Bool" (x::MyList Bool -> MyList Bool -> Bool -> Bool),
-     t "Map Int Int" (x::Map.Map Int Int -> Map.Map Int Int -> (Int, Int) -> Bool),
-     t "Map Bool Int" (x::Map.Map Bool Int -> Map.Map Bool Int -> (Bool, Int) -> Bool),
-     t "Map Int Bool" (x::Map.Map Int Bool -> Map.Map Int Bool -> (Int, Bool) -> Bool),
-     t "Map Bool Bool" (x::Map.Map Bool Bool -> Map.Map Bool Bool -> (Bool, Bool) -> Bool),
-     t "ByteString" (x::BS.ByteString -> BS.ByteString -> Word8 -> Bool),
-     t "ByteString.Lazy" (x::BSL.ByteString -> BSL.ByteString -> Word8 -> Bool),
-     t "Array Int Int" (x::A.Array Int Int -> A.Array Int Int -> Int -> Bool),
-     t "Array Int Bool" (x::A.Array Int Bool -> A.Array Int Bool -> Bool -> Bool)
+    [t "[Int]" (x::[Int] -> [Int] -> Int -> t),
+     t "MyList Int" (x::MyList Int -> MyList Int -> Int -> t),
+     t "[Bool]" (x::[Bool] -> [Bool] -> Bool -> t),
+     t "MyList Bool" (x::MyList Bool -> MyList Bool -> Bool -> t),
+     t "Map Int Int" (x::Map.Map Int Int -> Map.Map Int Int -> (Int, Int) -> t),
+     t "Map Bool Int" (x::Map.Map Bool Int -> Map.Map Bool Int -> (Bool, Int) -> t),
+     t "Map Int Bool" (x::Map.Map Int Bool -> Map.Map Int Bool -> (Int, Bool) -> t),
+     t "Map Bool Bool" (x::Map.Map Bool Bool -> Map.Map Bool Bool -> (Bool, Bool) -> t),
+     t "ByteString" (x::BS.ByteString -> BS.ByteString -> Word8 -> t),
+     t "ByteString.Lazy" (x::BSL.ByteString -> BSL.ByteString -> Word8 -> t),
+     t "Array Int Int" (x::A.Array Int Int -> A.Array Int Int -> Int -> t),
+     t "Array Int Bool" (x::A.Array Int Bool -> A.Array Int Bool -> Bool -> t)
     ]
 
 -- | all props, 2 args: full and item
-apfi :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> i -> Bool)) -> Test
+apfi :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> i -> t)) -> Test
 apfi msg func = apffi msg newfunc
     where newfunc f1 _ i = func f1 i
 
 -- | all props, 2 args: full, full
-apff :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> f -> Bool)) -> Test
+apff :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> f -> t)) -> Test
 apff msg func = apffi msg newfunc
     where newfunc f1 f2 i = func f1 (asTypeOf f2 (LL.singleton i))
 
 -- | all props, 1 arg: full
-apf :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> Bool)) -> Test
+apf :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> t)) -> Test
 apf msg func = 
     apfi msg newfunc
     where newfunc x y = func (asTypeOf x (LL.singleton y))
