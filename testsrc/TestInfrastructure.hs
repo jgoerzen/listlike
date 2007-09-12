@@ -109,26 +109,26 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
 data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, Eq i, Eq f) => LLTest f i = 
     forall t. Test.QuickCheck.Testable t => LLTest (f -> t)
 
-t :: TestLL f i => String -> LLTest f i -> Test
-t msg f = case f of
+w :: TestLL f i => String -> LLTest f i -> Test
+w msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
-w :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
-w = LLTest
+t :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
+t = LLTest
 
 -- | all props, 3 args: full, full, and item
 apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> Test 
 apf msg x = TestLabel msg $ TestList $
-    [t "[Int]" (x::LLTest [Int] Int),
-     t "MyList Int" (x::LLTest (MyList Int) Int),
-     t "[Bool]" (x::LLTest [Bool] Bool),
-     t "MyList Bool" (x::LLTest (MyList Bool) Bool),
-     t "Map Int Int" (x::LLTest (Map.Map Int Int) (Int, Int)),
-     t "Map Bool Int" (x::LLTest (Map.Map Bool Int) (Bool, Int)),
-     t "Map Int Bool" (x::LLTest (Map.Map Int Bool) (Int, Bool)),
-     t "Map Bool Bool" (x::LLTest (Map.Map Bool Bool) (Bool, Bool)),
-     t "ByteString" (x::LLTest BS.ByteString Word8),
-     t "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
-     t "Array Int Int" (x::LLTest (A.Array Int Int) Int),
-     t "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool)
+    [w "[Int]" (x::LLTest [Int] Int),
+     w "MyList Int" (x::LLTest (MyList Int) Int),
+     w "[Bool]" (x::LLTest [Bool] Bool),
+     w "MyList Bool" (x::LLTest (MyList Bool) Bool),
+     w "Map Int Int" (x::LLTest (Map.Map Int Int) (Int, Int)),
+     w "Map Bool Int" (x::LLTest (Map.Map Bool Int) (Bool, Int)),
+     w "Map Int Bool" (x::LLTest (Map.Map Int Bool) (Int, Bool)),
+     w "Map Bool Bool" (x::LLTest (Map.Map Bool Bool) (Bool, Bool)),
+     w "ByteString" (x::LLTest BS.ByteString Word8),
+     w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
+     w "Array Int Int" (x::LLTest (A.Array Int Int) Int),
+     w "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool)
     ]

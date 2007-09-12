@@ -48,19 +48,19 @@ prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
-allt = [apf "empty" (w prop_empty),
-        apf "length" (w prop_length),
-        apf "to/fromList" (w prop_tofromlist),
-        apf "singleton" (w prop_singleton),
-        apf "cons" (w prop_cons),
-        apf "append" (w prop_append),
-        apf "head" (w prop_head),
-        apf "last" (w prop_last),
-        apf "tail" (w prop_tail),
-        apf "init" (w prop_init),
-        apf "null" (w prop_null),
-        apf "length2" (w prop_length2),
-        apf "length3" (w prop_length3)
+allt = [apf "empty" (t prop_empty),
+        apf "length" (t prop_length),
+        apf "to/fromList" (t prop_tofromlist),
+        apf "singleton" (t prop_singleton),
+        apf "cons" (t prop_cons),
+        apf "append" (t prop_append),
+        apf "head" (t prop_head),
+        apf "last" (t prop_last),
+        apf "tail" (t prop_tail),
+        apf "init" (t prop_init),
+        apf "null" (t prop_null),
+        apf "length2" (t prop_length2),
+        apf "length3" (t prop_length3)
         ]
 
 testh = runTestTT (TestList allt)
