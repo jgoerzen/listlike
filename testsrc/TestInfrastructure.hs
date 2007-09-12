@@ -166,8 +166,10 @@ t :: TestLL f i => String -> LLTest f i -> Test
 t msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
+{-
 instance (LL.ListLike f i, Eq f, Arbitrary f, Show f) => Test.QuickCheck.Testable (LLTest f i) where
     property (LLTest x) = property x
+    -}
 
 w :: forall f t i. (TestLL f i, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
 w = LLTest
