@@ -17,7 +17,7 @@ import qualified Data.Map as Map
 import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
-import Test.HUnit
+import qualified Test.HUnit as HU
 import Text.Printf
 import Data.Word
 import Data.List
@@ -64,10 +64,11 @@ prop_concatmap f func =
     llcmp (LL.concatMap func f)
           (concatMap func (LL.toList f))
 
-prop_rigidConcatMap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> full) -> Result
 prop_rigidConcatMap f func =
     llcmp (LL.rigidConcatMap func f)
           (concatMap (LL.toList . func) (LL.toList f))
+
+prop_any f func = (LL.any func f) @?= (any func (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -88,10 +89,11 @@ allt = [apf "empty" (t prop_empty),
         apf "intersperse" (t prop_intersperse),
         apw "concat" (LLWrap prop_concat),
         apf "concatMap" (t prop_concatmap),
-        apf "rigidConcatMap" (t prop_rigidConcatMap)
+        apf "rigidConcatMap" (t prop_rigidConcatMap),
+        apf "any" (t prop_any)
         ]
 
-testh = runTestTT (TestList allt)
+testh = HU.runTestTT (HU.TestList allt)
 
 main = 
     do testh 
