@@ -92,11 +92,7 @@ mapRemoveDups :: (Eq k1) => [(k1, v1)] -> [(k1, v1)]
 mapRemoveDups = nubBy (\(k1, _) (k2, _) -> k1 == k2)
 
 data MyList a = MyList [a]
-
-instance (Show a) => Show (MyList a) where
-    show (MyList x) = "MyList " ++ show x
-instance (Eq a) => Eq (MyList a) where
-    (==) (MyList x) (MyList y) = x == y
+    deriving (Ord, Eq, Show)
 
 instance LL.FoldableLL (MyList a) a where
     foldr f i (MyList x) = foldr f i x
@@ -168,7 +164,7 @@ apw msg x = HU.TestLabel msg $ HU.TestList $
      ]
 
 -- | all props, 3 args: full, full, and item
-apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
+apf :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
 apf msg x = HU.TestLabel msg $ HU.TestList $
     [w "[Int]" (x::LLTest [Int] Int),
      w "MyList Int" (x::LLTest (MyList Int) Int),
