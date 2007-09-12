@@ -35,6 +35,12 @@ instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
 instance (Arbitrary a, Show a, Eq a) => TestLL (MyList a) a where
     llcmp (MyList x) l = x == l
 
+instance TestLL BS.ByteString Word8 where
+
+instance TestLL BSL.ByteString Word8 where
+
+instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
+
 instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
     llcmp m l = (sort (LL.toList m)) == (sort $ convl $ l)
         where convl = foldl myinsert [] 
