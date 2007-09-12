@@ -24,6 +24,20 @@ import Data.Word
 import Data.List
 import Data.Monoid
 
+{-
+#if defined __HUGS__
+-}
+instance (Arbitrary a) => Arbitrary (Maybe a) where
+  arbitrary            = sized arbMaybe
+   where
+    arbMaybe 0 = return Nothing
+    arbMaybe n = fmap Just (resize (n-1) arbitrary)
+  coarbitrary Nothing  = variant 0
+  coarbitrary (Just x) = variant 1 . coarbitrary x
+{-
+#endif
+-}
+
 (@=?) :: (Eq a, Show a) => a -> a -> Result
 expected @=? actual = 
         Result {ok = Just (expected == actual), 
@@ -147,9 +161,10 @@ t = LLTest
 -- | all props, wrapped list
 apw :: String -> (forall f' f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i, LL.ListLike f' f, Show f', TestLL f' f, Arbitrary f', Eq f') => LLWrap f' f i) -> HU.Test
 apw msg x = HU.TestLabel msg $ HU.TestList $
-    [wwrap "wrap []" (x::LLWrap [[Int]] [Int] Int),
-     wwrap "wrap MyList" (x::LLWrap (MyList (MyList Int)) (MyList Int) Int),
-     wwrap "wrap Array" (x::LLWrap (A.Array Int (A.Array Int Int)) (A.Array Int Int) Int)
+    [wwrap "wrap [[Int]]" (x::LLWrap [[Int]] [Int] Int),
+     wwrap "wrap MyList (MyList Int)" (x::LLWrap (MyList (MyList Int)) (MyList Int) Int),
+     wwrap "wrap Array (Array Int)" (x::LLWrap (A.Array Int (A.Array Int Int)) (A.Array Int Int) Int),
+     wwrap "wrap Array [Int]" (x::LLWrap (A.Array Int [Int]) [Int] Int)
      ]
 
 -- | all props, 3 args: full, full, and item
@@ -166,5 +181,11 @@ apf msg x = HU.TestLabel msg $ HU.TestList $
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
      w "Array Int Int" (x::LLTest (A.Array Int Int) Int),
-     w "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool)
+     w "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool),
+     w "[[Int]]" (x::LLTest [[Int]] [Int]),
+     w "MyList (MyList Int)" (x::LLTest (MyList (MyList Int)) (MyList Int)),
+     w "[MyList Int]" (x::LLTest [MyList Int] (MyList Int)),
+     w "Array [Int]" (x::LLTest (A.Array Int [Int]) [Int]),
+     w "Array (Array Int)" (x::LLTest (A.Array Int (A.Array Int Int)) (A.Array Int Int)),
+     w "Array (Just Int)" (x::LLTest (A.Array Int (Maybe Int)) (Maybe Int))
     ]

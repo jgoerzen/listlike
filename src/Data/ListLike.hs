@@ -126,7 +126,7 @@ import Data.ListLike.Utils
 import Data.ListLike.IO
 
 {- $intro
-#intro#
+ #intro#
 Welcome to ListLike.
 
 This module provides abstractions over typical list operations.
