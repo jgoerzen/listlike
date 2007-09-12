@@ -70,7 +70,7 @@ test-ghc6: testsrc/runtests
 	testsrc/runtests
 
 test-hugs: 
-	runhugs -98 +o -P$(PWD)/src:$(PWD)/testsrc: testsrc/runtests.hs
+	runhugs -98 +o -h10M -P$(PWD)/src:$(PWD)/testsrc: testsrc/runtests.hs
 
 interact-hugs:
 	hugs -98 +o -P$(PWD)/dist/build:
