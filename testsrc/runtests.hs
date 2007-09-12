@@ -27,9 +27,7 @@ import TestInfrastructure
 -- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
 prop_singleton f x = (LL.toList $ asTypeOf (LL.singleton x) f) == [x]
 
-
-
-prop_empty f x = (LL.toList l == []) && (LL.null l) && (LL.length l == 0)
+prop_empty f = (LL.toList l == []) && (LL.null l) && (LL.length l == 0)
     where l = asTypeOf LL.empty f
 
 prop_tofromlist f = 
@@ -63,7 +61,7 @@ apf msg func =
     apfi msg newfunc
     where newfunc x y = func (asTypeOf x (LL.singleton y))
     
-allt = [apfi "empty" prop_empty,
+allt = [apf "empty" prop_empty,
         apf "length" prop_length,
         apf "to/fromList" prop_tofromlist,
         apfi "singleton" prop_singleton]
