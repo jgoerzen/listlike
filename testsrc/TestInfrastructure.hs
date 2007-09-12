@@ -106,6 +106,10 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
           --                            ++ " cases)")
 
+-- | So we can test map and friends
+instance Show (a -> b) where
+    show _ = "(a -> b)"
+
 data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, Eq i, Eq f) => LLTest f i = 
     forall t. Test.QuickCheck.Testable t => LLTest (f -> t)
 

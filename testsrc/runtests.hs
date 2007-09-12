@@ -47,6 +47,7 @@ prop_init f = if LL.null f then True else  llcmp (LL.init f) (init (LL.toList f)
 prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
+prop_map f func = llcmp (LL.rigidMap func f) (map func (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -60,7 +61,8 @@ allt = [apf "empty" (t prop_empty),
         apf "init" (t prop_init),
         apf "null" (t prop_null),
         apf "length2" (t prop_length2),
-        apf "length3" (t prop_length3)
+        apf "length3" (t prop_length3),
+        apf "map" (t prop_map) 
         ]
 
 testh = runTestTT (TestList allt)
