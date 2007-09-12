@@ -159,14 +159,14 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
           --                            ++ " cases)")
 
-data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, TestLL f i, Eq i, Eq f) => LLTest f i = 
+data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, Eq i, Eq f) => LLTest f i = 
     forall t. Test.QuickCheck.Testable t => LLTest (f -> t)
 
 t :: TestLL f i => String -> LLTest f i -> Test
 t msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
-instance TestLL f i => Test.QuickCheck.Testable (LLTest f i) where
+instance (LL.ListLike f i, Eq f, Arbitrary f, Show f) => Test.QuickCheck.Testable (LLTest f i) where
     property (LLTest x) = property x
 
 w :: forall f t i. (TestLL f i, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
