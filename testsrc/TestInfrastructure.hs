@@ -63,11 +63,14 @@ instance TestLL BSL.ByteString Word8 where
 instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
 
 instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
-    llcmp m l = mycmp (Map.toList m)
-        where mycmp [] = l @=? l             -- True
+    llcmp m l = 
+        if mycmp (Map.toList m)
+            then l @=? l                         -- True
+            else l @=? (Map.toList m)            -- False
+        where mycmp [] = True
               mycmp (x:xs) = if elem x l 
                                 then mycmp xs
-                                else l @=? (Map.toList m) -- False
+                                else False
     -- FIXME: should find a way to use LL.length instead of Map.size here
     checkLengths m l = Map.size m == length (mapRemoveDups l)
 
@@ -109,7 +112,11 @@ instance Random Word8 where
 mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test defOpt >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = HU.assertFailure (show (x, y, z))
-          checResult (TestFailed x y) = HU.assertFailure (show (x, y))
+          checResult (TestFailed x y) = HU.assertFailure $
+                "Test Failure\n" ++ 
+                "Arguments: " ++
+                (concat . intersperse "\n           " $ x) ++ 
+                "\nTest No.:  " ++ show y
           checResult (TestAborted x) = HU.assertFailure (show x)
           printmsg _ _ = return ()
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
