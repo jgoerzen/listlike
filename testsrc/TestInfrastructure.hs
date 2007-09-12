@@ -24,6 +24,12 @@ import Data.Word
 import Data.List
 import Data.Monoid
 
+(@=?) :: (Eq a, Show a) => a -> a -> Result
+expected @=? actual = 
+        Result {ok = Just (expected == actual), 
+                arguments = ["Result: expected " ++ show expected ++ ", got " ++ show actual],
+                stamp = []}
+    
 instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
@@ -31,10 +37,10 @@ instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
                      return (LL.fromList arblist)
     coarbitrary l = coarbitrary (LL.toList l)
 
-class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
+class (Show b, Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
     -- | Compare a ListLike to a list using any local conversions needed
-    llcmp :: a -> [b] -> Bool
-    llcmp f l = (LL.toList f) == l
+    llcmp :: a -> [b] -> Result
+    llcmp f l = l @=? (LL.toList f)
 
     -- | Check the lenghts of the two items.  True if they should be considered
     -- to match.
@@ -42,10 +48,10 @@ class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
     checkLengths f l = (LL.length f) == length l
 
 instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
-    llcmp x y = x == y
+    llcmp x y = y @=? x
 
 instance (Arbitrary a, Show a, Eq a) => TestLL (MyList a) a where
-    llcmp (MyList x) l = x == l
+    llcmp (MyList x) l = l @=? x
 
 instance TestLL BS.ByteString Word8 where
 
@@ -55,10 +61,10 @@ instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
 
 instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
     llcmp m l = mycmp (Map.toList m)
-        where mycmp [] = True
+        where mycmp [] = l @=? l             -- True
               mycmp (x:xs) = if elem x l 
                                 then mycmp xs
-                                else False
+                                else l @=? (Map.toList m) -- False
     -- FIXME: should find a way to use LL.length instead of Map.size here
     checkLengths m l = Map.size m == length (mapRemoveDups l)
 

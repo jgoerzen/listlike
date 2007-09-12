@@ -40,15 +40,15 @@ prop_tofromlist f =
 prop_length f = LL.length f == length (LL.toList f)
 prop_cons f i = llcmp (LL.cons i f) (i : (LL.toList f))
 prop_append f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
-prop_head f = if LL.null f then True else LL.head f == head (LL.toList f)
-prop_last f = if LL.null f then True else LL.last f == last (LL.toList f)
-prop_tail f = if LL.null f then True else llcmp (LL.tail f) (tail (LL.toList f))
-prop_init f = if LL.null f then True else  llcmp (LL.init f) (init (LL.toList f))
+prop_head f = not (LL.null f) ==> LL.head f == head (LL.toList f)
+prop_last f = not (LL.null f) ==> LL.last f == last (LL.toList f)
+prop_tail f = not (LL.null f) ==> llcmp (LL.tail f) (tail (LL.toList f))
+prop_init f = not (LL.null f) ==> llcmp (LL.init f) (init (LL.toList f))
 prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
-prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Bool
+prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Result
 prop_map f func = llcmp llmap (map func (LL.toList f))
     where llmap = asTypeOf (LL.map func f) (LL.toList f)
 
