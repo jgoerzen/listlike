@@ -56,11 +56,13 @@ prop_rigidMap f func = llcmp (LL.rigidMap func f) (map func (LL.toList f))
 prop_reverse f = llcmp (LL.reverse f) (reverse (LL.toList f))
 prop_intersperse f i = llcmp (LL.intersperse i f) (intersperse i (LL.toList f))
 
---prop_concat :: (TestLL full item, LL.ListLike full' full) => full' -> Result
---prop_concat :: (TestLL full [Int], LL.ListLike full [Int]) => full -> Result
 prop_concat f = 
     llcmp (LL.concat f) (concat $ map LL.toList (LL.toList f))
-    --(LL.toList (LL.concat f)) == (concat (LL.toList f))
+
+prop_concatmap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> [item]) -> Result
+prop_concatmap f func =
+    llcmp (LL.concatMap func f)
+          (concatMap func (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -79,7 +81,8 @@ allt = [apf "empty" (t prop_empty),
         apf "rigidMap" (t prop_rigidMap),
         apf "reverse" (t prop_reverse),
         apf "intersperse" (t prop_intersperse),
-        apw "concat" (LLWrap prop_concat)
+        apw "concat" (LLWrap prop_concat),
+        apf "concatMap" (t prop_concatmap)
         ]
 
 testh = runTestTT (TestList allt)
