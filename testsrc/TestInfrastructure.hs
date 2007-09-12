@@ -29,19 +29,7 @@ instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
         where myVector n =
                   do arblist <- vector n
                      return (LL.fromList arblist)
-    {-
-    arbitrary = sized (\n -> choose (0, n) >>= myVector)
-        where myVector n =
-                  do arblist <- sequence [ arbitrary | i <- [1..n] ]
-                     return (LL.fromList arblist)
-                     -}
     coarbitrary l = coarbitrary (LL.toList l)
-    {-              
-    coarbitrary l
-        | LL.null l = variant 0
-        | otherwise = coarbitrary (LL.head l) . variant 1 .
-                        coarbitrary (LL.tail l)
-                        -}
 
 class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
     -- | Compare a ListLike to a list using any local conversions needed
@@ -100,50 +88,9 @@ instance LL.ListLike (MyList a) a where
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
 
-{-
-instance (Ord a, Ord b, Show a, Show b, Arbitrary a, Arbitrary b) => Arbitrary (Map.Map a b) where
-    arbitrary = fmap Map.fromList arbitrary
-    coarbitrary a b = coarbitrary (Map.toList a) b
--}
 instance Arbitrary Word8 where
     arbitrary = choose (0, maxBound)
     coarbitrary n = variant (2 * fromIntegral n)
-
-{-
-instance Arbitrary BS.ByteString where
-    arbitrary = sized (\n -> choose (0, n) >>= myVector)
-        where myVector n = 
-                do arblist <- vector n
-                   return (BS.pack arblist)
-    coarbitrary bs
-        | BS.null bs = variant 0
-        | otherwise = coarbitrary (BS.head bs) . variant 1 . 
-                        coarbitrary (BS.tail bs)
-
-instance Arbitrary BSL.ByteString where
-    arbitrary = sized (\n -> choose (0, n) >>= myVector)
-        where myVector n = 
-                do arblist <- vector n
-                   return (BSL.pack arblist)
-    coarbitrary bs
-        | BSL.null bs = variant 0
-        | otherwise = coarbitrary (BSL.head bs) . variant 1 . 
-                        coarbitrary (BSL.tail bs)
-
-instance (Arbitrary a) => Arbitrary (A.Array Int a) where
-    arbitrary = sized (\n -> choose (0, n) >>= myVector)
-        where myVector n =
-                  do arblist <- vector n
-                     return $ A.listArray (0, n - 1) arblist
-    coarbitrary a = coarbitrary (A.elems a)
-     
-instance (Arbitrary a) => Arbitrary (MyList a) where
-    arbitrary = sized (\n -> choose (0, n) >>= myVector)
-        where myVector n =
-                  do arblist <- vector n
-                     return (MyList arblist)
-    coarbitrary (MyList x) = coarbitrary x
-    -}
 
 instance Random Word8 where
     randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
@@ -166,11 +113,6 @@ t :: TestLL f i => String -> LLTest f i -> Test
 t msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
-{-
-instance (LL.ListLike f i, Eq f, Arbitrary f, Show f) => Test.QuickCheck.Testable (LLTest f i) where
-    property (LLTest x) = property x
-    -}
-
 w :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
 w = LLTest
 
@@ -178,35 +120,15 @@ w = LLTest
 apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> Test 
 apf msg x = TestLabel msg $ TestList $
     [t "[Int]" (x::LLTest [Int] Int),
-     t "MyList Int" (x::LLTest (MyList Int) Int)
+     t "MyList Int" (x::LLTest (MyList Int) Int),
+     t "[Bool]" (x::LLTest [Bool] Bool),
+     t "MyList Bool" (x::LLTest (MyList Bool) Bool),
+     t "Map Int Int" (x::LLTest (Map.Map Int Int) (Int, Int)),
+     t "Map Bool Int" (x::LLTest (Map.Map Bool Int) (Bool, Int)),
+     t "Map Int Bool" (x::LLTest (Map.Map Int Bool) (Int, Bool)),
+     t "Map Bool Bool" (x::LLTest (Map.Map Bool Bool) (Bool, Bool)),
+     t "ByteString" (x::LLTest BS.ByteString Word8),
+     t "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
+     t "Array Int Int" (x::LLTest (A.Array Int Int) Int),
+     t "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool)
     ]
-{-
-     t "[Bool]" (x::[Bool] -> [Bool] -> Bool -> t),
-     t "MyList Bool" (x::MyList Bool -> MyList Bool -> Bool -> t),
-     t "Map Int Int" (x::Map.Map Int Int -> Map.Map Int Int -> (Int, Int) -> t),
-     t "Map Bool Int" (x::Map.Map Bool Int -> Map.Map Bool Int -> (Bool, Int) -> t),
-     t "Map Int Bool" (x::Map.Map Int Bool -> Map.Map Int Bool -> (Int, Bool) -> t),
-     t "Map Bool Bool" (x::Map.Map Bool Bool -> Map.Map Bool Bool -> (Bool, Bool) -> t),
-     t "ByteString" (x::BS.ByteString -> BS.ByteString -> Word8 -> t),
-     t "ByteString.Lazy" (x::BSL.ByteString -> BSL.ByteString -> Word8 -> t),
-     t "Array Int Int" (x::A.Array Int Int -> A.Array Int Int -> Int -> t),
-     t "Array Int Bool" (x::A.Array Int Bool -> A.Array Int Bool -> Bool -> t)
-    ]
--}
-{-
--- | all props, 2 args: full and item
-apfi :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> i -> t)) -> Test
-apfi msg func = apffi msg newfunc
-    where newfunc f1 _ i = func f1 i
-
--- | all props, 2 args: full, full
-apff :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> f -> t)) -> Test
-apff msg func = apffi msg newfunc
-    where newfunc f1 f2 i = func f1 (asTypeOf f2 (LL.singleton i))
-
--- | all props, 1 arg: full
-apf :: Test.QuickCheck.Testable t => String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> t)) -> Test
-apf msg func = 
-    apfi msg newfunc
-    where newfunc x y = func (asTypeOf x (LL.singleton y))
-          -}
