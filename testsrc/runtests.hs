@@ -55,12 +55,12 @@ prop_map f func = llcmp llmap (map func (LL.toList f))
 prop_rigidMap f func = llcmp (LL.rigidMap func f) (map func (LL.toList f))
 prop_reverse f = llcmp (LL.reverse f) (reverse (LL.toList f))
 prop_intersperse f i = llcmp (LL.intersperse i f) (intersperse i (LL.toList f))
-prop_concat :: (LL.ListLike full item, TestLL full item,
-                LL.ListLike f' full, TestLL f' full) => 
-                full -> f' -> Result
-prop_concat f f2 = 
-    llcmp llres (concat (LL.map LL.toList f2))
-    where llres = asTypeOf (LL.concat f2) f
+
+--prop_concat :: (TestLL full item, LL.ListLike full' full) => full' -> Result
+prop_concat :: (TestLL full [Int], LL.ListLike full [Int]) => full -> Result
+prop_concat f = 
+    llcmp (LL.concat f) (concat (LL.toList f))
+    --(LL.toList (LL.concat f)) == (concat (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -78,14 +78,12 @@ allt = [apf "empty" (t prop_empty),
         apf "map" (t prop_map),
         apf "rigidMap" (t prop_rigidMap),
         apf "reverse" (t prop_reverse),
-        apf "intersperse" (t prop_intersperse) 
-        --apf "concat" (t prop_concat)
+        apf "intersperse" (t prop_intersperse),
+        apw "concat" (prop_concat)
         ]
 
 testh = runTestTT (TestList allt)
 
 main = 
-    do printf "Running %d test functions * %d types under test = %d cases\n"
-              (length allt) (12::Int) (12 * length allt)
-       testh 
+    do testh 
        return ()

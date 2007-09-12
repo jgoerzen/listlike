@@ -136,10 +136,13 @@ w msg f = case f of
 t :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Testable t) => (f -> t) -> LLTest f i
 t = LLTest
 
+-- | all props, wrapped list
 apw :: forall f i t. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i, Testable t) => String -> (forall f'. (LL.ListLike f' f, TestLL f' f, Show f', Eq f', Arbitrary f') => (f' -> t)) -> HU.Test 
 apw msg x = HU.TestLabel msg $ HU.TestList $
     [w "wrap []" ((LLTest x)::LLTest [f] f),
-     w "wrap MyList" ((LLTest x)::LLTest (MyList f) f)]
+     w "wrap MyList" ((LLTest x)::LLTest (MyList f) f),
+     w "wrap Array" ((LLTest x)::LLTest (A.Array Int f) f)]
+
 -- | all props, 3 args: full, full, and item
 apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
 apf msg x = HU.TestLabel msg $ HU.TestList $
