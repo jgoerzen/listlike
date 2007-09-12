@@ -171,11 +171,11 @@ instance (LL.ListLike f i, Eq f, Arbitrary f, Show f) => Test.QuickCheck.Testabl
     property (LLTest x) = property x
     -}
 
-w :: forall f t i. (Arbitrary f, Arbitrary i, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
+w :: forall f t i. (TestLL f i, Arbitrary f, Arbitrary i, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
 w = LLTest
 
 -- | all props, 3 args: full, full, and item
-apf :: String -> (forall f i. (Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> Test 
+apf :: String -> (forall f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> Test 
 apf msg x = TestLabel msg $ TestList $
     [t "[Int]" (x::LLTest [Int] Int),
      t "MyList Int" (x::LLTest (MyList Int) Int)
