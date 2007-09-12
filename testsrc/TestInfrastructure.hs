@@ -147,7 +147,12 @@ apffi msg x = TestLabel msg $ TestList $
 apfi :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> i -> Bool)) -> Test
 apfi msg func = apffi msg newfunc
     where newfunc f1 _ i = func f1 i
-    --
+
+-- | all props, 2 args: full, full
+apff :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> f -> Bool)) -> Test
+apff msg func = apffi msg newfunc
+    where newfunc f1 f2 i = func f1 (asTypeOf f2 (LL.singleton i))
+
 -- | all props, 1 arg: full
 apf :: String -> (forall f i. (Eq i, Eq f, TestLL f i, LL.ListLike f i) => (f -> Bool)) -> Test
 apf msg func = 
