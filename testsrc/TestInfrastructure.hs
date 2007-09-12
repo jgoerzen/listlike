@@ -27,8 +27,8 @@ import Data.Monoid
 instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
-                  do arblist <- ((vector n)::Gen [i])
-                     return (LL.fromList (arblist::[i]))
+                  do arblist <- vector n
+                     return (LL.fromList arblist)
     {-
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
