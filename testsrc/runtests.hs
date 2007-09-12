@@ -75,6 +75,12 @@ prop_minimum f = not (LL.null f) ==> LL.minimum f @=? minimum (LL.toList f)
 prop_replicate f count i = 
     llcmp res (replicate count i)
     where res = asTypeOf (LL.replicate count i) f
+prop_take f count = llcmp (LL.take count f) (take count (LL.toList f))
+prop_drop f count = llcmp (LL.drop count f) (drop count (LL.toList f))
+prop_splitAt f count = 
+    llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.splitAt count $ f] 
+          [LL.splitAt count (LL.toList f)]
+
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -100,10 +106,13 @@ allt = [apf "empty" (t prop_empty),
         apf "all" (t prop_all),
         apf "maximum" (t prop_maximum),
         apf "minimum" (t prop_minimum),
-        apf "replicate" (t prop_replicate)
+        apf "replicate" (t prop_replicate),
+        apf "take" (t prop_take),
+        apf "drop" (t prop_drop),
+        apf "splitAt" (t prop_splitAt)
         ]
 
-testh = HU.runTestTT (HU.TestList allt)
+testh = HU.runTestTT (HU.TestList (reverse allt))
 
 main = 
     do testh 
