@@ -495,7 +495,10 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     -- insertBy
     genericLength l = fromIntegral (bhigh - blow + 1)
         where (blow, bhigh) = A.bounds l
-    genericTake count l = A.listArray (blow, blow + (fromIntegral count))
+    genericTake count l 
+        | count > genericLength l = l
+        | count <= 0 = empty
+        | otherwise = A.listArray (blow, blow + (fromIntegral count) - 1)
                           (L.genericTake count (A.elems l))
         where (blow, _) = A.bounds l
     genericDrop count l = A.listArray (blow + (fromIntegral count), bhigh)
