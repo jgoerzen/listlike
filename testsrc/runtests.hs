@@ -25,6 +25,7 @@ import Data.Monoid
 import TestInfrastructure
 
 -- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
+prop_singleton :: (Eq i, LL.ListLike f i, Arbitrary f, Show f, Show i, Arbitrary i) => f -> i -> Bool
 prop_singleton f x = (LL.toList $ asTypeOf (LL.singleton x) f) == [x]
 
 prop_empty f = (LL.toList l == []) && (LL.null l) && (LL.length l == 0)
@@ -70,4 +71,4 @@ main =
               (length allt) (12::Int) (12 * length allt)
        testh 
        return ()
--}
+       -}

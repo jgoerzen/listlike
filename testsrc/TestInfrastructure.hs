@@ -159,7 +159,7 @@ mkTest msg test = TestLabel msg $ TestCase $ (run test defOpt >>= checResult)
           --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
           --                            ++ " cases)")
 
-data (LL.ListLike f i, Arbitrary f, Arbitrary i, TestLL f i, Eq i, Eq f) => LLTest f i = 
+data (LL.ListLike f i, Arbitrary f, Arbitrary i, Show f, Show i, TestLL f i, Eq i, Eq f) => LLTest f i = 
     forall t. Test.QuickCheck.Testable t => LLTest t
 
 t :: String -> LLTest f i -> Test
@@ -169,7 +169,7 @@ t msg f = case f of
 instance Test.QuickCheck.Testable (LLTest f i) where
     property (LLTest x) = property x
 
-w :: (Eq i, Eq f, TestLL f i, LL.ListLike f i, Arbitrary f, Arbitrary i) => String -> (forall t. Test.QuickCheck.Testable t => t) -> LLTest f i
+w :: (Eq i, Eq f, TestLL f i, LL.ListLike f i, Show f, Show i, Arbitrary f, Arbitrary i) => String -> (forall t. Test.QuickCheck.Testable t => t) -> LLTest f i
 w _ t = t
 
 -- | all props, 3 args: full, full, and item
