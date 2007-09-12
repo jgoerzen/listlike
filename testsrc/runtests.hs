@@ -47,7 +47,9 @@ prop_init f = if LL.null f then True else  llcmp (LL.init f) (init (LL.toList f)
 prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
-prop_map f func = llcmp (LL.rigidMap func f) (map func (LL.toList f))
+prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Bool
+prop_map f func = llcmp llmap (map func (LL.toList f))
+    where llmap = asTypeOf (LL.map func f) (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
