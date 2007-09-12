@@ -47,9 +47,14 @@ prop_init f = if LL.null f then True else  llcmp (LL.init f) (init (LL.toList f)
 prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
+
 prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Bool
 prop_map f func = llcmp llmap (map func (LL.toList f))
     where llmap = asTypeOf (LL.map func f) (LL.toList f)
+
+prop_rigidMap f func = llcmp (LL.rigidMap func f) (map func (LL.toList f))
+prop_reverse f = llcmp (LL.reverse f) (reverse (LL.toList f))
+prop_intersperse f i = llcmp (LL.intersperse i f) (intersperse i (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -64,7 +69,10 @@ allt = [apf "empty" (t prop_empty),
         apf "null" (t prop_null),
         apf "length2" (t prop_length2),
         apf "length3" (t prop_length3),
-        apf "map" (t prop_map) 
+        apf "map" (t prop_map),
+        apf "rigidMap" (t prop_rigidMap),
+        apf "reverse" (t prop_reverse),
+        apf "intersperse" (t prop_intersperse) 
         ]
 
 testh = runTestTT (TestList allt)
