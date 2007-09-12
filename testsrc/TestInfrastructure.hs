@@ -171,7 +171,7 @@ instance (LL.ListLike f i, Eq f, Arbitrary f, Show f) => Test.QuickCheck.Testabl
     property (LLTest x) = property x
     -}
 
-w :: forall f t i. (TestLL f i, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
+w :: forall f t i. (Arbitrary f, Show f, Eq f, Test.QuickCheck.Testable t) => (f -> t) -> LLTest f i
 w = LLTest
 
 -- | all props, 3 args: full, full, and item
