@@ -44,6 +44,8 @@ prop_last f = not (LL.null f) ==> LL.last f == last (LL.toList f)
 prop_tail f = not (LL.null f) ==> llcmp (LL.tail f) (tail (LL.toList f))
 prop_init f = not (LL.null f) ==> llcmp (LL.init f) (init (LL.toList f))
 prop_null f = LL.null f == null (LL.toList f)
+prop_length2 f = checkLengths f (LL.toList f)
+prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
 allt = [apf "empty" prop_empty,
         apf "length" prop_length,
@@ -55,7 +57,9 @@ allt = [apf "empty" prop_empty,
         apf "last" prop_last,
         apf "tail" prop_tail,
         apf "init" prop_init,
-        apf "null" prop_null]
+        apf "null" prop_null,
+        apf "length2" prop_length2,
+        apff "length3" prop_length3]
 
 testh = runTestTT (TestList allt)
 

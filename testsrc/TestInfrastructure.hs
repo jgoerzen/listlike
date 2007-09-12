@@ -25,9 +25,14 @@ import Data.List
 import Data.Monoid
 
 class (Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
+    -- | Compare a ListLike to a list using any local conversions needed
     llcmp :: a -> [b] -> Bool
-
     llcmp f l = (LL.toList f) == l
+
+    -- | Check the lenghts of the two items.  True if they should be considered
+    -- to match.
+    checkLengths :: a -> [b] -> Bool
+    checkLengths f l = (LL.length f) == length l
 
 instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
     llcmp x y = x == y
@@ -47,6 +52,12 @@ instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map
               mycmp (x:xs) = if elem x l 
                                 then mycmp xs
                                 else False
+    -- FIXME: should find a way to use LL.length instead of Map.size here
+    checkLengths m l = Map.size m == length (mapRemoveDups l)
+
+mapRemoveDups :: (Eq k1) => [(k1, v1)] -> [(k1, v1)]
+mapRemoveDups = nubBy (\(k1, _) (k2, _) -> k1 == k2)
+
 data MyList a = MyList [a]
 
 instance (Show a) => Show (MyList a) where
