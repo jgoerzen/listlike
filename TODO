@@ -1,3 +1,5 @@
 genericIndex, genericFindIndex, etc.
 charlike
 llencap
+
+test head, tail, maximum, etc. to make sure we get exception on empty lists

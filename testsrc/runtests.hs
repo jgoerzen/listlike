@@ -70,7 +70,11 @@ prop_rigidConcatMap f func =
 
 prop_any f func = (LL.any func f) @?= (any func (LL.toList f))
 prop_all f func = (LL.all func f) @?= (all func (LL.toList f))
-prop_maximum f = LL.maximum f @=? maximum (LL.toList f)
+prop_maximum f = not (LL.null f) ==> LL.maximum f @=? maximum (LL.toList f)
+prop_minimum f = not (LL.null f) ==> LL.minimum f @=? minimum (LL.toList f)
+prop_replicate f count i = 
+    llcmp res (replicate count i)
+    where res = asTypeOf (LL.replicate count i) f
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -94,7 +98,9 @@ allt = [apf "empty" (t prop_empty),
         apf "rigidConcatMap" (t prop_rigidConcatMap),
         apf "any" (t prop_any),
         apf "all" (t prop_all),
-        apf "maximum" (t prop_maximum)
+        apf "maximum" (t prop_maximum),
+        apf "minimum" (t prop_minimum),
+        apf "replicate" (t prop_replicate)
         ]
 
 testh = HU.runTestTT (HU.TestList allt)
