@@ -38,12 +38,16 @@ prop_tofromlist f =
 
 prop_length f = LL.length f == length (LL.toList f)
 prop_cons f i = llcmp (LL.cons i f) (i : (LL.toList f))
+prop_append f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
+prop_head f = LL.head f == head (LL.toList f)
 
 allt = [apf "empty" prop_empty,
         apf "length" prop_length,
         apf "to/fromList" prop_tofromlist,
         apfi "singleton" prop_singleton,
-        apfi "cons" prop_cons]
+        apfi "cons" prop_cons,
+        apff "append" prop_append,
+        apf "head" prop_head]
 
 testh = runTestTT (TestList allt)
 
