@@ -42,13 +42,11 @@ instance TestLL BSL.ByteString Word8 where
 instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
 
 instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
-    llcmp m l = (sort (LL.toList m)) == (sort $ convl $ l)
-        where convl = foldl myinsert [] 
-              myinsert [] newval = [newval]
-              myinsert ((ak, av):as) (nk, nv)
-                | ak == nk = (nk, nv) : as
-                | otherwise = (ak, av) : myinsert as (nk, nv)
-
+    llcmp m l = mycmp (Map.toList m)
+        where mycmp [] = True
+              mycmp (x:xs) = if elem x l 
+                                then mycmp xs
+                                else False
 data MyList a = MyList [a]
 
 instance (Show a) => Show (MyList a) where
