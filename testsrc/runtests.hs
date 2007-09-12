@@ -49,18 +49,18 @@ prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
 allt = [apf "empty" (w prop_empty),
-        apf "length" (w prop_length) 
-        --apf "to/fromList" $ T prop_tofromlist,
-        --apf "singleton" $ T prop_singleton,
-        --apf "cons" (w prop_cons) 
-        --apf "append" $ T prop_append,
-        --apf "head" $ T prop_head,
-        --apf "last" $ T prop_last,
-        --apf "tail" $ T prop_tail,
-        --apf "init" $ T prop_init,
-        --apf "null" $ T prop_null,
-        --apf "length2" $ T prop_length2,
-        --apf "length3" $ T prop_length3
+        apf "length" (w prop_length),
+        apf "to/fromList" (w prop_tofromlist),
+        apf "singleton" (w prop_singleton),
+        apf "cons" (w prop_cons),
+        apf "append" (w prop_append),
+        apf "head" (w prop_head),
+        apf "last" (w prop_last),
+        apf "tail" (w prop_tail),
+        apf "init" (w prop_init),
+        apf "null" (w prop_null),
+        apf "length2" (w prop_length2),
+        apf "length3" (w prop_length3)
         ]
 
 testh = runTestTT (TestList allt)
