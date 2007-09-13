@@ -339,7 +339,9 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     dropWhile f = Map.fromAscList . L.dropWhile f . Map.toAscList
     span f = l2m . L.span f . Map.toList
     break f = span (not . f)
-    group = map singleton
+    group m
+        | null m = empty
+        | otherwise = cons (singleton (head m)) (group (tail m))
     -- group
     -- inits
     -- tails

@@ -78,13 +78,15 @@ instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
 
 instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
     llcmp m l = 
-        if mycmp (Map.toList m)
+        if mycmp (Map.toList m) && mychk l
             then l @=? l                         -- True
             else l @=? (Map.toList m)            -- False
         where mycmp [] = True
               mycmp (x:xs) = if elem x l 
                                 then mycmp xs
                                 else False
+              mychk [] = True
+              mychk ((k, _):xs) = if Map.member k m then mychk xs else False
     -- FIXME: should find a way to use LL.length instead of Map.size here
     checkLengths m l = Map.size m == length (mapRemoveDups l)
 

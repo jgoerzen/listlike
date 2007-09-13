@@ -91,8 +91,8 @@ prop_break f func =
     llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.break func $ f]
           [break func (LL.toList f)]
 prop_group f =
-    llcmp (map LL.toList res) (group (LL.toList f))
-    where res = asTypeOf (LL.group f) [f]
+    -- llcmp (map LL.toList (LL.group f)) (group (LL.toList f))
+    (map LL.toList (LL.group f)) @?= (group (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -129,7 +129,7 @@ allt = [apf "empty" (t prop_empty),
         apf "group" (t prop_group)
         ]
 
-testh = HU.runTestTT (HU.TestList (reverse allt))
+testh = HU.runTestTT (HU.TestList (id allt))
 
 main = 
     do testh 
