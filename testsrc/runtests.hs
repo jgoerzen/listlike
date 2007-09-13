@@ -116,6 +116,12 @@ prop_elemIndices f i = LL.elemIndices i f @?= elemIndices i (LL.toList f)
 prop_findIndex f func = LL.findIndex func f @?= findIndex func (LL.toList f)
 prop_findIndices f func =
     LL.findIndices func f @?= findIndices func (LL.toList f)
+prop_sequence f =
+    case (llres, sequence testit) of
+         (Just ll, Just l) -> llcmp ll l
+         _ -> error "Error!"
+    where testit = map Just (LL.toList f)
+          llres = asTypeOf (LL.sequence testit) (Just f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -164,7 +170,8 @@ allt = [apf "empty" (t prop_empty),
         apf "elemIndex" (t prop_elemIndex),
         apf "elemIndices" (t prop_elemIndices),
         apf "findIndex" (t prop_findIndex),
-        apf "findIndices" (t prop_findIndices)
+        apf "findIndices" (t prop_findIndices),
+        apf "sequence" (t prop_sequence)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
