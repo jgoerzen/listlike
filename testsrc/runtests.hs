@@ -112,8 +112,10 @@ prop_partition f func =
 prop_index f i = (i >= 0 && i < LL.length f) ==>
     (LL.index f i @?= ((LL.toList f) !! i))
 prop_elemIndex f i = LL.elemIndex i f @?= elemIndex i (LL.toList f)
-prop_elemIndices f i = 
-    LL.elemIndices i f @?= elemIndices i (LL.toList f)
+prop_elemIndices f i = LL.elemIndices i f @?= elemIndices i (LL.toList f)
+prop_findIndex f func = LL.findIndex func f @?= findIndex func (LL.toList f)
+prop_findIndices f func =
+    LL.findIndices func f @?= findIndices func (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -160,7 +162,9 @@ allt = [apf "empty" (t prop_empty),
         apf "partition" (t prop_partition),
         apf "index" (t prop_index),
         apf "elemIndex" (t prop_elemIndex),
-        apf "elemIndices" (t prop_elemIndices)
+        apf "elemIndices" (t prop_elemIndices),
+        apf "findIndex" (t prop_findIndex),
+        apf "findIndices" (t prop_findIndices)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
