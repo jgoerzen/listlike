@@ -18,6 +18,7 @@ import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
 import qualified Test.HUnit as HU
+import System.IO
 import Text.Printf
 import Data.Word
 import Data.List
@@ -132,5 +133,5 @@ allt = [apf "empty" (t prop_empty),
 testh = HU.runTestTT (HU.TestList (id allt))
 
 main = 
-    do testh 
+    do runVerbTestText (HU.putTextToHandle stderr True) (HU.TestList (id allt))
        return ()

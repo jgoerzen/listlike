@@ -132,9 +132,27 @@ mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test testoptions >>= che
                 (concat . intersperse "\n           " $ x) ++ 
                 "\nTest No.:  " ++ show y
           checResult (TestAborted x) = HU.assertFailure (show x)
-          printmsg _ _ = return ()
-          --printmsg x y = printf "\r%-78s\n" (msg ++ ": " ++ x ++ " (" ++ show y 
-          --                            ++ " cases)")
+          printmsg x y 
+            | False = printf "\r%-78s\r" 
+                      (msg ++ " " ++ x ++ " (" ++ show y ++ " cases)")
+            | otherwise = return ()
+
+-- Modified from HUnit
+runVerbTestText :: HU.PutText st -> HU.Test -> IO (HU.Counts, st)
+runVerbTestText (HU.PutText put us) t = do
+  (counts, us') <- HU.performTest reportStart reportError reportFailure us t
+  us'' <- put (HU.showCounts counts) True us'
+  return (counts, us'')
+ where
+  reportStart ss us = do printf "\rTesting %-68s\n" (HU.showPath (HU.path ss))
+                         put (HU.showCounts (HU.counts ss)) False us
+  reportError   = reportProblem "Error:"   "Error in:   "
+  reportFailure = reportProblem "Failure:" "Failure in: "
+  reportProblem p0 p1 msg ss us = put line True us
+   where line  = "### " ++ kind ++ path' ++ '\n' : msg
+         kind  = if null path' then p0 else p1
+         path' = HU.showPath (HU.path ss)
+
 
 -- | So we can test map and friends
 instance Show (a -> b) where
