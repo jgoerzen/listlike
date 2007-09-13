@@ -106,6 +106,14 @@ prop_elem f i = LL.elem i f @?= elem i (LL.toList f)
 prop_notElem f i = LL.notElem i f @?= notElem i (LL.toList f)
 prop_find f func = LL.find func f @?= find func (LL.toList f)
 prop_filter f func = llcmp (LL.filter func f) (filter func (LL.toList f))
+prop_partition f func = 
+    (LL.toList f1, LL.toList f2) @?= partition func (LL.toList f)
+    where (f1, f2) = LL.partition func f
+prop_index f i = (i >= 0 && i < LL.length f) ==>
+    (LL.index f i @?= ((LL.toList f) !! i))
+prop_elemIndex f i = LL.elemIndex i f @?= elemIndex i (LL.toList f)
+prop_elemIndices f i = 
+    LL.elemIndices i f @?= elemIndices i (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -148,7 +156,11 @@ allt = [apf "empty" (t prop_empty),
         apf "elem" (t prop_elem),
         apf "notElem" (t prop_notElem),
         apf "find" (t prop_find),
-        apf "filter" (t prop_filter)
+        apf "filter" (t prop_filter),
+        apf "partition" (t prop_partition),
+        apf "index" (t prop_index),
+        apf "elemIndex" (t prop_elemIndex),
+        apf "elemIndices" (t prop_elemIndices)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))

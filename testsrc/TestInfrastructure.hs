@@ -18,6 +18,7 @@ import qualified Data.Map as Map
 import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
+import System.IO
 import qualified Test.HUnit as HU
 import Text.Printf
 import Data.Word
@@ -125,7 +126,10 @@ testoptions = defOpt {length_of_tests = 0, debug_tests = False}
 
 mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test testoptions >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
-          checResult (TestExausted x y z) = HU.assertFailure (show (x, y, z))
+          checResult (TestExausted x y z) = 
+            do hPrintf stderr "\r%-78s\n" $
+                "Warning: Arguments exhausted after " ++ show y ++ " cases."
+               return ()
           checResult (TestFailed x y) = HU.assertFailure $
                 "Test Failure\n" ++ 
                 "Arguments: " ++
@@ -133,7 +137,7 @@ mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test testoptions >>= che
                 "\nTest No.:  " ++ show y
           checResult (TestAborted x) = HU.assertFailure (show x)
           printmsg x y 
-            | False = printf "\r%-78s\r" 
+            | False = hPrintf stderr "\r%-78s\r" 
                       (msg ++ " " ++ x ++ " (" ++ show y ++ " cases)")
             | otherwise = return ()
 
@@ -144,7 +148,7 @@ runVerbTestText (HU.PutText put us) t = do
   us'' <- put (HU.showCounts counts) True us'
   return (counts, us'')
  where
-  reportStart ss us = do printf "\rTesting %-68s\n" (HU.showPath (HU.path ss))
+  reportStart ss us = do hPrintf stderr "\rTesting %-68s\n" (HU.showPath (HU.path ss))
                          put (HU.showCounts (HU.counts ss)) False us
   reportError   = reportProblem "Error:"   "Error in:   "
   reportFailure = reportProblem "Failure:" "Failure in: "
