@@ -312,8 +312,10 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     append = Map.union
     head = Map.elemAt 0
     last m = Map.elemAt (Map.size m - 1) m
-    tail = Map.deleteAt 0
-    init m = Map.deleteAt (Map.size m - 1) m
+    -- was deleteAt 0, but that is broken in GHC 6.6
+    tail = drop 1
+    -- broken in GHC 6.6: init m = Map.deleteAt (Map.size m - 1) m
+    init = Map.fromAscList . L.init . Map.toAscList
     null = Map.null
     length = Map.size
     map f = fromList . map f . Map.toList
