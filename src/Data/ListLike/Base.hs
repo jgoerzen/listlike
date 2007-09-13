@@ -465,7 +465,7 @@ class (FoldableLL full item, Monoid full) =>
         | null ys = singleton x
         | otherwise = case cmp x (head ys) of
                         GT -> cons (head ys) (insertBy cmp x (tail ys))
-                        _ ->  cons x (tail ys)
+                        _ ->  cons x ys
 
     ------------------------------ Generic Operations
     {- | Length of the list -}
@@ -589,6 +589,14 @@ instance ListLike [a] a where
     sequence = M.sequence . toList
     -- mapM = M.mapM
     mapM_ = M.mapM_
+    nub = L.nub
+    delete = L.delete
+    deleteFirsts = (L.\\)
+    union = L.union
+    intersect = L.intersect
+    sort = L.sort
+    insert = L.insert
+
 
 --------------------------------------------------
 -- These utils are here instead of in Utils.hs because they are needed
