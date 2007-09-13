@@ -94,6 +94,10 @@ prop_break f func =
 prop_group f =
     -- llcmp (map LL.toList (LL.group f)) (group (LL.toList f))
     (map LL.toList (LL.group f)) @?= (group (LL.toList f))
+prop_inits f =
+    (map LL.toList (LL.inits f)) @?= (inits (LL.toList f))
+prop_tails f =
+    (map LL.toList (LL.tails f)) @?= (tails (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -127,10 +131,12 @@ allt = [apf "empty" (t prop_empty),
         apf "dropWhile" (t prop_dropWhile),
         apf "span" (t prop_span),
         apf "break" (t prop_break),
-        apf "group" (t prop_group)
+        apf "group" (t prop_group),
+        apf "inits" (t prop_inits),
+        apf "tails" (t prop_tails)
         ]
 
-testh = HU.runTestTT (HU.TestList (id allt))
+testh = HU.runTestTT (HU.TestList (reverse allt))
 
 main = 
     do runVerbTestText (HU.putTextToHandle stderr True) (HU.TestList (id allt))
