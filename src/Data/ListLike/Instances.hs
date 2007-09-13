@@ -347,8 +347,8 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     -- group
     -- inits
     -- tails
-    -- isPrefixOf
-    -- isSuffixOf
+    isPrefixOf f1 f2 = L.isPrefixOf (Map.toList f1) (Map.toList f2)
+    isSuffixOf f1 f2 = L.isSuffixOf (Map.toList f1) (Map.toList f2)
     isInfixOf = Map.isSubmapOf
     --elem = Map.member
     --notElem = Map.notMember
