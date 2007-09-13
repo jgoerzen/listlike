@@ -91,7 +91,7 @@ prop_break f func =
     llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.break func $ f]
           [break func (LL.toList f)]
 prop_group f =
-    llcmp res (group (LL.toList f))
+    llcmp (map LL.toList res) (group (LL.toList f))
     where res = asTypeOf (LL.group f) [f]
 
 allt = [apf "empty" (t prop_empty),
