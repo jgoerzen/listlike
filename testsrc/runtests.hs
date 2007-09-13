@@ -134,6 +134,11 @@ prop_rigidMapM f func =
          (Just ll, Just l) -> llcmp ll l
          _ -> error "error in prop_rigidMapM"
 
+-- FIXME: can we test mapM_?
+
+prop_nub f = llcmp (LL.nub f) (nub (LL.toList f))
+prop_delete f i = llcmp (LL.delete i f) (delete i (LL.toList f))
+
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
         apf "to/fromList" (t prop_tofromlist),
@@ -184,7 +189,10 @@ allt = [apf "empty" (t prop_empty),
         apf "findIndices" (t prop_findIndices),
         apf "sequence" (t prop_sequence),
         apf "mapM" (t prop_mapM),
-        apf "rigidMapM" (t prop_rigidMapM)
+        apf "rigidMapM" (t prop_rigidMapM),
+        -- FIXME: mapM_ ?
+        apf "nub" (t prop_nub),
+        apf "delete" (t prop_delete)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
