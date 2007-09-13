@@ -103,6 +103,9 @@ prop_isSuffixOf f1 f2 = LL.isSuffixOf f1 f2 @?=
 prop_isInfixOf f1 f2 = LL.isInfixOf f1 f2 @?=
     (isInfixOf (LL.toList f1) (LL.toList f2))
 prop_elem f i = LL.elem i f @?= elem i (LL.toList f)
+prop_notElem f i = LL.notElem i f @?= notElem i (LL.toList f)
+prop_find f func = LL.find func f @?= find func (LL.toList f)
+prop_filter f func = llcmp (LL.filter func f) (filter func (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -142,11 +145,14 @@ allt = [apf "empty" (t prop_empty),
         apf "isPrefixOf" (t prop_isPrefixOf),
         apf "isSuffixOf" (t prop_isSuffixOf),
         apf "isInfixOf" (t prop_isInfixOf),
-        apf "elem" (t prop_elem)
+        apf "elem" (t prop_elem),
+        apf "notElem" (t prop_notElem),
+        apf "find" (t prop_find),
+        apf "filter" (t prop_filter)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
 
 main = 
-    do runVerbTestText (HU.putTextToHandle stderr True) (HU.TestList (id allt))
+    do runVerbTestText (HU.putTextToHandle stderr True) (HU.TestList (reverse allt))
        return ()
