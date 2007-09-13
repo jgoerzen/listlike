@@ -205,7 +205,13 @@ allt = [apf "empty" (t prop_empty),
         apf "union" (t prop_union),
         apf "intersect" (t prop_intersect),
         apf "sort" (t prop_sort),
-        apf "insert" (t prop_insert)
+        apf "insert" (t prop_insert),
+        -- toList
+        -- fromList
+        -- fromListLike
+        apf "nubBy" (t prop_nubBy),
+        apf "deleteBy" (t prop_deleteBy),
+        apf "deleteFirstsBy" (t prop_deleteFirstsBy),
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
