@@ -116,12 +116,23 @@ prop_elemIndices f i = LL.elemIndices i f @?= elemIndices i (LL.toList f)
 prop_findIndex f func = LL.findIndex func f @?= findIndex func (LL.toList f)
 prop_findIndices f func =
     LL.findIndices func f @?= findIndices func (LL.toList f)
+
 prop_sequence f =
     case (llres, sequence testit) of
          (Just ll, Just l) -> llcmp ll l
          _ -> error "Error!"
     where testit = map Just (LL.toList f)
           llres = asTypeOf (LL.sequence testit) (Just f)
+
+prop_mapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Result
+prop_mapM f func = llmapM @?= (mapM func (LL.toList f))
+    where llmapM = asTypeOf (LL.mapM func f) (Just (LL.toList f))
+
+prop_rigidMapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Result
+prop_rigidMapM f func = 
+    case (LL.rigidMapM func f, mapM func (LL.toList f)) of
+         (Just ll, Just l) -> llcmp ll l
+         _ -> error "error in prop_rigidMapM"
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -171,7 +182,9 @@ allt = [apf "empty" (t prop_empty),
         apf "elemIndices" (t prop_elemIndices),
         apf "findIndex" (t prop_findIndex),
         apf "findIndices" (t prop_findIndices),
-        apf "sequence" (t prop_sequence)
+        apf "sequence" (t prop_sequence),
+        apf "mapM" (t prop_mapM),
+        apf "rigidMapM" (t prop_rigidMapM)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
