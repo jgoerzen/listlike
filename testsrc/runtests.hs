@@ -94,10 +94,15 @@ prop_break f func =
 prop_group f =
     -- llcmp (map LL.toList (LL.group f)) (group (LL.toList f))
     (map LL.toList (LL.group f)) @?= (group (LL.toList f))
-prop_inits f =
-    (map LL.toList (LL.inits f)) @?= (inits (LL.toList f))
-prop_tails f =
-    (map LL.toList (LL.tails f)) @?= (tails (LL.toList f))
+prop_inits f = (map LL.toList (LL.inits f)) @?= (inits (LL.toList f))
+prop_tails f = (map LL.toList (LL.tails f)) @?= (tails (LL.toList f))
+prop_isPrefixOf f1 f2 = LL.isPrefixOf f1 f2 @?= 
+    (isPrefixOf (LL.toList f1) (LL.toList f2))
+prop_isSuffixOf f1 f2 = LL.isSuffixOf f1 f2 @?=
+    (isSuffixOf (LL.toList f1) (LL.toList f2))
+prop_isInfixOf f1 f2 = LL.isInfixOf f1 f2 @?=
+    (isInfixOf (LL.toList f1) (LL.toList f2))
+prop_elem f i = LL.elem i f @?= elem i (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -133,7 +138,11 @@ allt = [apf "empty" (t prop_empty),
         apf "break" (t prop_break),
         apf "group" (t prop_group),
         apf "inits" (t prop_inits),
-        apf "tails" (t prop_tails)
+        apf "tails" (t prop_tails),
+        apf "isPrefixOf" (t prop_isPrefixOf),
+        apf "isSuffixOf" (t prop_isSuffixOf),
+        apf "isInfixOf" (t prop_isInfixOf),
+        apf "elem" (t prop_elem)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
