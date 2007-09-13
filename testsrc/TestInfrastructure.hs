@@ -119,7 +119,9 @@ instance Random Word8 where
                        randomR (toInteger a, toInteger b) g
     random g = randomR (minBound, maxBound) g
 
-mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test defOpt >>= checResult)
+testoptions = defOpt {length_of_tests = 0, debug_tests = False}
+
+mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test testoptions >>= checResult)
     where checResult (TestOk x y z) = printmsg x y >> return ()
           checResult (TestExausted x y z) = HU.assertFailure (show (x, y, z))
           checResult (TestFailed x y) = HU.assertFailure $
