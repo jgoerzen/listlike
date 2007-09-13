@@ -138,6 +138,14 @@ prop_rigidMapM f func =
 
 prop_nub f = llcmp (LL.nub f) (nub (LL.toList f))
 prop_delete f i = llcmp (LL.delete i f) (delete i (LL.toList f))
+prop_deleteFirsts f1 f2 = llcmp (LL.deleteFirsts f1 f2) 
+    ((LL.toList f1) \\ (LL.toList f2))
+prop_union f1 f2 = llcmp (LL.union f1 f2) 
+    (union (LL.toList f1) (LL.toList f2))
+prop_intersect f1 f2 = llcmp (LL.intersect f1 f2) 
+    (intersect (LL.toList f1) (LL.toList f2))
+prop_sort f1 = llcmp (LL.sort f1) (sort (LL.toList f1))
+prop_insert f i = llcmp (LL.insert i f) (insert i (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -192,7 +200,12 @@ allt = [apf "empty" (t prop_empty),
         apf "rigidMapM" (t prop_rigidMapM),
         -- FIXME: mapM_ ?
         apf "nub" (t prop_nub),
-        apf "delete" (t prop_delete)
+        apf "delete" (t prop_delete),
+        apf "deleteFirsts" (t prop_deleteFirsts),
+        apf "union" (t prop_union),
+        apf "intersect" (t prop_intersect),
+        apf "sort" (t prop_sort),
+        apf "insert" (t prop_insert)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
