@@ -178,6 +178,8 @@ prop_genericSplitAt f (i::Integer) = i >= 0 ==>
 prop_genericReplicate f (count::Integer) i = count >= 0 ==>
     llcmp res (genericReplicate count i)
     where res = asTypeOf (LL.genericReplicate count i) f
+prop_foldl f func (i::Int) =
+    LL.foldl func i f @?= foldl func i (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -258,7 +260,12 @@ allt = [apf "empty" (t prop_empty),
         apf "genericReplicate" (t prop_genericReplicate)
         ]
 
-allTests = HU.TestList [HU.TestLabel "ListLike" (HU.TestList (reverse allt))]
+allf = [
+        apf "foldl" (t prop_foldl)
+       ]
+allTests = HU.TestList $ reverse $
+                       [HU.TestLabel "ListLike" (HU.TestList allt),
+                        HU.TestLabel "FoldableLL" (HU.TestList allf)]
 
 testh = HU.runTestTT $ allTests
 testv = runVerbTestText (HU.putTextToHandle stderr True) $ allTests
