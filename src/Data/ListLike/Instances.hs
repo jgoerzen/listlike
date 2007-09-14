@@ -262,7 +262,8 @@ instance ListLike BSL.ByteString Word8 where
     --deleteFirstsBy = BSL.deleteFirstsBy
     --unionBy = BSL.unionBy
     --intersectBy = BSL.intersectBy
-    groupBy f = fromList . BSL.groupBy f
+    -- BSL.groupBy is broken. groupBy f = fromList . BSL.groupBy f
+    groupBy func = map fromList . L.groupBy func . toList
     --sortBy = BSL.sortBy
     --insertBy = BSL.insertBy
     genericLength = fromInteger . fromIntegral . BSL.length
