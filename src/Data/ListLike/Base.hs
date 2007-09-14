@@ -595,6 +595,10 @@ instance ListLike [a] a where
     union = L.union
     intersect = L.intersect
     sort = L.sort
+    groupBy func = fromList . L.groupBy func
+    unionBy = L.unionBy
+    intersectBy = L.intersectBy
+    sortBy = L.sortBy
     insert = L.insert
 
 
