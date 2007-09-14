@@ -301,8 +301,7 @@ instance StringLike BSL.ByteString where
 instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
     foldr f start m = Map.foldWithKey func start m
             where func k v accum = f (k, v) accum
-    foldl f start m = Map.foldWithKey func start m
-            where func k v accum = f accum (k, v)
+    foldl f start m = L.foldl f start (Map.toList m)
 
 l2m :: (Ord k, Ord k2) => ([(k, v)], [(k2, v2)]) -> (Map.Map k v, Map.Map k2 v2)
 l2m (l1, l2) = (Map.fromList l1, Map.fromList l2)
