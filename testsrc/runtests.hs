@@ -179,6 +179,17 @@ prop_genericSplitAt f (i::Integer) = i >= 0 ==>
 prop_genericReplicate f (count::Integer) i = count >= 0 ==>
     llcmp res (genericReplicate count i)
     where res = asTypeOf (LL.genericReplicate count i) f
+
+--prop_zip :: (LL.ListLike full item, LL.ListLike result (item, Int)) =>
+--    full -> Result
+prop_zip f = llcmp (LL.zip f f2) (zip (LL.toList f) f2)
+    where f2 = [(-5::Int)..]
+prop_zipWith f = 
+    LL.toList res @?= (zipWith func (LL.toList f) f2)
+    where f2 = [(100::Int)..(-100)]
+          func x y = (y + 5, x)
+          res = asTypeOf (LL.zipWith func f f2) [(5::Int, LL.head f)]
+
 prop_foldl f func (i::Int) = LL.foldl func i f @?= foldl func i (LL.toList f)
 prop_foldl' f func (i::Integer) =
     LL.foldl' func i f @?= foldl' func i (LL.toList f)
@@ -273,7 +284,10 @@ allt = [apf "empty" (t prop_empty),
         apf "genericTake" (t prop_genericTake),
         apf "genericDrop" (t prop_genericDrop),
         apf "genericSplitAt" (t prop_genericSplitAt),
-        apf "genericReplicate" (t prop_genericReplicate)
+        apf "genericReplicate" (t prop_genericReplicate),
+        -- apf "zip" (t prop_zip),
+        apf "zipWith" (t prop_zipWith)
+        -- sequence_ 
         ]
 
 allf = [
