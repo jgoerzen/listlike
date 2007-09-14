@@ -392,7 +392,8 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
                                 L.deleteFirstsBy func (Map.toAscList m1)
                                                  (Map.toAscList m2)
     --deleteFirstsBy
-    --unionBy
+    unionBy func m1 m2 = Map.fromList $ 
+                            L.unionBy func (Map.toList m1) (Map.toList m2)
     --intersectBy
     --groupBy
     sortBy _ = id
