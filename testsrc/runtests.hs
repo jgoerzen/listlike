@@ -217,9 +217,9 @@ prop_toString f =
     where l = LL.toList f
 prop_fromString f x = 
     LL.toString (asTypeOf (LL.fromString x) f) @?= x
-prop_lines f = map LL.toList res @?= lines (LL.toList f)
+prop_lines f = map LL.toString res @?= lines (LL.toString f)
     where res = asTypeOf (LL.lines f) [f]
-prop_words f = map LL.toList res @?= words (LL.toList f)
+prop_words f = map LL.toString res @?= words (LL.toString f)
     where res = asTypeOf (LL.words f) [f]
 
 allt = [apf "empty" (t prop_empty),

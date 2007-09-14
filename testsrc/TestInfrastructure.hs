@@ -113,12 +113,16 @@ instance LL.ListLike (MyList a) a where
     tail (MyList x) = MyList (tail x)
     null (MyList x) = null x
 
+instance LL.StringLike (MyList Char) where
+    toString (MyList x) = x
+    fromString x = MyList x
+
 instance Arbitrary Word8 where
     arbitrary = choose (0, maxBound)
     coarbitrary n = variant (2 * fromIntegral n)
 
 instance Arbitrary Char where
-    arbitrary = choose (toEnum 0, maxBound)
+    arbitrary = choose (toEnum 0, toEnum 255)
     coarbitrary n = variant (2 * fromIntegral (fromEnum n))
 
 instance Random Word8 where
@@ -201,6 +205,7 @@ apf :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.ListLike f i,
 apf msg x = HU.TestLabel msg $ HU.TestList $
     [w "[Int]" (x::LLTest [Int] Int),
      w "MyList Int" (x::LLTest (MyList Int) Int),
+     w "String" (x::LLTest String Char),
      w "[Bool]" (x::LLTest [Bool] Bool),
      w "MyList Bool" (x::LLTest (MyList Bool) Bool),
      w "Map Int Int" (x::LLTest (Map.Map Int Int) (Int, Int)),
@@ -223,6 +228,7 @@ apf msg x = HU.TestLabel msg $ HU.TestList $
 aps :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.StringLike f, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
 aps msg x = HU.TestLabel msg $ HU.TestList $
     [w "String" (x::LLTest String Char),
+     w "MyList Char" (x::LLTest (MyList Char) Char),
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
      w "Array Int Char" (x::LLTest (A.Array Int Char) Char) 
