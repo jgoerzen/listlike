@@ -24,6 +24,7 @@ import Data.Word
 import Data.List
 import Data.Monoid
 import TestInfrastructure
+import Data.Foldable(foldr')
 
 -- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
 --prop_singleton :: (Eq i, LL.ListLike f i, Arbitrary f, Show f, Show i, Arbitrary i) => f -> i -> Bool
@@ -178,10 +179,16 @@ prop_genericSplitAt f (i::Integer) = i >= 0 ==>
 prop_genericReplicate f (count::Integer) i = count >= 0 ==>
     llcmp res (genericReplicate count i)
     where res = asTypeOf (LL.genericReplicate count i) f
-prop_foldl f func (i::Int) =
-    LL.foldl func i f @?= foldl func i (LL.toList f)
+prop_foldl f func (i::Int) = LL.foldl func i f @?= foldl func i (LL.toList f)
 prop_foldl' f func (i::Integer) =
     LL.foldl' func i f @?= foldl' func i (LL.toList f)
+prop_foldl1 f func = not (LL.null f) ==> 
+    (LL.foldl1 func f) @?= (foldl1 func (LL.toList f))
+prop_foldr f func (i::Int) = LL.foldr func i f @?= foldr func i (LL.toList f)
+prop_foldr' f func (i::Integer) =
+    LL.foldr' func i f @?= foldr' func i (LL.toList f)
+prop_foldr1 f func = not (LL.null f) ==>
+    LL.foldl1 func f @?= foldl1 func (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -264,7 +271,11 @@ allt = [apf "empty" (t prop_empty),
 
 allf = [
         apf "foldl" (t prop_foldl),
-        apf "foldl'" (t prop_foldl')
+        apf "foldl'" (t prop_foldl'),
+        apf "foldl1" (t prop_foldl1),
+        apf "foldr" (t prop_foldr),
+        apf "foldr'" (t prop_foldr'),
+        apf "foldr1" (t prop_foldr1)
        ]
 allTests = HU.TestList $ reverse $
                        [HU.TestLabel "ListLike" (HU.TestList allt),
