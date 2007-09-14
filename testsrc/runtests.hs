@@ -146,6 +146,18 @@ prop_intersect f1 f2 = llcmp (LL.intersect f1 f2)
     (intersect (LL.toList f1) (LL.toList f2))
 prop_sort f1 = llcmp (LL.sort f1) (sort (LL.toList f1))
 prop_insert f i = llcmp (LL.insert i f) (insert i (LL.toList f))
+prop_nubBy f func = llcmp (LL.nubBy func f) (nubBy func (LL.toList f))
+prop_deleteBy f func i = llcmp (LL.deleteBy func i f) 
+                         (deleteBy func i (LL.toList f))
+prop_deleteFirstsBy f1 f2 func = llcmp (LL.deleteFirstsBy func f1 f2)
+    (deleteFirstsBy func (LL.toList f1) (LL.toList f2))
+prop_unionBy f1 f2 func = llcmp (LL.unionBy func f1 f2)
+    (unionBy func (LL.toList f1) (LL.toList f2))
+prop_intersectBy f1 f2 func = llcmp (LL.intersectBy func f1 f2)
+    (intersectBy func (LL.toList f1) (LL.toList f2))
+prop_groupBy f func =
+    (map LL.toList (LL.groupBy func f)) @?= (groupBy func (LL.toList f))
+prop_sortBy f func = llcmp (LL.sortBy func f) (sortBy func (LL.toList f))
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -212,6 +224,10 @@ allt = [apf "empty" (t prop_empty),
         apf "nubBy" (t prop_nubBy),
         apf "deleteBy" (t prop_deleteBy),
         apf "deleteFirstsBy" (t prop_deleteFirstsBy),
+        apf "unionBy" (t prop_unionBy),
+        apf "intersectBy" (t prop_intersectBy),
+        apf "groupBy" (t prop_groupBy) 
+        -- apf "sortBy" (t prop_sortBy)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
