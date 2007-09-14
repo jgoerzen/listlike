@@ -332,9 +332,7 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     -- all
     -- maximum
     -- minimum
-    replicate count item 
-        | count <= 0 = empty
-        | otherwise = singleton item
+    replicate = genericReplicate
     take n = Map.fromAscList . L.take n . Map.toAscList
     drop n = Map.fromAscList . L.drop n . Map.toAscList
     splitAt n = l2m . L.splitAt n . Map.toList
@@ -402,7 +400,9 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     genericTake n = Map.fromAscList . L.genericTake n . Map.toAscList
     genericDrop n = Map.fromAscList . L.genericDrop n . Map.toAscList
     genericSplitAt n = l2m . L.genericSplitAt n . Map.toList
-    genericReplicate _ = singleton
+    genericReplicate count item
+        | count <= 0 = empty
+        | otherwise = singleton item
 
 --------------------------------------------------
 -- Arrays
