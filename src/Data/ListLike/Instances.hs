@@ -385,7 +385,7 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     insert = cons
     toList = Map.toList
     fromList = Map.fromList
-    nubBy _ = id
+    nubBy func = Map.fromAscList . L.nubBy func . Map.toAscList
     --deleteBy
     deleteFirstsBy func m1 m2 = Map.fromAscList $ 
                                 L.deleteFirstsBy func (Map.toAscList m1)
