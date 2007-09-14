@@ -180,6 +180,8 @@ prop_genericReplicate f (count::Integer) i = count >= 0 ==>
     where res = asTypeOf (LL.genericReplicate count i) f
 prop_foldl f func (i::Int) =
     LL.foldl func i f @?= foldl func i (LL.toList f)
+prop_foldl' f func (i::Integer) =
+    LL.foldl' func i f @?= foldl' func i (LL.toList f)
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -261,7 +263,8 @@ allt = [apf "empty" (t prop_empty),
         ]
 
 allf = [
-        apf "foldl" (t prop_foldl)
+        apf "foldl" (t prop_foldl),
+        apf "foldl'" (t prop_foldl')
        ]
 allTests = HU.TestList $ reverse $
                        [HU.TestLabel "ListLike" (HU.TestList allt),
