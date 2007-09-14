@@ -263,7 +263,8 @@ instance ListLike BSL.ByteString Word8 where
     --unionBy = BSL.unionBy
     --intersectBy = BSL.intersectBy
     -- BSL.groupBy is broken. groupBy f = fromList . BSL.groupBy f
-    groupBy func = map fromList . L.groupBy func . toList
+    -- the below works on ghc but generates a type error on hugs
+    -- groupBy func = map fromList . L.groupBy func . toList
     --sortBy = BSL.sortBy
     --insertBy = BSL.insertBy
     genericLength = fromInteger . fromIntegral . BSL.length
