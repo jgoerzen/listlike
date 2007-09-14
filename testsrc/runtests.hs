@@ -172,6 +172,12 @@ prop_genericTake f (i::Integer) = (i >= 0) ==>
     llcmp (LL.genericTake i f) (genericTake i (LL.toList f))
 prop_genericDrop f (i::Integer) = (i >= 0) ==>
     llcmp (LL.genericDrop i f) (genericDrop i (LL.toList f))
+prop_genericSplitAt f (i::Integer) = i >= 0 ==>
+    llcmp [(\(x, y) -> (LL.toList x, LL.toList y)) . LL.genericSplitAt i $ f]
+          [LL.genericSplitAt i (LL.toList f)]
+prop_genericReplicate f (count::Integer) i = count >= 0 ==>
+    llcmp res (genericReplicate count i)
+    where res = asTypeOf (LL.genericReplicate count i) f
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -247,7 +253,9 @@ allt = [apf "empty" (t prop_empty),
         apf "insertBy2" (t prop_insertBy2),
         apf "genericLength" (t prop_genericLength),
         apf "genericTake" (t prop_genericTake),
-        apf "genericDrop" (t prop_genericDrop)
+        apf "genericDrop" (t prop_genericDrop),
+        apf "genericSplitAt" (t prop_genericSplitAt),
+        apf "genericReplicate" (t prop_genericReplicate)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
