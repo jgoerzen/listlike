@@ -182,14 +182,18 @@ prop_genericReplicate f (count::Integer) i = count >= 0 ==>
 
 --prop_zip :: (LL.ListLike full item, LL.ListLike result (item, Int)) =>
 --    full -> Result
-prop_zip f = llcmp (LL.zip f f2) (zip (LL.toList f) f2)
+prop_zip f = LL.zip f f2 @?= zip (LL.toList f) f2
     where f2 = [(-5::Int)..]
 prop_zipWith f = 
     LL.toList res @?= (zipWith func (LL.toList f) f2)
     where f2 = [(100::Int)..(-100)]
           func x y = (y + 5, x)
           res = asTypeOf (LL.zipWith func f f2) [(5::Int, LL.head f)]
-
+--FIXME: prop_unzip 
+--FIXME: prop_and
+--FIXME: prop_or
+--FIXME: prop_sum
+--FIXME: prop_product
 prop_foldl f func (i::Int) = LL.foldl func i f @?= foldl func i (LL.toList f)
 prop_foldl' f func (i::Integer) =
     LL.foldl' func i f @?= foldl' func i (LL.toList f)
@@ -285,8 +289,13 @@ allt = [apf "empty" (t prop_empty),
         apf "genericDrop" (t prop_genericDrop),
         apf "genericSplitAt" (t prop_genericSplitAt),
         apf "genericReplicate" (t prop_genericReplicate),
-        -- apf "zip" (t prop_zip),
-        apf "zipWith" (t prop_zipWith)
+        apf "zip" (t prop_zip),
+        apf "zipWith" (t prop_zipWith) 
+        -- apf "unzip" (t prop_unzip),
+        -- apf "and" (t prop_and),
+        -- apf "or" (t prop_or),
+        -- apf "sum" (t prop_sum),
+        -- apf "propduct" (t prop_product),
         -- sequence_ 
         ]
 
@@ -300,7 +309,7 @@ allf = [
         apw "fold" (LLWrap prop_fold),
         apf "foldMap" (t prop_foldMap) 
        ]
-allTests = HU.TestList $ reverse $
+allTests = HU.TestList $ 
                        [HU.TestLabel "ListLike" (HU.TestList allt),
                         HU.TestLabel "FoldableLL" (HU.TestList allf)]
 
