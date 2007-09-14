@@ -258,8 +258,11 @@ allt = [apf "empty" (t prop_empty),
         apf "genericReplicate" (t prop_genericReplicate)
         ]
 
-testh = HU.runTestTT (HU.TestList (reverse allt))
+allTests = HU.TestList [HU.TestLabel "ListLike" (HU.TestList (reverse allt))]
 
+testh = HU.runTestTT $ allTests
+testv = runVerbTestText (HU.putTextToHandle stderr True) $ allTests
+         
 main = 
-    do runVerbTestText (HU.putTextToHandle stderr True) (HU.TestList (reverse allt))
+    do testv
        return ()
