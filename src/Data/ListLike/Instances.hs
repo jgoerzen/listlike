@@ -387,6 +387,9 @@ instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
     fromList = Map.fromList
     nubBy _ = id
     --deleteBy
+    deleteFirstsBy func m1 m2 = Map.fromAscList $ 
+                                L.deleteFirstsBy func (Map.toAscList m1)
+                                                 (Map.toAscList m2)
     --deleteFirstsBy
     --unionBy
     --intersectBy
