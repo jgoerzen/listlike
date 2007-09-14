@@ -157,7 +157,16 @@ prop_intersectBy f1 f2 func = llcmp (LL.intersectBy func f1 f2)
     (intersectBy func (LL.toList f1) (LL.toList f2))
 prop_groupBy f func =
     (map LL.toList (LL.groupBy func f)) @?= (groupBy func (LL.toList f))
+prop_sortBy1 f = llcmp (LL.sortBy compare f) (sortBy compare (LL.toList f))
+prop_sortBy2 f = llcmp (LL.sortBy func f) (sortBy func (LL.toList f))
+    where func x y = compare y x
 prop_sortBy f func = llcmp (LL.sortBy func f) (sortBy func (LL.toList f))
+prop_insertBy1 f i = llcmp (LL.insertBy compare i f)
+    (insertBy compare i (LL.toList f))
+prop_insertBy2 f i = llcmp (LL.insertBy func i f)
+    (insertBy func i (LL.toList f))
+    where func x y = compare y x
+
 
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
@@ -226,8 +235,11 @@ allt = [apf "empty" (t prop_empty),
         apf "deleteFirstsBy" (t prop_deleteFirstsBy),
         apf "unionBy" (t prop_unionBy),
         apf "intersectBy" (t prop_intersectBy),
-        apf "groupBy" (t prop_groupBy) 
-        -- apf "sortBy" (t prop_sortBy)
+        apf "groupBy" (t prop_groupBy),
+        apf "sortBy1" (t prop_sortBy1),
+        apf "sortBy2" (t prop_sortBy2),
+        apf "insertBy1" (t prop_insertBy1),
+        apf "insertBy2" (t prop_insertBy2)
         ]
 
 testh = HU.runTestTT (HU.TestList (reverse allt))
