@@ -212,6 +212,16 @@ prop_foldMap f func = res @?= resl
     where res = LL.foldMap func f
           resl = foldMap func  (LL.toList f) -- asTypeOf (foldMap (LL.toList f)) (head f)
 
+prop_toString f =
+    ((LL.fromString . LL.toString $ f) == f)
+    where l = LL.toList f
+prop_fromString f x = 
+    LL.toString (asTypeOf (LL.fromString x) f) @?= x
+prop_lines f = map LL.toList res @?= lines (LL.toList f)
+    where res = asTypeOf (LL.lines f) [f]
+prop_words f = map LL.toList res @?= words (LL.toList f)
+    where res = asTypeOf (LL.words f) [f]
+
 allt = [apf "empty" (t prop_empty),
         apf "length" (t prop_length),
         apf "to/fromList" (t prop_tofromlist),
@@ -309,9 +319,19 @@ allf = [
         apw "fold" (LLWrap prop_fold),
         apf "foldMap" (t prop_foldMap) 
        ]
-allTests = HU.TestList $ 
+
+alls = [
+        aps "toString" (t prop_toString),
+        aps "fromString" (t prop_fromString),
+        aps "lines" (t prop_lines),
+        aps "words" (t prop_words) 
+        -- FIXME: aps (t prop_unlines),
+        -- FIXME: aps (t prop_unwords)
+       ]
+allTests = HU.TestList $ reverse $
                        [HU.TestLabel "ListLike" (HU.TestList allt),
-                        HU.TestLabel "FoldableLL" (HU.TestList allf)]
+                        HU.TestLabel "FoldableLL" (HU.TestList allf),
+                        HU.TestLabel "StringLike" (HU.TestList alls)]
 
 testh = HU.runTestTT $ allTests
 testv = runVerbTestText (HU.putTextToHandle stderr True) $ allTests

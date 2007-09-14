@@ -117,6 +117,10 @@ instance Arbitrary Word8 where
     arbitrary = choose (0, maxBound)
     coarbitrary n = variant (2 * fromIntegral n)
 
+instance Arbitrary Char where
+    arbitrary = choose (toEnum 0, maxBound)
+    coarbitrary n = variant (2 * fromIntegral (fromEnum n))
+
 instance Random Word8 where
     randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
                        randomR (toInteger a, toInteger b) g
@@ -173,6 +177,9 @@ w :: TestLL f i => String -> LLTest f i -> HU.Test
 w msg f = case f of
                     LLTest theTest -> mkTest msg theTest
 
+ws :: (LL.StringLike f, TestLL f i) => String -> LLTest f i -> HU.Test
+ws = w
+
 wwrap :: (TestLL f i, TestLL f' f) => String -> LLWrap f' f i -> HU.Test
 wwrap msg f = case f of
                    LLWrap theTest -> mkTest msg theTest
@@ -189,7 +196,7 @@ apw msg x = HU.TestLabel msg $ HU.TestList $
      wwrap "wrap Array [Int]" (x::LLWrap (A.Array Int [Int]) [Int] Int)
      ]
 
--- | all props, 3 args: full, full, and item
+-- | all props, 1 args: full
 apf :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
 apf msg x = HU.TestLabel msg $ HU.TestList $
     [w "[Int]" (x::LLTest [Int] Int),
@@ -210,4 +217,13 @@ apf msg x = HU.TestLabel msg $ HU.TestList $
      w "Array [Int]" (x::LLTest (A.Array Int [Int]) [Int]),
      w "Array (Array Int)" (x::LLTest (A.Array Int (A.Array Int Int)) (A.Array Int Int)),
      w "Array (Just Int)" (x::LLTest (A.Array Int (Maybe Int)) (Maybe Int))
+    ]
+
+-- | all props, 1 args: full
+aps :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.StringLike f, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
+aps msg x = HU.TestLabel msg $ HU.TestList $
+    [w "String" (x::LLTest String Char),
+     w "ByteString" (x::LLTest BS.ByteString Word8),
+     w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
+     w "Array Int Char" (x::LLTest (A.Array Int Char) Char) 
     ]
