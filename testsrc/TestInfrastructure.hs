@@ -123,8 +123,9 @@ instance Arbitrary Word8 where
                 where x = abs . fromIntegral $ n
 
 instance Arbitrary Char where
-    arbitrary = choose (toEnum 0, toEnum 255)
-    coarbitrary n = variant (2 * fromIntegral (fromEnum n))
+    arbitrary = sized $ \n -> choose (toEnum 0, min (toEnum n) maxBound)
+    coarbitrary n = variant (if (fromEnum n) >= 0 then toEnum (2 * x) else toEnum (2 * x + 1))
+                where (x::Int) = abs . fromEnum $ n
 
 instance Random Word8 where
     randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
