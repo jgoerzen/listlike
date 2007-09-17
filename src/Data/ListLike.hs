@@ -149,7 +149,6 @@ from Prelude and import specific generic functions from here, such as:
 >import Prelude hiding (map)
 >import ListLike (map)
 
-The I\/O features of ListLike may a
 The module "Data.ListLike" actually simply re-exports the items found
 in a number of its sub-modules.  If you want a smaller subset of
 "Data.ListLike", look at the documentation for its sub-modules and import
