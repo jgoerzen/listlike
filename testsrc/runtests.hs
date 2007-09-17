@@ -25,6 +25,8 @@ import Data.List
 import Data.Monoid
 import TestInfrastructure
 import Data.Foldable(foldr', fold, foldMap)
+import System.Info
+
 
 -- prop_singleton :: (Eq i,LL.ListLike f i) => f -> i -> Bool
 --prop_singleton :: (Eq i, LL.ListLike f i, Arbitrary f, Show f, Show i, Arbitrary i) => f -> i -> Bool
@@ -309,13 +311,14 @@ allt = [apf "empty" (t prop_empty),
         -- sequence_ 
         ]
 
-allf = [
-        apf "foldl" (t prop_foldl),
+allf = (if compilerName == "hugs" then [] else [ apf "foldl" (t prop_foldl),
+                                                 apf "foldr1" (t prop_foldr1),
+                                                 apf "foldl1" (t prop_foldl1)])
+       ++
+       [
         apf "foldl'" (t prop_foldl'),
-        apf "foldl1" (t prop_foldl1),
         apf "foldr" (t prop_foldr),
         apf "foldr'" (t prop_foldr'),
-        apf "foldr1" (t prop_foldr1),
         apw "fold" (LLWrap prop_fold),
         apf "foldMap" (t prop_foldMap) 
        ]
