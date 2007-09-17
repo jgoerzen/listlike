@@ -118,8 +118,9 @@ instance LL.StringLike (MyList Char) where
     fromString x = MyList x
 
 instance Arbitrary Word8 where
-    arbitrary = choose (0, maxBound)
-    coarbitrary n = variant (2 * fromIntegral n)
+    arbitrary = sized $ \n -> choose (0, min (fromIntegral n) maxBound)
+    coarbitrary n = variant (if n >= 0 then 2 * x else 2 * x + 1)
+                where x = abs . fromIntegral $ n
 
 instance Arbitrary Char where
     arbitrary = choose (toEnum 0, toEnum 255)
