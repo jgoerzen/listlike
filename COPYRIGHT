@@ -16,8 +16,8 @@ All code is under the following license unless otherwise noted:
    along with this program; if not, write to the Free Software
    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 
-The GNU General Public License is available in the file COPYING in the source
-distribution.  Debian GNU/Linux users may find this in
+The GNU Lesser General Public License is available in the file COPYING in the
+source distribution.  Debian GNU/Linux users may find this in
 /usr/share/common-licenses/LGPL-2.1.
 
 If the LGPL is unacceptable for your uses, please e-mail me; alternative
