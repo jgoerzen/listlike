@@ -23,7 +23,7 @@ Written by John Goerzen, jgoerzen\@complete.org
 -}
 
 module Data.ListLike.Utils
-    (and, or, sum, product, zip, zipWith, unzip, sequence_
+    (and, or, sum, product, zip, zipWith, unzip, sequence_, toMonadPlus, list
     ) where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
@@ -33,8 +33,10 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        product, repeat, replicate, cycle, take, drop,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
+import Control.Monad (MonadPlus(..))
 import Data.ListLike.Base
 import Data.ListLike.FoldableLL
+import Data.Maybe (maybe)
 import Data.Monoid
 
 -- | Returns True if all elements are True
@@ -61,3 +63,13 @@ unzip :: (ListLike full (itema, itemb),
           ListLike rb itemb) => full -> (ra, rb)
 unzip inp = foldr convert (empty, empty) inp
     where convert (a, b) (as, bs) = ((cons a as), (cons b bs))
+
+-- | Converts to a MonadPlus instance
+toMonadPlus :: (MonadPlus m, ListLike full a) => full -> m (a, full)
+toMonadPlus c
+    | null c = mzero
+    | otherwise = return (head c, tail c)
+
+-- | List-like destructor (like Data.Maybe.maybe)
+list :: ListLike full a => b -> (a -> full -> b) -> full -> b
+list d f = maybe d (uncurry f) . toMonadPlus
