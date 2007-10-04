@@ -67,16 +67,16 @@ class (FoldableLL full item, Monoid full) =>
     empty :: full
     empty = mempty
 
-    {- | Creates a single-itement list out of an itement -}
+    {- | Creates a single-element list out of an element -}
     singleton :: item -> full
 
     ------------------------------ Basic Functions
 
-    {- | Like (:) for lists: adds an itement to the beginning of a list -}
+    {- | Like (:) for lists: adds an element to the beginning of a list -}
     cons :: item -> full -> full
     cons item l = append (singleton item) l
 
-    {- | Adds an itement to the *end* of a 'ListLike'. -}
+    {- | Adds an element to the *end* of a 'ListLike'. -}
     snoc :: full -> item -> full
     snoc l item = append l (singleton item)
 
@@ -84,17 +84,17 @@ class (FoldableLL full item, Monoid full) =>
     append :: full -> full -> full 
     append = mappend
 
-    {- | Extracts the first itement of a 'ListLike'. -}
+    {- | Extracts the first element of a 'ListLike'. -}
     head :: full -> item
 
-    {- | Extracts the last itement of a 'ListLike'. -}
+    {- | Extracts the last element of a 'ListLike'. -}
     last :: full -> item
     last l = case genericLength l of
                   (0::Integer) -> error "Called last on empty list"
                   1 -> head l
                   _ -> last (tail l)
 
-    {- | Gives all itements after the head. -}
+    {- | Gives all elements after the head. -}
     tail :: full -> full 
 
     {- | All elements of the list except the last one.  See also 'inits'. -}
@@ -389,8 +389,8 @@ class (FoldableLL full item, Monoid full) =>
     sort :: Ord item => full -> full
     sort = sortBy compare
 
-    {- | Inserts the itement at the last place where it is still less than or
-         equal to the next itement.  On data types that do not preserve 
+    {- | Inserts the element at the last place where it is still less than or
+         equal to the next element.  On data types that do not preserve 
          ordering, or enforce their own ordering, the result may not
          be what you expect.  On types such as maps, this may result in
          changing an existing item.  See also 'insertBy'. -}
