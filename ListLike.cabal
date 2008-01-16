@@ -30,9 +30,11 @@ Exposed-Modules: Data.ListLike,
         Data.ListLike.Utils
 -- Other-Modules: Data.ConfigFile.Lexer
 Extensions: ExistentialQuantification, OverlappingInstances, 
-   UndecidableInstances
+   UndecidableInstances, MultiParamTypeClasses,
+   FunctionalDependencies, FlexibleInstances, PatternSignatures,
+   FlexibleContexts, TypeSynonymInstances
 Build-Depends: base,
-               haskell98, mtl
+               haskell98, mtl, containers, bytestring, array
 GHC-Options: -O2
 
 Executable: runtests
