@@ -1,9 +1,9 @@
 Name: ListLike
-Version: 1.0.0
+Version: 1.0.1
 License: LGPL
 Maintainer: John Goerzen <jgoerzen@complete.org>
 Author: John Goerzen
-Copyright: Copyright (c) 2007 John Goerzen
+Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
 extra-source-files: COPYING
 Category: Generics
