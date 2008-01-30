@@ -23,7 +23,7 @@ Description: Generic support for list-like structures in Haskell, GHC
 
 Package: libhugs-listlike
 Section: devel
-Architecture: any
+Architecture: all
 Depends: ${haskell:Depends}, libhugs-mtl
 Suggests: listlike-doc
 Description: Generic support for list-like structures in Haskell, Hugs
