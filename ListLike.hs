@@ -214,5 +214,25 @@ instance ListLike [] where
     map = L.map
     reverse = L.reverse
 
-instance F.Foldable BS.ByteString where
-    foldr = BS.foldr
+data BSWrap a b = BSWrap {whead :: b,
+--                          wcons :: b -> BSWrap a b,
+                          wappend :: BSWrap a b -> BSWrap a b,
+                          wextract :: a}
+
+bs2bsw :: BS.ByteString -> BSWrap BS.ByteString Word8
+bs2bsw bs = BSWrap {whead = BS.head bs,
+--                    wempty = BS.empty bs,
+--                    wcons = BS.cons bs,
+                    wappend = \c -> bs2bsw (BS.append bs (wextract c)) }
+
+instance F.Foldable (BSWrap a) where
+    foldr _ _ _ = error "Foo"
+
+instance T.Traversable (BSWrap a) where
+    traverse _ _ = error "Foo"
+
+instance Functor (BSWrap a) where
+    fmap  _ _ = error "Foo"
+
+instance ListLike (BSWrap a) where
+    append = wappend
