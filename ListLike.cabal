@@ -7,6 +7,7 @@ Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
 extra-source-files: COPYING
 Category: Generics
+Build-Type: simple
 homepage: http://software.complete.org/listlike
 synopsis: Generic support for list-like structures
 Description: Generic support for list-like structures in Haskell.
