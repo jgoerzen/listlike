@@ -5,6 +5,9 @@ Build-Depends: debhelper (>= 4.0.0), ghc6 (>= 6.8.2), ghc6 (<< 6.8.2-999), haske
 Build-Depends-Indep: debhelper (>= 4.0.0), haddock, haskell-devscripts (>= 0.6.6), ghc6 (>= 6.8), cpphs, hugs, libhugs-mtl
 Standards-Version: 3.6.2
 Section: devel
+Vcs-Git: git://git.complete.org/listlike
+Vcs-browser: http://git.complete.org/listlike
+Homepage: http://software.complete.org/listlike
 
 Package: libghc6-listlike-dev
 Section: devel
