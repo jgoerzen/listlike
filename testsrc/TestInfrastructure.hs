@@ -7,6 +7,7 @@ For license and copyright information, see the file COPYRIGHT
 
 -}
 
+-- FIXME -- better code is in offlineimap v7 branch
 module TestInfrastructure where
 
 import Test.QuickCheck
