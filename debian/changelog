@@ -1,3 +1,9 @@
+listlike (1.0.1.2) unstable; urgency=high
+
+  * Rebuild for new GHC.  High urgency to allow ghc to go to testing.
+
+ -- John Goerzen <jgoerzen@complete.org>  Mon, 19 Jan 2009 10:15:39 -0600
+
 listlike (1.0.1.1) unstable; urgency=low
 
   * Correct libhugs-listlike to be arch: all.
