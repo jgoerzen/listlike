@@ -1,3 +1,8 @@
+{-# LANGUAGE MultiParamTypeClasses            
+            ,FlexibleInstances
+            ,TypeSynonymInstances #-}
+
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 

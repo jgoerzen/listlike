@@ -1,3 +1,7 @@
+{-# LANGUAGE MultiParamTypeClasses
+            ,FunctionalDependencies
+            ,FlexibleInstances #-}
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 

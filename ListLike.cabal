@@ -1,5 +1,5 @@
 Name: ListLike
-Version: 1.0.1
+Version: 1.0.2
 License: LGPL
 Maintainer: John Goerzen <jgoerzen@complete.org>
 Author: John Goerzen
@@ -30,13 +30,11 @@ Exposed-Modules: Data.ListLike,
         Data.ListLike.String,
         Data.ListLike.Utils
 -- Other-Modules: Data.ConfigFile.Lexer
-Extensions: ExistentialQuantification, OverlappingInstances, 
-   UndecidableInstances, MultiParamTypeClasses,
-   FunctionalDependencies, FlexibleInstances, PatternSignatures,
-   FlexibleContexts, TypeSynonymInstances
-Build-Depends: base,
-               haskell98, mtl, containers, bytestring, array
-GHC-Options: -O2
+Build-Depends: base >= 3 && < 5
+              ,mtl
+              ,containers
+              ,bytestring
+              ,array
 
 Executable: runtests
 Buildable: False
