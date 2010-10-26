@@ -304,7 +304,7 @@ instance StringLike BSL.ByteString where
 -- Map
 
 instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
-    foldr f start m = Map.foldWithKey func start m
+    foldr f start m = Map.foldrWithKey func start m
             where func k v accum = f (k, v) accum
     foldl f start m = L.foldl f start (Map.toList m)
 

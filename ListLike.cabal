@@ -1,11 +1,11 @@
 Name: ListLike
-Version: 1.0.2
+Version: 1.1.0
 License: LGPL
 Maintainer: John Goerzen <jgoerzen@complete.org>
 Author: John Goerzen
 Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
-extra-source-files: COPYING
+extra-source-files: COPYING, README
 Category: Generics
 Build-Type: Simple
 homepage: http://software.complete.org/listlike
@@ -30,11 +30,11 @@ Exposed-Modules: Data.ListLike,
         Data.ListLike.String,
         Data.ListLike.Utils
 -- Other-Modules: Data.ConfigFile.Lexer
-Build-Depends: base >= 3 && < 5
-              ,mtl
-              ,containers
-              ,bytestring
-              ,array
+Build-Depends: base       >= 3     && < 5
+              ,mtl        >= 1.1.0 && < 1.2
+              ,containers >= 0.3   && < 0.5
+              ,bytestring >= 0.9.1 && < 0.10
+              ,array      >= 0.3   && < 0.4
 
 Executable: runtests
 Buildable: False
