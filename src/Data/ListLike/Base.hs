@@ -16,7 +16,7 @@ For license and copyright information, see the file COPYRIGHT
 {- |
    Module     : Data.ListLike.Base
    Copyright  : Copyright (C) 2007 John Goerzen
-   License    : LGPL
+   License    : BSD3
 
    Maintainer : John Goerzen <jgoerzen@complete.org>
    Stability  : provisional
