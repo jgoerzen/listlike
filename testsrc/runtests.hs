@@ -141,8 +141,9 @@ prop_mapM f func = llmapM == (mapM func (LL.toList f))
 prop_rigidMapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Property
 prop_rigidMapM f func = 
     case (LL.rigidMapM func f, mapM func (LL.toList f)) of
-         (Just ll, Just l) -> llcmp ll l
-         _ -> error "error in prop_rigidMapM"
+         (Just ll, Just l)  -> llcmp ll l
+         (Nothing, Nothing) -> property True
+         e -> error $ "error in prop_rigidMapM: " ++ show e
 
 -- FIXME: can we test mapM_?
 
