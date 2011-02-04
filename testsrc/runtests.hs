@@ -1,3 +1,12 @@
+{-# LANGUAGE ScopedTypeVariables
+            ,RankNTypes
+            ,ExistentialQuantification
+            ,MultiParamTypeClasses
+            ,FunctionalDependencies
+            ,FlexibleInstances
+            ,UndecidableInstances
+            ,FlexibleContexts #-}
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
@@ -8,7 +17,6 @@ For license and copyright information, see the file COPYRIGHT
 -}
 
 import Test.QuickCheck
-import Test.QuickCheck.Batch
 import qualified Data.ByteString as BS
 import qualified Data.Array as A
 import qualified Data.ByteString.Lazy as BSL
@@ -52,7 +60,7 @@ prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
-prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Result
+prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Bool
 prop_map f func = llcmp llmap (map func (LL.toList f))
     where llmap = asTypeOf (LL.map func f) (LL.toList f)
 
@@ -63,7 +71,7 @@ prop_intersperse f i = llcmp (LL.intersperse i f) (intersperse i (LL.toList f))
 prop_concat f = 
     llcmp (LL.concat f) (concat $ map LL.toList (LL.toList f))
 
-prop_concatmap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> [item]) -> Result
+prop_concatmap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> [item]) -> Bool
 prop_concatmap f func =
     llcmp (LL.concatMap func f)
           (concatMap func (LL.toList f))
@@ -72,10 +80,10 @@ prop_rigidConcatMap f func =
     llcmp (LL.rigidConcatMap func f)
           (concatMap (LL.toList . func) (LL.toList f))
 
-prop_any f func = (LL.any func f) @?= (any func (LL.toList f))
-prop_all f func = (LL.all func f) @?= (all func (LL.toList f))
-prop_maximum f = not (LL.null f) ==> LL.maximum f @=? maximum (LL.toList f)
-prop_minimum f = not (LL.null f) ==> LL.minimum f @=? minimum (LL.toList f)
+prop_any f func = (LL.any func f) == (any func (LL.toList f))
+prop_all f func = (LL.all func f) == (all func (LL.toList f))
+prop_maximum f = not (LL.null f) ==> LL.maximum f == maximum (LL.toList f)
+prop_minimum f = not (LL.null f) ==> LL.minimum f == minimum (LL.toList f)
 prop_replicate f count i = 
     llcmp res (replicate count i)
     where res = asTypeOf (LL.replicate count i) f
@@ -96,29 +104,29 @@ prop_break f func =
           [break func (LL.toList f)]
 prop_group f =
     -- llcmp (map LL.toList (LL.group f)) (group (LL.toList f))
-    (map LL.toList (LL.group f)) @?= (group (LL.toList f))
-prop_inits f = (map LL.toList (LL.inits f)) @?= (inits (LL.toList f))
-prop_tails f = (map LL.toList (LL.tails f)) @?= (tails (LL.toList f))
-prop_isPrefixOf f1 f2 = LL.isPrefixOf f1 f2 @?= 
+    (map LL.toList (LL.group f)) == (group (LL.toList f))
+prop_inits f = (map LL.toList (LL.inits f)) == (inits (LL.toList f))
+prop_tails f = (map LL.toList (LL.tails f)) == (tails (LL.toList f))
+prop_isPrefixOf f1 f2 = LL.isPrefixOf f1 f2 == 
     (isPrefixOf (LL.toList f1) (LL.toList f2))
-prop_isSuffixOf f1 f2 = LL.isSuffixOf f1 f2 @?=
+prop_isSuffixOf f1 f2 = LL.isSuffixOf f1 f2 ==
     (isSuffixOf (LL.toList f1) (LL.toList f2))
-prop_isInfixOf f1 f2 = LL.isInfixOf f1 f2 @?=
+prop_isInfixOf f1 f2 = LL.isInfixOf f1 f2 ==
     (isInfixOf (LL.toList f1) (LL.toList f2))
-prop_elem f i = LL.elem i f @?= elem i (LL.toList f)
-prop_notElem f i = LL.notElem i f @?= notElem i (LL.toList f)
-prop_find f func = LL.find func f @?= find func (LL.toList f)
+prop_elem f i = LL.elem i f == elem i (LL.toList f)
+prop_notElem f i = LL.notElem i f == notElem i (LL.toList f)
+prop_find f func = LL.find func f == find func (LL.toList f)
 prop_filter f func = llcmp (LL.filter func f) (filter func (LL.toList f))
 prop_partition f func = 
-    (LL.toList f1, LL.toList f2) @?= partition func (LL.toList f)
+    (LL.toList f1, LL.toList f2) == partition func (LL.toList f)
     where (f1, f2) = LL.partition func f
 prop_index f i = (i >= 0 && i < LL.length f) ==>
-    (LL.index f i @?= ((LL.toList f) !! i))
-prop_elemIndex f i = LL.elemIndex i f @?= elemIndex i (LL.toList f)
-prop_elemIndices f i = LL.elemIndices i f @?= elemIndices i (LL.toList f)
-prop_findIndex f func = LL.findIndex func f @?= findIndex func (LL.toList f)
+    (LL.index f i == ((LL.toList f) !! i))
+prop_elemIndex f i = LL.elemIndex i f == elemIndex i (LL.toList f)
+prop_elemIndices f i = LL.elemIndices i f == elemIndices i (LL.toList f)
+prop_findIndex f func = LL.findIndex func f == findIndex func (LL.toList f)
 prop_findIndices f func =
-    LL.findIndices func f @?= findIndices func (LL.toList f)
+    LL.findIndices func f == findIndices func (LL.toList f)
 
 prop_sequence f =
     case (llres, sequence testit) of
@@ -127,11 +135,11 @@ prop_sequence f =
     where testit = map Just (LL.toList f)
           llres = asTypeOf (LL.sequence testit) (Just f)
 
-prop_mapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Result
-prop_mapM f func = llmapM @?= (mapM func (LL.toList f))
+prop_mapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Bool
+prop_mapM f func = llmapM == (mapM func (LL.toList f))
     where llmapM = asTypeOf (LL.mapM func f) (Just (LL.toList f))
 
-prop_rigidMapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Result
+prop_rigidMapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Bool
 prop_rigidMapM f func = 
     case (LL.rigidMapM func f, mapM func (LL.toList f)) of
          (Just ll, Just l) -> llcmp ll l
@@ -159,7 +167,7 @@ prop_unionBy f1 f2 func = llcmp (LL.unionBy func f1 f2)
 prop_intersectBy f1 f2 func = llcmp (LL.intersectBy func f1 f2)
     (intersectBy func (LL.toList f1) (LL.toList f2))
 prop_groupBy f func =
-    (map LL.toList (LL.groupBy func f)) @?= (groupBy func (LL.toList f))
+    (map LL.toList (LL.groupBy func f)) == (groupBy func (LL.toList f))
 prop_sortBy1 f = llcmp (LL.sortBy compare f) (sortBy compare (LL.toList f))
 prop_sortBy2 f = llcmp (LL.sortBy func f) (sortBy func (LL.toList f))
     where func x y = compare y x
@@ -170,7 +178,7 @@ prop_insertBy2 f i = llcmp (LL.insertBy func i f)
     (insertBy func i (LL.toList f))
     where func x y = compare y x
 prop_genericLength f =
-    LL.genericLength f @?= genericLength (LL.toList f)
+    LL.genericLength f == genericLength (LL.toList f)
 prop_genericTake f (i::Integer) = (i >= 0) ==>
     llcmp (LL.genericTake i f) (genericTake i (LL.toList f))
 prop_genericDrop f (i::Integer) = (i >= 0) ==>
@@ -184,10 +192,10 @@ prop_genericReplicate f (count::Integer) i = count >= 0 ==>
 
 --prop_zip :: (LL.ListLike full item, LL.ListLike result (item, Int)) =>
 --    full -> Result
-prop_zip f = LL.zip f f2 @?= zip (LL.toList f) f2
+prop_zip f = LL.zip f f2 == zip (LL.toList f) f2
     where f2 = [(-5::Int)..]
 prop_zipWith f = 
-    LL.toList res @?= (zipWith func (LL.toList f) f2)
+    LL.toList res == (zipWith func (LL.toList f) f2)
     where f2 = [(100::Int)..(-100)]
           func x y = (y + 5, x)
           res = asTypeOf (LL.zipWith func f f2) [(5::Int, LL.head f)]
@@ -196,21 +204,21 @@ prop_zipWith f =
 --FIXME: prop_or
 --FIXME: prop_sum
 --FIXME: prop_product
-prop_foldl f func (i::Int) = LL.foldl func i f @?= foldl func i (LL.toList f)
+prop_foldl f func (i::Int) = LL.foldl func i f == foldl func i (LL.toList f)
 prop_foldl' f func (i::Integer) =
-    LL.foldl' func i f @?= foldl' func i (LL.toList f)
+    LL.foldl' func i f == foldl' func i (LL.toList f)
 prop_foldl1 f func = not (LL.null f) ==> 
-    (LL.foldl1 func f) @?= (foldl1 func (LL.toList f))
-prop_foldr f func (i::Int) = LL.foldr func i f @?= foldr func i (LL.toList f)
+    (LL.foldl1 func f) == (foldl1 func (LL.toList f))
+prop_foldr f func (i::Int) = LL.foldr func i f == foldr func i (LL.toList f)
 prop_foldr' f func (i::Integer) =
-    LL.foldr' func i f @?= foldr' func i (LL.toList f)
+    LL.foldr' func i f == foldr' func i (LL.toList f)
 prop_foldr1 f func = not (LL.null f) ==>
-    LL.foldl1 func f @?= foldl1 func (LL.toList f)
+    LL.foldl1 func f == foldl1 func (LL.toList f)
 prop_fold f = llcmp res resl
     where res = LL.fold f
           resl = fold (map LL.toList (LL.toList f))
-prop_foldMap :: (LL.ListLike full item, Eq full) => full -> (item -> [Int]) -> Result
-prop_foldMap f func = res @?= resl
+prop_foldMap :: (LL.ListLike full item, Eq full) => full -> (item -> [Int]) -> Bool
+prop_foldMap f func = res == resl
     where res = LL.foldMap func f
           resl = foldMap func  (LL.toList f) -- asTypeOf (foldMap (LL.toList f)) (head f)
 
@@ -218,10 +226,10 @@ prop_toString f =
     ((LL.fromString . LL.toString $ f) == f)
     where l = LL.toList f
 prop_fromString f x = 
-    LL.toString (asTypeOf (LL.fromString x) f) @?= x
-prop_lines f = map LL.toString res @?= lines (LL.toString f)
+    LL.toString (asTypeOf (LL.fromString x) f) == x
+prop_lines f = map LL.toString res == lines (LL.toString f)
     where res = asTypeOf (LL.lines f) [f]
-prop_words f = map LL.toString res @?= words (LL.toString f)
+prop_words f = map LL.toString res == words (LL.toString f)
     where res = asTypeOf (LL.words f) [f]
 
 allt = [apf "empty" (t prop_empty),
