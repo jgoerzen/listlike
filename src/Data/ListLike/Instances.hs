@@ -50,7 +50,6 @@ import Data.Array.IArray((!), (//), Ix(..))
 import qualified Data.ByteString.Lazy as BSL
 import qualified System.IO as IO
 import Data.Word
-import qualified Data.Map as Map
 
 --------------------------------------------------
 -- []
@@ -302,112 +301,13 @@ instance StringLike BSL.ByteString where
 
 --------------------------------------------------
 -- Map
+-- N.B. the Map instance is broken because it treats the key as part of the
+-- element.  Consider:
+--  let m = fromList [(False,0)] :: Map Bool Int
+--  let m' = cons (False, 1) m
+--  m' == fromList [(False,1)] =/= [(False,1), (False,0)]
+--  Map isn't a suitable candidate for ListLike...
 
-instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
-    foldr f start m = Map.foldrWithKey func start m
-            where func k v accum = f (k, v) accum
-    foldl f start m = L.foldl f start (Map.toList m)
-
-l2m :: (Ord k, Ord k2) => ([(k, v)], [(k2, v2)]) -> (Map.Map k v, Map.Map k2 v2)
-l2m (l1, l2) = (Map.fromList l1, Map.fromList l2)
-instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
-    empty = Map.empty
-    singleton (k, v) = Map.singleton k v
-    cons (k, v) m = Map.insert k v m
-    snoc = flip cons
-    append = Map.union
-    head = Map.elemAt 0
-    last m = Map.elemAt (Map.size m - 1) m
-    -- was deleteAt 0, but that is broken in GHC 6.6
-    tail = drop 1
-    -- broken in GHC 6.6: init m = Map.deleteAt (Map.size m - 1) m
-    init = Map.fromAscList . L.init . Map.toAscList
-    null = Map.null
-    length = Map.size
-    map f = fromList . map f . Map.toList
-    rigidMap f = Map.fromList . L.map f . Map.toList
-    reverse = id
-    intersperse i f
-        | Map.size f <= 1 = f
-        | otherwise = cons i f
-    -- concat
-    -- concatMap
-    -- rigidConcatMap
-    -- any
-    -- all
-    -- maximum
-    -- minimum
-    replicate = genericReplicate
-    take n = Map.fromAscList . L.take n . Map.toAscList
-    drop n = Map.fromAscList . L.drop n . Map.toAscList
-    splitAt n = l2m . L.splitAt n . Map.toList
-    takeWhile f = Map.fromAscList . L.takeWhile f . Map.toAscList
-    dropWhile f = Map.fromAscList . L.dropWhile f . Map.toAscList
-    span f = l2m . L.span f . Map.toList
-    break f = span (not . f)
-    group m
-        | null m = empty
-        | otherwise = cons (singleton (head m)) (group (tail m))
-    -- group
-    -- inits
-    -- tails
-    isPrefixOf f1 f2 = L.isPrefixOf (Map.toList f1) (Map.toList f2)
-    isSuffixOf f1 f2 = L.isSuffixOf (Map.toList f1) (Map.toList f2)
-    isInfixOf = Map.isSubmapOf
-    --elem = Map.member
-    --notElem = Map.notMember
-    -- find
-    filter f m = Map.filterWithKey func m
-            where func k v = f (k, v)
-    index = flip Map.elemAt
-    elemIndex (k, v) m =
-        case Map.lookupIndex k m of
-             Nothing -> fail "elemIndex: no matching key"
-             Just i -> if snd (Map.elemAt i m) == v
-                           then Just i
-                           else fail "elemIndex on Map: matched key but not value"
-    elemIndices i m = 
-        case elemIndex i m of
-             Nothing -> empty
-             Just x -> singleton x
-    -- findIndex
-    -- findIndices
-    -- sequence
-    -- mapM
-    -- rigidMapM
-    -- mapM_
-    nub = id
-    delete (k, v) m =
-        case Map.lookup k m of
-             Nothing -> m
-             Just x -> if x == v
-                          then Map.delete k m
-                          else m
-    union = Map.union
-    -- intersect
-    sort = id
-    insert = cons
-    toList = Map.toList
-    fromList = Map.fromList
-    nubBy func = Map.fromAscList . L.nubBy func . Map.toAscList
-    --deleteBy
-    deleteFirstsBy func m1 m2 = Map.fromAscList $ 
-                                L.deleteFirstsBy func (Map.toAscList m1)
-                                                 (Map.toAscList m2)
-    --deleteFirstsBy
-    unionBy func m1 m2 = Map.fromList $ 
-                            L.unionBy func (Map.toList m1) (Map.toList m2)
-    --intersectBy
-    --groupBy
-    sortBy _ = id
-    insertBy _ = insert
-    genericLength = fromIntegral . Map.size
-    genericTake n = Map.fromAscList . L.genericTake n . Map.toAscList
-    genericDrop n = Map.fromAscList . L.genericDrop n . Map.toAscList
-    genericSplitAt n = l2m . L.genericSplitAt n . Map.toList
-    genericReplicate count item
-        | count <= 0 = empty
-        | otherwise = singleton item
 
 --------------------------------------------------
 -- Arrays

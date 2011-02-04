@@ -15,13 +15,13 @@ All rights reserved.
 For license and copyright information, see the file COPYRIGHT
 
 -}
+module Main where
 
 import Test.QuickCheck
 import qualified Data.ByteString as BS
 import qualified Data.Array as A
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
-import qualified Data.Map as Map
 import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
@@ -60,7 +60,7 @@ prop_null f = LL.null f == null (LL.toList f)
 prop_length2 f = checkLengths f (LL.toList f)
 prop_length3 f1 f2 = llcmp (LL.append f1 f2) (LL.toList f1 ++ LL.toList f2)
 
-prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Bool
+prop_map :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> item) -> Property
 prop_map f func = llcmp llmap (map func (LL.toList f))
     where llmap = asTypeOf (LL.map func f) (LL.toList f)
 
@@ -71,7 +71,7 @@ prop_intersperse f i = llcmp (LL.intersperse i f) (intersperse i (LL.toList f))
 prop_concat f = 
     llcmp (LL.concat f) (concat $ map LL.toList (LL.toList f))
 
-prop_concatmap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> [item]) -> Bool
+prop_concatmap :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> [item]) -> Property
 prop_concatmap f func =
     llcmp (LL.concatMap func f)
           (concatMap func (LL.toList f))
@@ -139,7 +139,7 @@ prop_mapM :: forall full item. (TestLL full item, TestLL [item] item) => full ->
 prop_mapM f func = llmapM == (mapM func (LL.toList f))
     where llmapM = asTypeOf (LL.mapM func f) (Just (LL.toList f))
 
-prop_rigidMapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Bool
+prop_rigidMapM :: forall full item. (TestLL full item, TestLL [item] item) => full -> (item -> Maybe item) -> Property
 prop_rigidMapM f func = 
     case (LL.rigidMapM func f, mapM func (LL.toList f)) of
          (Just ll, Just l) -> llcmp ll l

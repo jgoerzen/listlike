@@ -24,7 +24,6 @@ import Test.QuickCheck.Test
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
-import qualified Data.Map as Map
 import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
@@ -76,19 +75,10 @@ instance Arbitrary i => Arbitrary (A.Array Int i) where
 instance (CoArbitrary i) => CoArbitrary (A.Array Int i) where
     coarbitrary l = coarbitrary (LL.toList l)
 
-instance (Ord k, Eq i, Arbitrary i, Arbitrary k) => Arbitrary (Map.Map k i) where
-    arbitrary = sized (\n -> choose (0, n) >>= myVector)
-        where myVector n =
-                  do arblist <- vector n
-                     return (LL.fromList arblist)
-    shrink = map LL.fromList . shrink . LL.toList
-
-instance (Ord k, Eq i, CoArbitrary k, CoArbitrary i) => CoArbitrary (Map.Map k i) where
-    coarbitrary l = coarbitrary (LL.toList l)
-
 class (Show b, Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
-  llcmp :: a -> [b] -> Bool
-  llcmp f l = l == (LL.toList f)
+  llcmp :: a -> [b] -> Property
+  llcmp f l =  (putStrLn ("Expected: " ++ show l ++ "\nGot: " ++ show f))
+               `whenFail` (l == (LL.toList f))
   checkLengths :: a -> [b] -> Bool
   checkLengths f l = (LL.length f) == length l
 
@@ -101,8 +91,6 @@ instance TestLL BS.ByteString Word8 where
 instance TestLL BSL.ByteString Word8 where
 
 instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
-
-instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
 
 mapRemoveDups :: (Eq k1) => [(k1, v1)] -> [(k1, v1)]
 mapRemoveDups = nubBy (\(k1, _) (k2, _) -> k1 == k2)
@@ -191,10 +179,6 @@ apf msg x = HU.TestLabel msg $ HU.TestList $
      w "String" (x::LLTest String Char),
      w "[Bool]" (x::LLTest [Bool] Bool),
      w "MyList Bool" (x::LLTest (MyList Bool) Bool),
-     w "Map Int Int" (x::LLTest (Map.Map Int Int) (Int, Int)),
-     w "Map Bool Int" (x::LLTest (Map.Map Bool Int) (Bool, Int)),
-     w "Map Int Bool" (x::LLTest (Map.Map Int Bool) (Int, Bool)),
-     w "Map Bool Bool" (x::LLTest (Map.Map Bool Bool) (Bool, Bool)),
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
      w "Array Int Int" (x::LLTest (A.Array Int Int) Int),
