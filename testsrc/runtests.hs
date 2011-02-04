@@ -84,8 +84,7 @@ prop_any f func = (LL.any func f) == (any func (LL.toList f))
 prop_all f func = (LL.all func f) == (all func (LL.toList f))
 prop_maximum f = not (LL.null f) ==> LL.maximum f == maximum (LL.toList f)
 prop_minimum f = not (LL.null f) ==> LL.minimum f == minimum (LL.toList f)
-prop_replicate f count i = 
-    llcmp res (replicate count i)
+prop_replicate f count i = count <= 1000 ==> llcmp res (replicate count i)
     where res = asTypeOf (LL.replicate count i) f
 prop_take f count = llcmp (LL.take count f) (take count (LL.toList f))
 prop_drop f count = count >= 0 ==> llcmp (LL.drop count f) (drop count (LL.toList f))

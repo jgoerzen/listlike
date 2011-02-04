@@ -423,10 +423,19 @@ class (FoldableLL full item, Monoid full) =>
     ------------------------------ Generalized functions
     {- | Generic version of 'nub' -}
     nubBy :: (item -> item -> Bool) -> full -> full
+    nubBy f l = nubBy' l (empty :: full)
+     where
+      nubBy' ys xs
+        | null ys              = empty
+        | any (f (head ys)) xs = nubBy' (tail ys) xs
+        | otherwise            = let y = head ys
+                                 in  cons y (nubBy' (tail ys) (cons y xs))
+{-
     nubBy f l
         | null l = empty
         | otherwise =
             cons (head l) (nubBy f (filter (\y -> not (f (head l) y)) (tail l)))
+-}
 
     {- | Generic version of 'deleteBy' -}
     deleteBy :: (item -> item -> Bool) -> item -> full -> full

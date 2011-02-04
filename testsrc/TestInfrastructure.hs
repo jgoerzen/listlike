@@ -183,11 +183,6 @@ apf msg x = HU.TestLabel msg $ HU.TestList $
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
      w "Array Int Int" (x::LLTest (A.Array Int Int) Int),
      w "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool),
-     w "[[Int]]" (x::LLTest [[Int]] [Int]),
-     w "MyList (MyList Int)" (x::LLTest (MyList (MyList Int)) (MyList Int)),
-     w "[MyList Int]" (x::LLTest [MyList Int] (MyList Int)),
-     w "Array [Int]" (x::LLTest (A.Array Int [Int]) [Int]),
-     w "Array (Array Int)" (x::LLTest (A.Array Int (A.Array Int Int)) (A.Array Int Int)),
      w "Array (Just Int)" (x::LLTest (A.Array Int (Maybe Int)) (Maybe Int))
     ]
 
