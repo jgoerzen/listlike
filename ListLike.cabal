@@ -1,7 +1,7 @@
 Name: ListLike
-Version: 1.1.1
+Version: 2.0.1
 License: BSD3
-Maintainer: John W. Lato <jwlato@gmail.com>
+Maintainer: John Lato <jwlato@gmail.com>
 Author: John Goerzen
 Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
@@ -31,7 +31,6 @@ Exposed-Modules: Data.ListLike,
         Data.ListLike.Utils
 -- Other-Modules: Data.ConfigFile.Lexer
 Build-Depends: base       >= 3     && < 5
-              ,mtl        >= 1.1.0 && < 1.2
               ,containers >= 0.3   && < 0.5
               ,bytestring >= 0.9.1 && < 0.10
               ,array      >= 0.3   && < 0.4
