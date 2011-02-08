@@ -37,19 +37,23 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
 import qualified Data.List as L
-import Data.ListLike.Base
-import Data.ListLike.String
-import Data.ListLike.IO
-import Data.ListLike.FoldableLL
-import Data.Int
-import Data.Monoid
+import qualified Data.Sequence as S
+import           Data.Sequence ((><), (|>), (<|))
+import qualified Data.Foldable as F
+import           Data.ListLike.Base
+import           Data.ListLike.String
+import           Data.ListLike.IO
+import           Data.ListLike.FoldableLL
+import           Data.Int
+import           Data.Monoid
 import qualified Data.ByteString as BS
 import qualified Data.Foldable as F
+import qualified Data.Traversable as T
 import qualified Data.Array.IArray as A
-import Data.Array.IArray((!), (//), Ix(..))
+import           Data.Array.IArray((!), (//), Ix(..))
 import qualified Data.ByteString.Lazy as BSL
 import qualified System.IO as IO
-import Data.Word
+import           Data.Word
 
 --------------------------------------------------
 -- []
@@ -104,12 +108,12 @@ instance ListLike BS.ByteString Word8 where
     init = BS.init
     null = BS.null
     length = BS.length
-    -- map = BS.map
+    -- map =
     rigidMap = BS.map
     reverse = BS.reverse
     intersperse = BS.intersperse
     concat = BS.concat . toList
-    --concatMap = BS.concatMap
+    --concatMap =
     rigidConcatMap = BS.concatMap
     any = BS.any
     all = BS.all
@@ -445,3 +449,108 @@ instance (Integral i, Ix i) => ListLikeIO (A.Array i Char) Char where
     -- readFile
     -- writeFile
     -- appendFile
+
+-- ---------------------------
+-- Data.Sequence instances
+
+instance ListLikeIO (S.Seq Char) Char where
+    hGetLine h = IO.hGetLine h >>= (return . fromList)
+    hGetContents h = IO.hGetContents h >>= (return . fromList)
+    hGet h i = ((hGet h i)::IO String) >>= (return . fromList)
+    hGetNonBlocking h i = ((hGetNonBlocking h i):: IO String) >>= (return . fromList)
+    hPutStr h = hPutStr h . toString
+    hPutStrLn h = hPutStrLn h . toString
+    getLine = IO.getLine >>= (return . fromString)
+    getContents = IO.getContents >>= (return . fromString)
+    putStr = IO.putStr . toString
+    putStrLn = IO.putStrLn . toString
+    -- interact
+    -- readFile
+    -- writeFile
+    -- appendFile
+
+instance StringLike (S.Seq Char) where
+    toString = toList
+    fromString = fromList
+
+instance FoldableLL (S.Seq a) a where
+    foldl = F.foldl
+    foldl' = F.foldl'
+    foldl1 = F.foldl1
+    foldr = F.foldr
+    foldr' = F.foldr'
+    foldr1 = F.foldr1
+
+instance ListLike (S.Seq a) a where
+    empty = S.empty
+    singleton = S.singleton
+    cons = (<|)
+    snoc = (|>)
+    append = (><)
+    head s = let (a S.:< _) = S.viewl s in a
+    last s = let (_ S.:> a) = S.viewr s in a
+    tail s = S.index (S.tails s) 1
+    init s = S.index (S.inits s) (S.length s - 1)
+    null = S.null
+    length = S.length
+    map f = fromList . toList . fmap f
+    --rigidMap =
+    reverse = S.reverse
+    --intersperse =
+    --concat =
+    --concatMap = 
+    --rigidConcatMap =
+    any = F.any
+    all = F.all
+    maximum = F.maximum
+    minimum = F.minimum
+    replicate n = S.replicate (if n >= 0 then n else 0)
+    take = S.take
+    drop = S.drop
+    splitAt = S.splitAt
+    --takeWhile =
+    --dropWhile =
+    span = S.spanl
+    -- break =
+    --group =
+    inits = fromList . toList . S.inits
+    tails = fromList . toList . S.tails
+    --isPrefixOf =
+    --isSuffixOf =
+    --isInfixOf =
+    --elem =
+    --notElem =
+    --find =
+    filter = S.filter
+    partition = S.partition
+    index = S.index
+    elemIndex = S.elemIndexL
+    elemIndices p = fromList . S.elemIndicesL p
+    findIndex = S.findIndexL
+    findIndices p = fromList . S.findIndicesL p
+    --sequence =
+    --mapM f =
+    mapM_ = F.mapM_
+    --nub =
+    --delete =
+    --deleteFirsts =
+    --union =
+    --intersect =
+    sort = S.sort
+    --insert = S.insert
+    toList = F.toList
+    fromList = S.fromList
+    fromListLike = fromList . toList
+    --nubBy =
+    --deleteBy =
+    --deleteFirstsBy =
+    --unionBy =
+    --intersectBy =
+    --groupBy f =
+    sortBy = S.sortBy
+    --insertBy =
+    genericLength = fromInteger . fromIntegral . S.length
+    genericTake i = S.take (fromIntegral i)
+    genericDrop i = S.drop (fromIntegral i)
+    genericSplitAt i = S.splitAt (fromIntegral i)
+    genericReplicate i = S.replicate (fromIntegral i)

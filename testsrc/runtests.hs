@@ -18,11 +18,7 @@ For license and copyright information, see the file COPYRIGHT
 module Main where
 
 import Test.QuickCheck
-import qualified Data.ByteString as BS
-import qualified Data.Array as A
-import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
-import qualified Data.Array as A
 import qualified Data.Foldable as F
 import System.Random
 import qualified Test.HUnit as HU

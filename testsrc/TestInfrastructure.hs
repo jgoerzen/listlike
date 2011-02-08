@@ -25,6 +25,7 @@ import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
 import qualified Data.Array as A
+import qualified Data.Sequence as S
 import qualified Data.Foldable as F
 import System.Random
 import System.IO
@@ -43,6 +44,16 @@ instance (Arbitrary i) => Arbitrary (MyList i) where
     shrink (MyList l) = map MyList $ shrink l
 
 instance (CoArbitrary i) => CoArbitrary (MyList i) where
+    coarbitrary l = coarbitrary (LL.toList l)
+
+instance (Arbitrary i) => Arbitrary (S.Seq i) where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- vector n
+                     return (LL.fromList arblist)
+    shrink = map LL.fromList . shrink . LL.toList
+
+instance (CoArbitrary i) => CoArbitrary (S.Seq i) where
     coarbitrary l = coarbitrary (LL.toList l)
 
 instance Arbitrary (BSL.ByteString) where
@@ -89,6 +100,8 @@ instance (Arbitrary a, Show a, Eq a) => TestLL (MyList a) a where
 instance TestLL BS.ByteString Word8 where
 
 instance TestLL BSL.ByteString Word8 where
+
+instance (Arbitrary a, Show a, Eq a) => TestLL (S.Seq a) a where
 
 instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
 
@@ -167,6 +180,7 @@ apw :: String -> (forall f' f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq 
 apw msg x = HU.TestLabel msg $ HU.TestList $
     [wwrap "wrap [[Int]]" (x::LLWrap [[Int]] [Int] Int),
      wwrap "wrap MyList (MyList Int)" (x::LLWrap (MyList (MyList Int)) (MyList Int) Int),
+     wwrap "wrap S.Seq (S.Seq Int)" (x::LLWrap (S.Seq (S.Seq Int)) (S.Seq Int) Int),
      wwrap "wrap Array (Array Int)" (x::LLWrap (A.Array Int (A.Array Int Int)) (A.Array Int Int) Int),
      wwrap "wrap Array [Int]" (x::LLWrap (A.Array Int [Int]) [Int] Int)
      ]
@@ -181,6 +195,9 @@ apf msg x = HU.TestLabel msg $ HU.TestList $
      w "MyList Bool" (x::LLTest (MyList Bool) Bool),
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
+     w "Sequence Int" (x::LLTest (S.Seq Int) Int),
+     w "Sequence Bool" (x::LLTest (S.Seq Bool) Bool),
+     w "Sequence Char" (x::LLTest (S.Seq Char) Char),
      w "Array Int Int" (x::LLTest (A.Array Int Int) Int),
      w "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool),
      w "Array (Just Int)" (x::LLTest (A.Array Int (Maybe Int)) (Maybe Int))
@@ -191,6 +208,7 @@ aps :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.StringLike f,
 aps msg x = HU.TestLabel msg $ HU.TestList $
     [w "String" (x::LLTest String Char),
      w "MyList Char" (x::LLTest (MyList Char) Char),
+     w "Sequence Char" (x::LLTest (S.Seq Char) Char),
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
      w "Array Int Char" (x::LLTest (A.Array Int Char) Char) 
