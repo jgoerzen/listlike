@@ -1,5 +1,5 @@
 Name: ListLike
-Version: 3.0.1
+Version: 3.1.0
 License: BSD3
 Maintainer: John Lato <jwlato@gmail.com>
 Author: John Goerzen
@@ -24,6 +24,7 @@ Stability: Stable
 Hs-Source-Dirs: src
 Exposed-Modules: Data.ListLike,
         Data.ListLike.Base,
+        Data.ListLike.CharString,
         Data.ListLike.FoldableLL,
         Data.ListLike.IO,
         Data.ListLike.Instances,
