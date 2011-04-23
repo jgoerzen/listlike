@@ -470,11 +470,11 @@ class (FoldableLL full item, Monoid full) =>
                             xs = tail l
 
     {- | Sort function taking a custom comparison function -}
-    sortBy :: Ord item => (item -> item -> Ordering) -> full -> full 
+    sortBy :: (item -> item -> Ordering) -> full -> full 
     sortBy cmp = foldr (insertBy cmp) empty
 
     {- | Like 'insert', but with a custom comparison function -}
-    insertBy :: Ord item => (item -> item -> Ordering) -> item ->
+    insertBy :: (item -> item -> Ordering) -> item ->
                 full -> full 
     insertBy cmp x ys
         | null ys = singleton x
