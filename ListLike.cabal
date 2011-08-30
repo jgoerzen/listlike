@@ -7,6 +7,7 @@ Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
 extra-source-files: COPYRIGHT, README
 Category: Generics
+Cabal-Version: >= 1.6
 Build-Type: Simple
 homepage: http://software.complete.org/listlike
 synopsis: Generic support for list-like structures
@@ -21,24 +22,30 @@ Description: Generic support for list-like structures in Haskell.
  ByteString, for types that support input and output, and for types that can handle
  infinite lists.
 Stability: Stable
-Hs-Source-Dirs: src
-Exposed-Modules: Data.ListLike,
-        Data.ListLike.Base,
-        Data.ListLike.CharString,
-        Data.ListLike.FoldableLL,
-        Data.ListLike.IO,
-        Data.ListLike.Instances,
-        Data.ListLike.String,
-        Data.ListLike.Utils
--- Other-Modules: Data.ConfigFile.Lexer
-Build-Depends: base       >= 3     && < 5
-              ,containers >= 0.3   && < 0.5
-              ,bytestring >= 0.9.1 && < 0.10
-              ,array      >= 0.3   && < 0.4
 
-Executable: runtests
-Buildable: False
-Main-Is: runtests.hs
-HS-Source-Dirs: testsrc, .
-Extensions: ExistentialQuantification, OverlappingInstances,
-    UndecidableInstances, CPP
+Library
+  Hs-Source-Dirs: src
+  Exposed-Modules: Data.ListLike,
+          Data.ListLike.Base,
+          Data.ListLike.CharString,
+          Data.ListLike.FoldableLL,
+          Data.ListLike.IO,
+          Data.ListLike.Instances,
+          Data.ListLike.String,
+          Data.ListLike.Utils
+  -- Other-Modules: Data.ConfigFile.Lexer
+  Build-Depends: base       >= 3     && < 5
+                ,containers >= 0.3   && < 0.5
+                ,bytestring >= 0.9.1 && < 0.10
+                ,array      >= 0.3   && < 0.4
+  
+Executable runtests
+  Buildable: False
+  Main-Is: runtests.hs
+  HS-Source-Dirs: testsrc, .
+  Extensions: ExistentialQuantification, OverlappingInstances,
+      UndecidableInstances, CPP
+
+source-repository head
+  type:     git
+  location: git://github.com/JohnLato/listlike.git
