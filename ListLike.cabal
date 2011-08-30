@@ -5,7 +5,7 @@ Maintainer: John Lato <jwlato@gmail.com>
 Author: John Goerzen
 Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
-extra-source-files: COPYING, README
+extra-source-files: COPYRIGHT, README
 Category: Generics
 Build-Type: Simple
 homepage: http://software.complete.org/listlike
