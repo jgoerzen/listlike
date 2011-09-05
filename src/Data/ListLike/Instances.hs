@@ -47,11 +47,13 @@ import           Data.ListLike.FoldableLL
 import           Data.Int
 import           Data.Monoid
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
 import qualified Data.Foldable as F
 import qualified Data.Traversable as T
 import qualified Data.Array.IArray as A
 import           Data.Array.IArray((!), (//), Ix(..))
 import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified System.IO as IO
 import           Data.Word
 
@@ -176,11 +178,11 @@ instance ListLikeIO BS.ByteString Word8 where
     hGet = BS.hGet
     hGetNonBlocking = BS.hGetNonBlocking
     hPutStr = BS.hPutStr
-    hPutStrLn = BS.hPutStrLn
+    hPutStrLn = BSC.hPutStrLn
     getLine = BS.getLine
     getContents = BS.getContents
     putStr = BS.putStr
-    putStrLn = BS.putStrLn
+    putStrLn = BSC.putStrLn
     interact = BS.interact
     readFile = BS.readFile
     writeFile = BS.writeFile
@@ -289,11 +291,11 @@ instance ListLikeIO BSL.ByteString Word8 where
     hGet = BSL.hGet
     hGetNonBlocking = BSL.hGetNonBlocking
     hPutStr = BSL.hPut
-    --hPutStrLn = BSL.hPutStrLn
+    -- hPutStrLn = BSLC.hPutStrLn
     getLine = BS.getLine >>= strict2lazy
     getContents = BSL.getContents
     putStr = BSL.putStr
-    putStrLn = BSL.putStrLn
+    putStrLn = BSLC.putStrLn
     interact = BSL.interact
     readFile = BSL.readFile
     writeFile = BSL.writeFile
