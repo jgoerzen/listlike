@@ -1,5 +1,5 @@
 Name: ListLike
-Version: 3.1.3
+Version: 3.1.4
 License: BSD3
 Maintainer: John Lato <jwlato@gmail.com>
 Author: John Goerzen
@@ -39,7 +39,7 @@ Library
   Build-Depends: base       >= 3     && < 5
                 ,containers >= 0.3   && < 0.5
                 ,bytestring >= 0.9.1 && < 0.10
-                ,array      >= 0.3   && < 0.4
+                ,array      >= 0.3   && < 0.5
   
 Executable runtests
   Buildable: False
