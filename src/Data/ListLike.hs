@@ -140,14 +140,14 @@ They carry the
 same names, too.  Therefore, you'll want to be careful how you import
 the module.  I suggest using:
 
->import qualified ListLike as LL
+>import qualified Data.ListLike as LL
 
 Then, you can use LL.fold, LL.map, etc. to get the generic version of
 the functions you want.  Alternatively, you can hide the other versions
 from Prelude and import specific generic functions from here, such as:
 
 >import Prelude hiding (map)
->import ListLike (map)
+>import Data.ListLike (map)
 
 The module "Data.ListLike" actually simply re-exports the items found
 in a number of its sub-modules.  If you want a smaller subset of
