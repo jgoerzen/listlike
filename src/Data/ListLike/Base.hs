@@ -2,6 +2,7 @@
             ,MultiParamTypeClasses
             ,FunctionalDependencies
             ,FlexibleInstances
+            ,BangPatterns
             ,FlexibleContexts #-}
 
 {-
@@ -18,7 +19,7 @@ For license and copyright information, see the file COPYRIGHT
    Copyright  : Copyright (C) 2007 John Goerzen
    License    : BSD3
 
-   Maintainer : John Goerzen <jgoerzen@complete.org>
+   Maintainer : John Lato <jwlato@gmail.com>
    Stability  : provisional
    Portability: portable
 
@@ -486,7 +487,7 @@ class (FoldableLL full item, Monoid full) =>
     {- | Length of the list -}
     genericLength :: Num a => full -> a
     genericLength l = calclen 0 l
-        where calclen accum cl =
+        where calclen !accum cl =
                   if null cl
                      then accum
                      else calclen (accum + 1) (tail cl)
@@ -615,6 +616,7 @@ instance ListLike [a] a where
     intersectBy = L.intersectBy
     sortBy = L.sortBy
     insert = L.insert
+    genericLength = L.genericLength
 
 
 --------------------------------------------------
