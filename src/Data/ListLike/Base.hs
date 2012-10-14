@@ -348,12 +348,6 @@ class (FoldableLL full item, Monoid full) =>
          of the item.  This can have performance benefits with some types. -}
     rigidMapM :: Monad m => (item -> m item) -> full -> m full
     rigidMapM = mapM
-            
-    {- | A map in monad space, discarding results.  Same as
-       @'sequence_' . 'map'@ -}
-    mapM_ :: (Monad m) => (item -> m b) -> full -> m ()
-    mapM_ func l = sequence_ mapresult
-            where mapresult = asTypeOf (map func l) []
 
 
     ------------------------------ "Set" operations
@@ -588,7 +582,7 @@ instance ListLike [a] a where
     findIndex = L.findIndex
     sequence = M.sequence . toList
     -- mapM = M.mapM
-    mapM_ = M.mapM_
+    -- mapM_ = M.mapM_
     nub = L.nub
     delete = L.delete
     deleteFirsts = (L.\\)
