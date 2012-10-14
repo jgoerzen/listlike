@@ -622,9 +622,3 @@ zipWith f a b
     | null a = empty
     | null b = empty
     | otherwise = cons (f (head a) (head b)) (zipWith f (tail a) (tail b))
-
-{- | Evaluate each action, ignoring the results -}
-sequence_ :: (Monad m, ListLike mfull (m item)) => mfull -> m ()
-sequence_ l = foldr (>>) (return ()) l
-
-
