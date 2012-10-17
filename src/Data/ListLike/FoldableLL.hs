@@ -28,9 +28,9 @@ module Data.ListLike.FoldableLL
     (-- * FoldableLL Class
      FoldableLL(..),
      -- * Utilities
-     fold, foldMap
+     fold, foldMap, foldM, sequence_, mapM_
     ) where 
-import Prelude hiding (foldl, foldr, foldr1)
+import Prelude hiding (foldl, foldr, foldr1, sequence_, mapM_)
 import qualified Data.Foldable as F
 import Data.Monoid
 import Data.Maybe
@@ -102,3 +102,17 @@ instance (F.Foldable f) => FoldableLL (f a) a where
     foldr1 = F.foldr1
     foldr' = F.foldr'
 -}
+
+-- Based on http://stackoverflow.com/a/12881193/1333025
+{- | Monadic version of left fold, similar to 'Control.Monad.foldM'. -}
+foldM :: (Monad m, FoldableLL full item) => (a -> item -> m a) -> a -> full -> m a
+foldM f z xs = foldr (\x rest a -> f a x >>= rest) return xs z
+
+{- | A map in monad space, discarding results. -}
+mapM_ :: (Monad m, FoldableLL full item) => (item -> m b) -> full -> m ()
+mapM_ func = foldr ((>>) . func) (return ())
+
+{- | Evaluate each action, ignoring the results.
+   Same as @'mapM_' 'id'@. -}
+sequence_ :: (Monad m, FoldableLL full (m item)) => full -> m ()
+sequence_ = mapM_ id
