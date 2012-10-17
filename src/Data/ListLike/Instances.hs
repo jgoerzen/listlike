@@ -532,7 +532,6 @@ instance ListLike (S.Seq a) a where
     findIndices p = fromList . S.findIndicesL p
     --sequence =
     --mapM f =
-    mapM_ = F.mapM_
     --nub =
     --delete =
     --deleteFirsts =
