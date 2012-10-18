@@ -41,9 +41,11 @@ import qualified Data.Sequence as S
 import           Data.Sequence ((><), (|>), (<|))
 import qualified Data.Foldable as F
 import           Data.ListLike.Base
+import qualified Data.ListLike.Base as Base
 import           Data.ListLike.String
 import           Data.ListLike.IO
 import           Data.ListLike.FoldableLL
+import           Data.ListLike.TraversableLL
 import           Data.Int
 import           Data.Monoid
 import qualified Data.ByteString as BS
@@ -98,6 +100,10 @@ instance FoldableLL BS.ByteString Word8 where
     foldr' = BS.foldr'
     foldr1 = BS.foldr1
 
+instance TraversableLL BS.ByteString Word8 where
+    rigidMap f = BS.map f
+    rigidTraverse = Base.rigidTraverse
+
 instance ListLike BS.ByteString Word8 where
     empty = BS.empty
     singleton = BS.singleton
@@ -111,7 +117,6 @@ instance ListLike BS.ByteString Word8 where
     null = BS.null
     length = BS.length
     -- map =
-    rigidMap = BS.map
     reverse = BS.reverse
     intersperse = BS.intersperse
     concat = BS.concat . toList
@@ -207,6 +212,10 @@ mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
 mi64toi (Just x) = Just (fromIntegral x)
 
+instance TraversableLL BSL.ByteString Word8 where
+    rigidMap = BSL.map
+    rigidTraverse = Base.rigidTraverse
+
 instance ListLike BSL.ByteString Word8 where
     empty = BSL.empty
     singleton = BSL.singleton
@@ -220,7 +229,6 @@ instance ListLike BSL.ByteString Word8 where
     null = BSL.null
     length = fromIntegral . BSL.length
     -- map = BSL.map
-    rigidMap = BSL.map
     reverse = BSL.reverse
     --intersperse = BSL.intersperse
     concat = BSL.concat . toList
@@ -336,6 +344,10 @@ instance (Integral i, Ix i) => Monoid (A.Array i e) where
               newbhigh = bhigh + newlen
               (blow, bhigh) = A.bounds l1
 
+instance (Integral i, Ix i) => TraversableLL (A.Array i e) e where
+    rigidMap = A.amap
+    rigidTraverse = T.traverse
+
 instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     empty = mempty
     singleton i = A.listArray (0, 0) [i]
@@ -358,7 +370,6 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     null l = genericLength l == (0::Integer)
     length = genericLength
     -- map
-    rigidMap = A.amap
     reverse l = A.listArray (A.bounds l) (L.reverse (A.elems l)) 
     -- intersperse
     -- concat
@@ -482,6 +493,10 @@ instance FoldableLL (S.Seq a) a where
     foldr = F.foldr
     foldr' = F.foldr'
     foldr1 = F.foldr1
+
+instance TraversableLL (S.Seq a) a where
+    rigidMap      = fmap
+    rigidTraverse = T.traverse
 
 instance ListLike (S.Seq a) a where
     empty = S.empty

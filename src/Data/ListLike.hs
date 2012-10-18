@@ -120,6 +120,7 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
 import Data.ListLike.Base
 import Data.ListLike.CharString
 import Data.ListLike.FoldableLL
+import Data.ListLike.TraversableLL
 import Data.ListLike.Instances()
 import Data.ListLike.String
 import Data.ListLike.Utils

@@ -44,9 +44,11 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        unlines, unwords)
 import qualified Data.Foldable as F
 import           Data.ListLike.Base
+import qualified Data.ListLike.Base as Base
 import           Data.ListLike.String
 import           Data.ListLike.IO
 import           Data.ListLike.FoldableLL
+import           Data.ListLike.TraversableLL
 import           Data.Int
 import           Data.Monoid
 import qualified Data.ByteString.Char8 as BS
@@ -74,6 +76,10 @@ instance FoldableLL CharString Char where
     foldr f i0  ls = BS.foldr f i0 (unCS ls)
     foldr1 f    ls = BS.foldr1 f (unCS ls)
 
+instance TraversableLL CharString Char where
+    rigidMap f = CS . BS.map f . unCS
+    rigidTraverse = Base.rigidTraverse
+
 instance ListLike CharString Char where
     empty = CS BS.empty
     singleton = CS . BS.singleton
@@ -87,7 +93,6 @@ instance ListLike CharString Char where
     null = BS.null . unCS
     length = fromIntegral . BS.length . unCS
     -- map = BS.map
-    rigidMap f = CS . BS.map f . unCS
     reverse = CS . BS.reverse . unCS
     --intersperse = BS.intersperse
     concat = CS . BS.concat . map unCS . toList
@@ -193,6 +198,10 @@ mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
 mi64toi (Just x) = Just (fromIntegral x)
 
+instance TraversableLL CharStringLazy Char where
+    rigidMap f = CSL . BSL.map f . unCSL
+    rigidTraverse = Base.rigidTraverse
+
 instance ListLike CharStringLazy Char where
     empty = CSL BSL.empty
     singleton = CSL . BSL.singleton
@@ -206,7 +215,6 @@ instance ListLike CharStringLazy Char where
     null = BSL.null . unCSL
     length = fromIntegral . BSL.length . unCSL
     -- map = BSL.map
-    rigidMap f = CSL . BSL.map f . unCSL
     reverse = CSL . BSL.reverse . unCSL
     --intersperse = BSL.intersperse
     concat = CSL . BSL.concat . map unCSL . toList

@@ -32,6 +32,7 @@ module Data.ListLike.Base
     (
     ListLike(..),
     InfiniteListLike(..),
+    mapM, rigidMapM,
     zip, zipWith, sequence_
     ) where
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
@@ -44,7 +45,10 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        unlines, unwords)
 import qualified Data.List as L
 import Data.ListLike.FoldableLL
+import Data.ListLike.TraversableLL
+import qualified Control.Applicative as A
 import qualified Control.Monad as M
+import qualified Control.Monad.Identity as M
 import Data.Monoid
 import Data.Maybe
 
@@ -66,7 +70,7 @@ Implementators must define at least:
 
 * null or genericLength
 -}
-class (FoldableLL full item, Monoid full) =>
+class (TraversableLL full item, Monoid full) =>
     ListLike full item | full -> item where
 
     ------------------------------ Creation
@@ -131,13 +135,6 @@ class (FoldableLL full item, Monoid full) =>
         | null inp = empty
         | otherwise = cons (func (head inp)) (map func (tail inp))
 
-    {- | Like 'map', but without the possibility of changing the type of
-       the item.  This can have performance benefits for things such as
-       ByteStrings, since it will let the ByteString use its native
-       low-level map implementation. -}
-    rigidMap :: (item -> item) -> full -> full
-    rigidMap = map
-
     {- | Reverse the elements in a list. -}
     reverse :: full -> full 
     reverse l = rev l empty
@@ -163,7 +160,7 @@ class (FoldableLL full item, Monoid full) =>
 
     {- | Map a function over the items and concatenate the results.
          See also 'rigidConcatMap'.-}
-    concatMap :: (ListLike full' item') =>
+    concatMap :: (FoldableLL full item, Monoid full') =>
                  (item -> full') -> full -> full'
     concatMap = foldMap
 
@@ -335,26 +332,25 @@ class (FoldableLL full item, Monoid full) =>
 
     ------------------------------ Monadic operations
     {- | Evaluate each action in the sequence and collect the results -}
+    sequenceA :: (A.Applicative f, ListLike fullinp (f item)) =>
+                fullinp -> f full
+    sequenceA = foldr (A.liftA2 cons) (A.pure empty)
+
+    {- | Evaluate each action in the sequence and collect the results -}
     sequence :: (Monad m, ListLike fullinp (m item)) =>
                 fullinp -> m full
-    sequence l = foldr func (return empty) l
-        where func litem results = 
-                do x <- litem
-                   xs <- results
-                   return (cons x xs)
+    sequence = foldr (M.liftM2 cons) (return empty)
 
-    {- | A map in monad space.  Same as @'sequence' . 'map'@ 
-         
-         See also 'rigidMapM' -}
-    mapM :: (Monad m, ListLike full' item') => 
-            (item -> m item') -> full -> m full'
-    mapM func l = sequence mapresult
+    {- | A map in applicative space. -}
+    traverse :: (A.Applicative f, ListLike full' item') =>
+            (item -> f item') -> full -> f full'
+    traverse func l = sequenceA mapresult
             where mapresult = asTypeOf (map func l) []
 
-    {- | Like 'mapM', but without the possibility of changing the type
+    {- | Like 'traverse', but without the possibility of changing the type
          of the item.  This can have performance benefits with some types. -}
-    rigidMapM :: Monad m => (item -> m item) -> full -> m full
-    rigidMapM = mapM
+    rigidTraverse :: (A.Applicative f) => (item -> f item) -> full -> f full
+    rigidTraverse = traverse
 
 
     ------------------------------ "Set" operations
@@ -558,7 +554,6 @@ instance ListLike [a] a where
     null = L.null
     length = L.length
     map f = fromList . L.map f
-    rigidMap = L.map
     reverse = L.reverse
     intersperse = L.intersperse
     toList = id
@@ -612,6 +607,16 @@ instance ListLike [a] a where
     insert = L.insert
     genericLength = L.genericLength
 
+
+--------------------------------------------------
+-- Moved from ListLike to top-level:
+
+{- | A map in monad space.  Same as @'sequence' . 'map'@
+
+     See also 'rigidMapM' -}
+mapM :: (Monad m, ListLike full item, ListLike full' item') =>
+        (item -> m item') -> full -> m full'
+mapM f = A.unwrapMonad . traverse (A.WrapMonad . f)
 
 --------------------------------------------------
 -- These utils are here instead of in Utils.hs because they are needed

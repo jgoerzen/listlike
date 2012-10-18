@@ -29,6 +29,7 @@ Library
           Data.ListLike.Base,
           Data.ListLike.CharString,
           Data.ListLike.FoldableLL,
+          Data.ListLike.TraversableLL,
           Data.ListLike.IO,
           Data.ListLike.Instances,
           Data.ListLike.String,
@@ -38,6 +39,7 @@ Library
                 ,containers >= 0.3   && < 0.6
                 ,bytestring >= 0.9.1 && < 0.11
                 ,array      >= 0.3   && < 0.5
+                ,mtl        >= 2     && < 3
   
 Executable runtests
   Buildable: False
