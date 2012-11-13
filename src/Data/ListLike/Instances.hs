@@ -151,7 +151,6 @@ instance ListLike BS.ByteString Word8 where
     -- do monadic stuff via a list instead
     sequence  = liftM fromList . P.sequence  . toList
     mapM func = liftM fromList . P.mapM func . toList
-    mapM_ func = P.mapM_ func . toList
     --nub = BS.nub
     --delete = BS.delete
     --deleteFirsts = BS.deleteFirsts
@@ -260,7 +259,6 @@ instance ListLike BSL.ByteString Word8 where
     --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
     sequence  = liftM fromList . P.sequence  . toList
     mapM func = liftM fromList . P.mapM func . toList
-    mapM_ func = P.mapM_ func . toList
     --sequence = BSL.sequence
     --mapM = BSL.mapM
     --mapM_ = BSL.mapM_
@@ -401,7 +399,6 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     findIndices f = fromList . L.findIndices f . toList
     sequence  = liftM fromList . P.sequence  . toList
     mapM func = liftM fromList . P.mapM func . toList
-    mapM_ func = P.mapM_ func . toList
     -- rigidMapM = mapM
     nub = fromList . L.nub . toList
     -- delete
