@@ -593,7 +593,6 @@ instance ListLike [a] a where
     findIndex = L.findIndex
     sequence = M.sequence . toList
     -- mapM = M.mapM
-    -- mapM_ = M.mapM_
     nub = L.nub
     delete = L.delete
     deleteFirsts = (L.\\)

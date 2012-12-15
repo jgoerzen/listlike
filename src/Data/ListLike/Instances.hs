@@ -36,6 +36,8 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        product, repeat, replicate, cycle, take, drop,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
+import qualified Prelude as P
+import           Control.Monad
 import qualified Data.List as L
 import qualified Data.Sequence as S
 import           Data.Sequence ((><), (|>), (<|))
@@ -150,9 +152,10 @@ instance ListLike BS.ByteString Word8 where
     elemIndices x = fromList . BS.elemIndices x
     findIndex = BS.findIndex
     findIndices x = fromList . BS.findIndices x
-    --sequence = BS.sequence
-    --mapM = BS.mapM
-    --mapM_ = BS.mapM_
+    -- the default definitions don't work well for array-like things, so
+    -- do monadic stuff via a list instead
+    sequence  = liftM fromList . P.sequence  . toList
+    mapM func = liftM fromList . P.mapM func . toList
     --nub = BS.nub
     --delete = BS.delete
     --deleteFirsts = BS.deleteFirsts
@@ -262,6 +265,8 @@ instance ListLike BSL.ByteString Word8 where
     --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
     findIndex f = mi64toi . BSL.findIndex f
     --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
+    sequence  = liftM fromList . P.sequence  . toList
+    mapM func = liftM fromList . P.mapM func . toList
     --sequence = BSL.sequence
     --mapM = BSL.mapM
     --mapM_ = BSL.mapM_
@@ -403,10 +408,9 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     elemIndices i = fromList . L.elemIndices i . toList
     findIndex f = L.findIndex f . toList
     findIndices f = fromList . L.findIndices f . toList
-    -- sequence = M.sequence . toList
-    -- mapM f = M.mapM f . toList
+    sequence  = liftM fromList . P.sequence  . toList
+    mapM func = liftM fromList . P.mapM func . toList
     -- rigidMapM = mapM
-    -- mapM_ f = M.mapM_ f . toList
     nub = fromList . L.nub . toList
     -- delete
     -- deleteFirsts
