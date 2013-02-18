@@ -74,7 +74,7 @@ Implementators must define at least:
 class (UnfoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
 
-    ------------------------------ Basic Functions
+    ------------------------------ basic functions
 
     {- | Like (:) for lists: adds an element to the beginning of a list -}
     cons :: item -> full -> full
@@ -88,16 +88,6 @@ class (UnfoldableLL full item, Monoid full) =>
     append :: full -> full -> full 
     append = mappend
 
-    {- | Extracts the first element of a 'ListLike'. -}
-    head :: full -> item
-
-    {- | Extracts the last element of a 'ListLike'. -}
-    last :: full -> item
-    last l = case genericLength l of
-                  (0::Integer) -> error "Called last on empty list"
-                  1 -> head l
-                  _ -> last (tail l)
-
     {- | Gives all elements after the head. -}
     tail :: full -> full 
 
@@ -108,14 +98,6 @@ class (UnfoldableLL full item, Monoid full) =>
         | null xs = empty
         | otherwise = cons (head l) (init xs)
         where xs = tail l
-
-    {- | Tests whether the list is empty. -}
-    null :: full -> Bool
-    null x = genericLength x == (0::Integer)
-
-    {- | Length of the list.  See also 'genericLength'. -}
-    length :: full -> Int
-    length = genericLength
 
     ------------------------------ List Transformations
 
@@ -219,12 +201,6 @@ class (UnfoldableLL full item, Monoid full) =>
         where thetails = asTypeOf (tails haystack) [haystack]
 
     ------------------------------ Searching
-    {- | Take a function and return the first matching element, or Nothing
-       if there is no such element. -}
-    find :: (item -> Bool) -> full -> Maybe item
-    find f l = case findIndex f l of
-                    Nothing -> Nothing
-                    Just x -> Just (index l x)
 
     {- | Returns only the elements that satisfy the function. -}
     filter :: (item -> Bool) -> full -> full 
@@ -383,13 +359,6 @@ class (UnfoldableLL full item, Monoid full) =>
                         _ ->  cons x ys
 
     ------------------------------ Generic Operations
-    {- | Length of the list -}
-    genericLength :: Num a => full -> a
-    genericLength l = calclen 0 l
-        where calclen !accum cl =
-                  if null cl
-                     then accum
-                     else calclen (accum + 1) (tail cl)
 
     {- | Generic version of 'take' -}
     genericTake :: Integral a => a -> full -> full
@@ -448,12 +417,8 @@ instance ListLike [a] a where
     cons x l = x : l
     snoc l x = l ++ [x]
     append = (++)
-    head = L.head
-    last = L.last
     tail = L.tail
     init = L.init
-    null = L.null
-    length = L.length
     reverse = L.reverse
     intersperse = L.intersperse
     -- fromListLike = toList
@@ -473,7 +438,6 @@ instance ListLike [a] a where
     isPrefixOf = L.isPrefixOf
     isSuffixOf = L.isSuffixOf
     isInfixOf = L.isInfixOf
-    find = L.find
     filter = L.filter
     partition = L.partition
     index = (L.!!)
@@ -493,7 +457,6 @@ instance ListLike [a] a where
     intersectBy = L.intersectBy
     sortBy = L.sortBy
     insert = L.insert
-    genericLength = L.genericLength
 
 --------------------------------------------------
 -- These utils are here instead of in Utils.hs because they are needed

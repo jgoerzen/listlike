@@ -95,6 +95,40 @@ class FoldableLL full item | full -> item where
                  mf x (Just y) = Just (f x y)
     {-# INLINE foldr1 #-}
 
+    ------------------------------ basic functions derivable from fold
+
+    {- | Extracts the first element of a 'ListLike'. -}
+    head :: full -> item
+    head = foldr const (error "'head' called on an empty collection")
+    {-# INLINE head #-}
+
+    {- | Extracts the last element of a 'ListLike'. -}
+    last :: full -> item
+    last = foldl' (const id) (error "'last' called on an empty collection")
+    {-# INLINE last #-}
+
+    {- | Tests whether the list is empty. -}
+    null :: full -> Bool
+    null = foldr (\_ _ -> False) True
+    {-# INLINE null #-}
+
+    {- | Length of the list.  See also 'genericLength'. -}
+    length :: full -> Int
+    length = genericLength
+    {-# INLINE  length #-}
+
+    {- | Length of the list -}
+    genericLength :: (Num a) => full -> a
+    genericLength = foldl' (\n _ -> n + 1) 0
+    {-# INLINE genericLength #-}
+
+    ------------------------------ Searching
+
+    {- | Take a function and return the first matching element, or Nothing
+       if there is no such element. -}
+    find :: (item -> Bool) -> full -> Maybe item
+    find p = foldr (\x r -> if p x then Just x else r) Nothing
+    {-# INLINE find #-}
 
     ------------------------------ Special folds
     {- | Flatten the structure. -}
@@ -189,6 +223,18 @@ instance FoldableLL [a] a where
     {-# INLINE foldr1 #-}
     foldr' = F.foldr'
     {-# INLINE foldr' #-}
+
+    head = L.head
+    {-# INLINE head #-}
+    last = L.last
+    {-# INLINE last #-}
+    null = L.null
+    {-# INLINE null #-}
+    length = L.length
+    {-# INLINE length #-}
+    find = L.find
+    {-# INLINE find #-}
+
 {-
 instance (F.Foldable f) => FoldableLL (f a) a where
     foldl = F.foldl

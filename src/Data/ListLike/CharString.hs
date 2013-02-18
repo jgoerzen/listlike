@@ -77,6 +77,13 @@ instance FoldableLL CharString Char where
     foldr f i0  ls = BS.foldr f i0 (unCS ls)
     foldr1 f    ls = BS.foldr1 f (unCS ls)
 
+    head = BS.head . unCS
+    last = BS.last . unCS
+    null = BS.null . unCS
+    length = BS.length . unCS
+    genericLength = fromIntegral . BS.length . unCS
+    find p = BS.find p . unCS
+
     concat = CS . BS.concat . map unCS . toList
     --concatMap = BS.concatMap
     rigidConcatMap f = CS . BS.concatMap (unCS . f) . unCS
@@ -107,12 +114,8 @@ instance ListLike CharString Char where
     cons x l = CS (BS.cons x (unCS l))
     snoc l x = CS (BS.snoc (unCS l) x)
     append l r = CS $ BS.append (unCS l) (unCS r)
-    head = BS.head . unCS
-    last = BS.last . unCS
     tail = CS . BS.tail . unCS
     init = CS . BS.init . unCS
-    null = BS.null . unCS
-    length = fromIntegral . BS.length . unCS
     -- map = BS.map
     reverse = CS . BS.reverse . unCS
     --intersperse = BS.intersperse
@@ -129,7 +132,6 @@ instance ListLike CharString Char where
     isPrefixOf p f = BS.isPrefixOf (unCS p) (unCS f)
     --isSuffixOf = BS.isSuffixOf
     --isInfixOf = BS.isInfixOf
-    find p = BS.find p . unCS
     filter p = CS . BS.filter p . unCS
     --partition = BS.partition
     index l i = BS.index (unCS l) (fromIntegral i)
@@ -157,7 +159,6 @@ instance ListLike CharString Char where
     -- groupBy func = map fromList . L.groupBy func . toList
     --sortBy = BS.sortBy
     --insertBy = BS.insertBy
-    genericLength = fromInteger . fromIntegral . BS.length . unCS
     genericTake i = CS . BS.take (fromIntegral i) . unCS
     genericDrop i = CS . BS.drop (fromIntegral i) . unCS
     genericSplitAt i = (CS *** CS) . BS.splitAt (fromIntegral i) . unCS
@@ -201,6 +202,13 @@ instance FoldableLL CharStringLazy Char where
     foldr f i0  ls = BSL.foldr f i0 (unCSL ls)
     foldr1 f    ls = BSL.foldr1 f (unCSL ls)
 
+    head = BSL.head . unCSL
+    last = BSL.last . unCSL
+    null = BSL.null . unCSL
+    length = fromIntegral . BSL.length . unCSL
+    genericLength = fromIntegral . BSL.length . unCSL
+    find p = BSL.find p . unCSL
+
 mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
 mi64toi (Just x) = Just (fromIntegral x)
@@ -222,12 +230,8 @@ instance ListLike CharStringLazy Char where
     cons x l = CSL (BSL.cons x (unCSL l))
     snoc l x = CSL (BSL.snoc (unCSL l) x)
     append l r = CSL $ BSL.append (unCSL l) (unCSL r)
-    head = BSL.head . unCSL
-    last = BSL.last . unCSL
     tail = CSL . BSL.tail . unCSL
     init = CSL . BSL.init . unCSL
-    null = BSL.null . unCSL
-    length = fromIntegral . BSL.length . unCSL
     -- map = BSL.map
     reverse = CSL . BSL.reverse . unCSL
     --intersperse = BSL.intersperse
@@ -244,7 +248,6 @@ instance ListLike CharStringLazy Char where
     isPrefixOf p f = BSL.isPrefixOf (unCSL p) (unCSL f)
     --isSuffixOf = BSL.isSuffixOf
     --isInfixOf = BSL.isInfixOf
-    find p = BSL.find p . unCSL
     filter p = CSL . BSL.filter p . unCSL
     --partition = BSL.partition
     index l i = BSL.index (unCSL l) (fromIntegral i)
@@ -272,7 +275,6 @@ instance ListLike CharStringLazy Char where
     -- groupBy func = map fromList . L.groupBy func . toList
     --sortBy = BSL.sortBy
     --insertBy = BSL.insertBy
-    genericLength = fromInteger . fromIntegral . BSL.length . unCSL
     genericTake i = CSL . BSL.take (fromIntegral i) . unCSL
     genericDrop i = CSL . BSL.drop (fromIntegral i) . unCSL
     genericSplitAt i = (CSL *** CSL) . BSL.splitAt (fromIntegral i) . unCSL
