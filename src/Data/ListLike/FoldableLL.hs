@@ -59,6 +59,9 @@ These functions are used heavily in "Data.ListLike". -}
 class FoldableLL full item | full -> item where
     {- | Left-associative fold -}
     foldl :: (a -> item -> a) -> a -> full -> a
+    foldl f a xs = foldr f' id xs a
+        where f' x k z = k $ f z x
+    {-# INLINE foldl #-}
 
     {- | Strict version of 'foldl'. -}
     foldl' :: (a -> item -> a) -> a -> full -> a
@@ -76,8 +79,12 @@ class FoldableLL full item | full -> item where
            where mf Nothing y = Just y
                  mf (Just x) y = Just (f x y)
     {-# INLINE foldl1 #-}
+
     {- | Right-associative fold -}
     foldr :: (item -> b -> b) -> b -> full -> b
+    foldr f a xs = foldl f' id xs a
+        where f' k x z = k $ f x z
+    {-# INLINE foldr #-}
 
     -- | Strict version of 'foldr'
     foldr' :: (item -> b -> b) -> b -> full -> b
