@@ -5,7 +5,7 @@ module Data.ListLike.UnfoldableLL
     (-- * FoldableLL Class
      UnfoldableLL(..),
      -- * Utilities
-     mapM, replicate, genericReplicate
+     mapM, sequence, sequenceA, replicate, genericReplicate
     ) where 
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
@@ -104,6 +104,19 @@ mapM
   => (item1 -> m item) -> full1 -> m full
 mapM f = unwrapMonad . traverse (WrapMonad . f)
 {-# INLINE mapM #-}
+
+{- | Evaluate each action in the sequence and collect the results -}
+sequenceA
+    :: (Applicative f, FoldableLL full' (f item), UnfoldableLL full item)
+    => full' -> f full
+sequenceA = traverse id
+{-# INLINE sequenceA #-}
+
+sequence
+  :: (Monad m, FoldableLL full' (m item), UnfoldableLL full item)
+  => full' -> m full
+sequence = mapM id
+{-# INLINE sequence #-}
 
 
 -- TODO: Should we export this?

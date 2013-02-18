@@ -243,17 +243,6 @@ class (UnfoldableLL full item, Monoid full) =>
     findIndices p xs = map snd $ filter (p . fst) $ thezips
         where thezips = asTypeOf (zip xs [0..]) [(head xs, 0::Int)]
 
-    ------------------------------ Monadic operations
-    {- | Evaluate each action in the sequence and collect the results -}
-    sequenceA :: (A.Applicative f, ListLike fullinp (f item)) =>
-                fullinp -> f full
-    sequenceA = foldr (A.liftA2 cons) (A.pure empty)
-
-    {- | Evaluate each action in the sequence and collect the results -}
-    sequence :: (Monad m, ListLike fullinp (m item)) =>
-                fullinp -> m full
-    sequence = foldr (M.liftM2 cons) (return empty)
-
 
     ------------------------------ "Set" operations
     {- | Removes duplicate elements from the list.  See also 'nubBy' -}
@@ -444,7 +433,6 @@ instance ListLike [a] a where
     elemIndex = L.elemIndex
     elemIndices item = fromList . L.elemIndices item
     findIndex = L.findIndex
-    sequence = M.sequence . toList
     -- mapM = M.mapM
     nub = L.nub
     delete = L.delete
