@@ -215,14 +215,6 @@ class (UnfoldableLL full item, Monoid full) =>
     partition p xs = (filter p xs, filter (not . p) xs)
 
     ------------------------------ Indexing
-    {- | The element at 0-based index i.  Raises an exception if i is out
-         of bounds.  Like (!!) for lists. -}
-    index :: full -> Int -> item
-    index l i 
-        | null l = error "index: index not found"
-        | i < 0 = error "index: index must be >= 0"
-        | i == 0 = head l
-        | otherwise = index (tail l) (i - 1)
 
     {- | Returns the index of the element, if it exists. -}
     elemIndex :: Eq item => item -> full -> Maybe Int
@@ -429,7 +421,6 @@ instance ListLike [a] a where
     isInfixOf = L.isInfixOf
     filter = L.filter
     partition = L.partition
-    index = (L.!!)
     elemIndex = L.elemIndex
     elemIndices item = fromList . L.elemIndices item
     findIndex = L.findIndex

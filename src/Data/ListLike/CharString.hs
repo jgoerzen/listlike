@@ -83,6 +83,7 @@ instance FoldableLL CharString Char where
     length = BS.length . unCS
     genericLength = fromIntegral . BS.length . unCS
     find p = BS.find p . unCS
+    index l i = BS.index (unCS l) (fromIntegral i)
 
     concat = CS . BS.concat . map unCS . toList
     --concatMap = BS.concatMap
@@ -134,7 +135,6 @@ instance ListLike CharString Char where
     --isInfixOf = BS.isInfixOf
     filter p = CS . BS.filter p . unCS
     --partition = BS.partition
-    index l i = BS.index (unCS l) (fromIntegral i)
     elemIndex i = BS.elemIndex i  . unCS
     --elemIndices x = fromList . L.map fromIntegral . BS.elemIndices x
     findIndex f = BS.findIndex f . unCS
@@ -208,6 +208,7 @@ instance FoldableLL CharStringLazy Char where
     length = fromIntegral . BSL.length . unCSL
     genericLength = fromIntegral . BSL.length . unCSL
     find p = BSL.find p . unCSL
+    index l i = BSL.index (unCSL l) (fromIntegral i)
 
 mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
@@ -250,7 +251,6 @@ instance ListLike CharStringLazy Char where
     --isInfixOf = BSL.isInfixOf
     filter p = CSL . BSL.filter p . unCSL
     --partition = BSL.partition
-    index l i = BSL.index (unCSL l) (fromIntegral i)
     elemIndex i = mi64toi . BSL.elemIndex i  . unCSL
     --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
     findIndex f = mi64toi . BSL.findIndex f . unCSL

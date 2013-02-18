@@ -129,6 +129,17 @@ class FoldableLL full item | full -> item where
     genericLength = foldl' (\n _ -> n + 1) 0
     {-# INLINE genericLength #-}
 
+    {- | The element at 0-based index @i@.  Raises an exception if @i@ is out
+         of bounds.  Like @(!!)@ for lists. -}
+    index :: full -> Int -> item
+    index l n | n < 0       = err
+              | otherwise   = foldr f (const err) l n
+      where
+        f x k 0 = x
+        f _ k i = k (i - 1)
+        err = error $ "index: index " ++ show n ++ " not found"
+    {-# INLINE index #-}
+
     ------------------------------ Searching
 
     {- | Take a function and return the first matching element, or Nothing
