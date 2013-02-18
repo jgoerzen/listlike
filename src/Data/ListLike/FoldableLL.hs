@@ -30,7 +30,14 @@ module Data.ListLike.FoldableLL
      -- * Utilities
      fold, foldMap, foldM, sequence_, mapM_
     ) where 
-import Prelude hiding (foldl, foldr, foldr1, sequence_, mapM_)
+import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
+                       any, lookup, init, all, foldl, foldr, foldl1, foldr1,
+                       maximum, minimum, iterate, span, break, takeWhile,
+                       dropWhile, reverse, zip, zipWith, sequence,
+                       sequence_, mapM, mapM_, concatMap, and, or, sum,
+                       product, repeat, replicate, cycle, take, drop,
+                       splitAt, elem, notElem, unzip, lines, words,
+                       unlines, unwords)
 import qualified Data.Foldable as F
 import Data.Monoid
 import Data.Maybe
@@ -76,6 +83,58 @@ class FoldableLL full item | full -> item where
                     (foldr mf Nothing xs)
            where mf x Nothing = Just x
                  mf x (Just y) = Just (f x y)
+
+
+    ------------------------------ Special folds
+    {- | Flatten the structure. -}
+    concat :: (FoldableLL full' full, Monoid full) => full' -> full
+    concat = fold
+
+    {- | Map a function over the items and concatenate the results.
+         See also 'rigidConcatMap'.-}
+    concatMap :: (FoldableLL full item, Monoid full') =>
+                 (item -> full') -> full -> full'
+    concatMap = foldMap
+
+    {- | Like 'concatMap', but without the possibility of changing
+         the type of the item.  This can have performance benefits
+         for some things such as ByteString. -}
+    rigidConcatMap :: (Monoid full) => (item -> full) -> full -> full
+    rigidConcatMap = concatMap
+
+    {- | True if any items satisfy the function -}
+    any :: (item -> Bool) -> full -> Bool
+    any p = getAny . foldMap (Any . p)
+
+    {- | True if all items satisfy the function -}
+    all :: (item -> Bool) -> full -> Bool
+    all p = getAll . foldMap (All . p)
+
+    {- | The maximum value of the list -}
+    maximum :: Ord item => full -> item
+    maximum = foldr1 max
+
+    {- | The minimum value of the list -}
+    minimum :: Ord item => full -> item
+    minimum = foldr1 min
+
+
+    ------------------------------ Searching
+    {- | True if the item occurs in the list -}
+    elem :: Eq item => item -> full -> Bool
+    elem i = any (== i)
+
+    {- | True if the item does not occur in the list -}
+    notElem :: Eq item => item -> full -> Bool
+    notElem i = all (/= i)
+
+    ------------------------------ Conversions
+
+    {- | Converts the structure to a list.  This is logically equivolent
+         to 'fromListLike', but may have a more optimized implementation. -}
+    toList :: full -> [item]
+    toList = foldr (:) []
+    {-# INLINE toList #-}
 
 {- | Combine the elements of a structure using a monoid.
      @'fold' = 'foldMap' id@ -}

@@ -48,6 +48,7 @@ import qualified Data.ListLike.Base as Base
 import           Data.ListLike.String
 import           Data.ListLike.IO
 import           Data.ListLike.FoldableLL
+import           Data.ListLike.UnfoldableLL
 import           Data.ListLike.TraversableLL
 import           Data.Int
 import           Data.Monoid
@@ -76,13 +77,32 @@ instance FoldableLL CharString Char where
     foldr f i0  ls = BS.foldr f i0 (unCS ls)
     foldr1 f    ls = BS.foldr1 f (unCS ls)
 
+    concat = CS . BS.concat . map unCS . toList
+    --concatMap = BS.concatMap
+    rigidConcatMap f = CS . BS.concatMap (unCS . f) . unCS
+    any p = BS.any p . unCS
+    all p = BS.all p . unCS
+    maximum = BS.maximum . unCS
+    minimum = BS.minimum . unCS
+    elem x = BS.elem x . unCS
+    notElem x = BS.notElem x . unCS
+    toList = BS.unpack . unCS
+
 instance TraversableLL CharString Char where
     rigidMap f = CS . BS.map f . unCS
-    rigidTraverse = Base.rigidTraverse
+    rigidTraverse = traverse
 
-instance ListLike CharString Char where
+instance UnfoldableLL CharString Char where
+    unfoldr f s = CS $ BS.unfoldr f s
+    unfoldrN n f s = CS $ fst $ BS.unfoldrN n f s
     empty = CS BS.empty
     singleton = CS . BS.singleton
+    --replicate i = CS . BS.replicate (fromIntegral i)
+    fromList = CS . BS.pack
+    fromListLike = fromList . toList
+    --genericReplicate i = CS . BS.replicate (fromIntegral i)
+
+instance ListLike CharString Char where
     cons x l = CS (BS.cons x (unCS l))
     snoc l x = CS (BS.snoc (unCS l) x)
     append l r = CS $ BS.append (unCS l) (unCS r)
@@ -95,14 +115,6 @@ instance ListLike CharString Char where
     -- map = BS.map
     reverse = CS . BS.reverse . unCS
     --intersperse = BS.intersperse
-    concat = CS . BS.concat . map unCS . toList
-    --concatMap = BS.concatMap
-    rigidConcatMap f = CS . BS.concatMap (unCS . f) . unCS
-    any p = BS.any p . unCS
-    all p = BS.all p . unCS
-    maximum = BS.maximum . unCS
-    minimum = BS.minimum . unCS
-    replicate i = CS . BS.replicate (fromIntegral i)
     take i = CS . BS.take (fromIntegral i) . unCS
     drop i = CS . BS.drop (fromIntegral i) . unCS
     splitAt i = (CS *** CS) . BS.splitAt (fromIntegral i) . unCS
@@ -116,8 +128,6 @@ instance ListLike CharString Char where
     isPrefixOf p f = BS.isPrefixOf (unCS p) (unCS f)
     --isSuffixOf = BS.isSuffixOf
     --isInfixOf = BS.isInfixOf
-    elem x = BS.elem x . unCS
-    notElem x = BS.notElem x . unCS
     find p = BS.find p . unCS
     filter p = CS . BS.filter p . unCS
     --partition = BS.partition
@@ -136,9 +146,6 @@ instance ListLike CharString Char where
     --intersect = BS.intersect
     --sort = BS.sort
     --insert = BS.insert
-    toList = BS.unpack . unCS
-    fromList = CS . BS.pack
-    fromListLike = fromList . toList
     --nubBy = BS.nubBy
     --deleteBy = BS.deleteBy
     --deleteFirstsBy = BS.deleteFirstsBy
@@ -153,7 +160,6 @@ instance ListLike CharString Char where
     genericTake i = CS . BS.take (fromIntegral i) . unCS
     genericDrop i = CS . BS.drop (fromIntegral i) . unCS
     genericSplitAt i = (CS *** CS) . BS.splitAt (fromIntegral i) . unCS
-    genericReplicate i = CS . BS.replicate (fromIntegral i)
 
 instance ListLikeIO CharString Char where
     hGetLine h = fmap CS $ BS.hGetLine h
@@ -200,11 +206,18 @@ mi64toi (Just x) = Just (fromIntegral x)
 
 instance TraversableLL CharStringLazy Char where
     rigidMap f = CSL . BSL.map f . unCSL
-    rigidTraverse = Base.rigidTraverse
+    rigidTraverse = traverse
 
-instance ListLike CharStringLazy Char where
+instance UnfoldableLL CharStringLazy Char where
+    unfoldr f s = CSL $ BSL.unfoldr f s
     empty = CSL BSL.empty
     singleton = CSL . BSL.singleton
+    --replicate i = CS . BS.replicate (fromIntegral i)
+    fromList = CSL . BSL.pack
+    fromListLike = fromList . toList
+    --genericReplicate i = CS . BS.replicate (fromIntegral i)
+
+instance ListLike CharStringLazy Char where
     cons x l = CSL (BSL.cons x (unCSL l))
     snoc l x = CSL (BSL.snoc (unCSL l) x)
     append l r = CSL $ BSL.append (unCSL l) (unCSL r)
@@ -217,14 +230,6 @@ instance ListLike CharStringLazy Char where
     -- map = BSL.map
     reverse = CSL . BSL.reverse . unCSL
     --intersperse = BSL.intersperse
-    concat = CSL . BSL.concat . map unCSL . toList
-    --concatMap = BSL.concatMap
-    rigidConcatMap f = CSL . BSL.concatMap (unCSL . f) . unCSL
-    any p = BSL.any p . unCSL
-    all p = BSL.all p . unCSL
-    maximum = BSL.maximum . unCSL
-    minimum = BSL.minimum . unCSL
-    replicate i = CSL . BSL.replicate (fromIntegral i)
     take i = CSL . BSL.take (fromIntegral i) . unCSL
     drop i = CSL . BSL.drop (fromIntegral i) . unCSL
     splitAt i = (CSL *** CSL) . BSL.splitAt (fromIntegral i) . unCSL
@@ -238,8 +243,6 @@ instance ListLike CharStringLazy Char where
     isPrefixOf p f = BSL.isPrefixOf (unCSL p) (unCSL f)
     --isSuffixOf = BSL.isSuffixOf
     --isInfixOf = BSL.isInfixOf
-    elem x = BSL.elem x . unCSL
-    notElem x = BSL.notElem x . unCSL
     find p = BSL.find p . unCSL
     filter p = CSL . BSL.filter p . unCSL
     --partition = BSL.partition
@@ -258,9 +261,6 @@ instance ListLike CharStringLazy Char where
     --intersect = BSL.intersect
     --sort = BSL.sort
     --insert = BSL.insert
-    toList = BSL.unpack . unCSL
-    fromList = CSL . BSL.pack
-    fromListLike = fromList . toList
     --nubBy = BSL.nubBy
     --deleteBy = BSL.deleteBy
     --deleteFirstsBy = BSL.deleteFirstsBy
@@ -275,7 +275,6 @@ instance ListLike CharStringLazy Char where
     genericTake i = CSL . BSL.take (fromIntegral i) . unCSL
     genericDrop i = CSL . BSL.drop (fromIntegral i) . unCSL
     genericSplitAt i = (CSL *** CSL) . BSL.splitAt (fromIntegral i) . unCSL
-    genericReplicate i = CSL . BSL.replicate (fromIntegral i)
 
 strict2lazy :: BS.ByteString -> CharStringLazy
 strict2lazy b = CSL $ BSL.fromChunks [b]

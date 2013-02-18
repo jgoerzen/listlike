@@ -46,6 +46,7 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
 import qualified Data.List as L
 import Data.ListLike.FoldableLL
 import Data.ListLike.TraversableLL
+import Data.ListLike.UnfoldableLL
 import qualified Control.Applicative as A
 import qualified Control.Monad as M
 import qualified Control.Monad.Identity as M
@@ -70,16 +71,8 @@ Implementators must define at least:
 
 * null or genericLength
 -}
-class (TraversableLL full item, Monoid full) =>
+class (UnfoldableLL full item, Monoid full) =>
     ListLike full item | full -> item where
-
-    ------------------------------ Creation
-    {- | The empty list -}
-    empty :: full
-    empty = mempty
-
-    {- | Creates a single-element list out of an element -}
-    singleton :: item -> full
 
     ------------------------------ Basic Functions
 
@@ -126,15 +119,6 @@ class (TraversableLL full item, Monoid full) =>
 
     ------------------------------ List Transformations
 
-    {- | Apply a function to each element, returning any other
-         valid 'ListLike'.  'rigidMap' will always be at least
-         as fast, if not faster, than this function and is recommended
-         if it will work for your purposes.  See also 'mapM'. -}
-    map :: ListLike full' item' => (item -> item') -> full -> full'
-    map func inp  
-        | null inp = empty
-        | otherwise = cons (func (head inp)) (map func (tail inp))
-
     {- | Reverse the elements in a list. -}
     reverse :: full -> full 
     reverse l = rev l empty
@@ -152,45 +136,6 @@ class (TraversableLL full item, Monoid full) =>
 
     ------------------------------ Reducing Lists (folds)
     -- See also functions in FoldableLLL
-
-    ------------------------------ Special folds
-    {- | Flatten the structure. -}
-    concat :: (ListLike full' full, Monoid full) => full' -> full
-    concat = fold
-
-    {- | Map a function over the items and concatenate the results.
-         See also 'rigidConcatMap'.-}
-    concatMap :: (FoldableLL full item, Monoid full') =>
-                 (item -> full') -> full -> full'
-    concatMap = foldMap
-
-    {- | Like 'concatMap', but without the possibility of changing
-         the type of the item.  This can have performance benefits
-         for some things such as ByteString. -}
-    rigidConcatMap :: (item -> full) -> full -> full
-    rigidConcatMap = concatMap
-
-    {- | True if any items satisfy the function -}
-    any :: (item -> Bool) -> full -> Bool
-    any p = getAny . foldMap (Any . p)
-
-    {- | True if all items satisfy the function -}
-    all :: (item -> Bool) -> full -> Bool
-    all p = getAll . foldMap (All . p)
-
-    {- | The maximum value of the list -}
-    maximum :: Ord item => full -> item
-    maximum = foldr1 max
-
-    {- | The minimum value of the list -}
-    minimum :: Ord item => full -> item
-    minimum = foldr1 min
-
-    ------------------------------ Infinite lists
-    {- | Generate a structure with the specified length with every element
-    set to the item passed in.  See also 'genericReplicate' -}
-    replicate :: Int -> item -> full
-    replicate = genericReplicate
 
     ------------------------------ Sublists
     {- | Takes the first n elements of the list.  See also 'genericTake'. -}
@@ -274,14 +219,6 @@ class (TraversableLL full item, Monoid full) =>
         where thetails = asTypeOf (tails haystack) [haystack]
 
     ------------------------------ Searching
-    {- | True if the item occurs in the list -}
-    elem :: Eq item => item -> full -> Bool
-    elem i = any (== i)
-
-    {- | True if the item does not occur in the list -}
-    notElem :: Eq item => item -> full -> Bool
-    notElem i = all (/= i)
-
     {- | Take a function and return the first matching element, or Nothing
        if there is no such element. -}
     find :: (item -> Bool) -> full -> Maybe item
@@ -341,17 +278,6 @@ class (TraversableLL full item, Monoid full) =>
                 fullinp -> m full
     sequence = foldr (M.liftM2 cons) (return empty)
 
-    {- | A map in applicative space. -}
-    traverse :: (A.Applicative f, ListLike full' item') =>
-            (item -> f item') -> full -> f full'
-    traverse func l = sequenceA mapresult
-            where mapresult = asTypeOf (map func l) []
-
-    {- | Like 'traverse', but without the possibility of changing the type
-         of the item.  This can have performance benefits with some types. -}
-    rigidTraverse :: (A.Applicative f) => (item -> f item) -> full -> f full
-    rigidTraverse = traverse
-
 
     ------------------------------ "Set" operations
     {- | Removes duplicate elements from the list.  See also 'nubBy' -}
@@ -393,23 +319,6 @@ class (TraversableLL full item, Monoid full) =>
          changing an existing item.  See also 'insertBy'. -}
     insert :: Ord item => item -> full -> full 
     insert = insertBy compare
-
-    ------------------------------ Conversions
-
-    {- | Converts the structure to a list.  This is logically equivolent
-         to 'fromListLike', but may have a more optimized implementation. -}
-    toList :: full -> [item]
-    toList = fromListLike
-
-    {- | Generates the structure from a list. -}
-    fromList :: [item] -> full 
-    fromList [] = empty
-    fromList (x:xs) = cons x (fromList xs)
-
-    {- | Converts one ListLike to another.  See also 'toList'.
-         Default implementation is @fromListLike = map id@ -}
-    fromListLike :: ListLike full' item => full -> full'
-    fromListLike = map id
 
     ------------------------------ Generalized functions
     {- | Generic version of 'nub' -}
@@ -500,12 +409,6 @@ class (TraversableLL full item, Monoid full) =>
     genericSplitAt :: Integral a => a -> full -> (full, full)
     genericSplitAt n l = (genericTake n l, genericDrop n l)
 
-    {- | Generic version of 'replicate' -}
-    genericReplicate :: Integral a => a -> item -> full
-    genericReplicate count x 
-        | count <= 0 = empty
-        | otherwise = map (\_ -> x) [1..count]
-
 {-
 instance (ListLike full item) => Monad full where
     m >>= k = foldr (append . k) empty m
@@ -542,8 +445,6 @@ class (ListLike full item) => InfiniteListLike full item | full -> item where
 -- This instance is here due to some default class functions
 
 instance ListLike [a] a where
-    empty = []
-    singleton x = [x]
     cons x l = x : l
     snoc l x = l ++ [x]
     append = (++)
@@ -553,22 +454,12 @@ instance ListLike [a] a where
     init = L.init
     null = L.null
     length = L.length
-    map f = fromList . L.map f
     reverse = L.reverse
     intersperse = L.intersperse
-    toList = id
-    fromList = id
     -- fromListLike = toList
-    concat = L.concat . toList
     -- concatMap func = fromList . L.concatMap func
-    rigidConcatMap = L.concatMap
-    any = L.any
-    all = L.all
-    maximum = L.maximum
-    minimum = L.minimum
     -- fold
     -- foldMap
-    replicate = L.replicate
     take = L.take
     drop = L.drop
     splitAt = L.splitAt
@@ -582,8 +473,6 @@ instance ListLike [a] a where
     isPrefixOf = L.isPrefixOf
     isSuffixOf = L.isSuffixOf
     isInfixOf = L.isInfixOf
-    elem = L.elem
-    notElem = L.notElem
     find = L.find
     filter = L.filter
     partition = L.partition
@@ -605,17 +494,6 @@ instance ListLike [a] a where
     sortBy = L.sortBy
     insert = L.insert
     genericLength = L.genericLength
-
-
---------------------------------------------------
--- Moved from ListLike to top-level:
-
-{- | A map in monad space.  Same as @'sequence' . 'map'@
-
-     See also 'rigidMapM' -}
-mapM :: (Monad m, ListLike full item, ListLike full' item') =>
-        (item -> m item') -> full -> m full'
-mapM f = A.unwrapMonad . traverse (A.WrapMonad . f)
 
 --------------------------------------------------
 -- These utils are here instead of in Utils.hs because they are needed

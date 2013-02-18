@@ -34,6 +34,7 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
 import qualified Data.List as L
+import Data.ListLike.UnfoldableLL
 import Data.ListLike.Base
 
 {- | An extension to 'ListLike' for those data types that are similar
