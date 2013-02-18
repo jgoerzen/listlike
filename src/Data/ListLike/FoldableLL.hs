@@ -28,7 +28,12 @@ module Data.ListLike.FoldableLL
     (-- * FoldableLL Class
      FoldableLL(..),
      -- * Utilities
-     fold, foldMap, foldM, sequence_, mapM_
+     fold, foldMap,
+     -- * Folding actinos
+     -- ** Applicative actions
+     traverse_, for_, sequenceA_, asum,
+     -- ** Monadic actions
+     foldM, sequence_, mapM_, forM_, msum
     ) where 
 import Prelude hiding (length, head, last, null, tail, map, filter, concat, 
                        any, lookup, init, all, foldl, foldr, foldl1, foldr1,
@@ -38,6 +43,8 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        product, repeat, replicate, cycle, take, drop,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
+import Control.Applicative
+import Control.Monad hiding (mapM, mapM_, sequence_, foldM, forM_, msum)
 import qualified Data.Foldable as F
 import Data.Monoid
 import Data.Maybe
@@ -162,6 +169,37 @@ instance (F.Foldable f) => FoldableLL (f a) a where
     foldr' = F.foldr'
 -}
 
+-- Applicative actions -------------------------------------------------
+
+{- | Map each element of a structure to an action, evaluate these actions
+   from left to right, and ignore the results. -}
+traverse_ 
+    :: (Applicative f, FoldableLL full item)
+    => (item -> f b) -> full -> f ()
+traverse_ func = foldr ((*>) . func) (pure ())
+
+{- | 'for_' is 'traverse_' with its arguments flipped. -}
+for_
+    :: (Applicative f, FoldableLL full item)
+    => full -> (item -> f b) -> f ()
+for_ = flip traverse_
+
+{- | Evaluate each action in the structure from left to right, and ignore
+   the results. -}
+sequenceA_ 
+    :: (Applicative f, FoldableLL full (f item))
+    => full -> f ()
+sequenceA_ = traverse_ id
+
+{- | The sum of a collection of actions, generalizing concat.-}
+asum 
+    :: (Alternative f, FoldableLL full (f item))
+    => full -> f item
+asum = foldr (<|>) empty
+
+
+-- Monadic actions -----------------------------------------------------
+
 -- Based on http://stackoverflow.com/a/12881193/1333025
 {- | Monadic version of left fold, similar to 'Control.Monad.foldM'. -}
 foldM :: (Monad m, FoldableLL full item) => (a -> item -> m a) -> a -> full -> m a
@@ -171,7 +209,17 @@ foldM f z xs = foldr (\x rest a -> f a x >>= rest) return xs z
 mapM_ :: (Monad m, FoldableLL full item) => (item -> m b) -> full -> m ()
 mapM_ func = foldr ((>>) . func) (return ())
 
+{- | A map in monad space, discarding results. -}
+forM_ :: (Monad m, FoldableLL full item) => full -> (item -> m b) -> m ()
+forM_ = flip mapM_
+
 {- | Evaluate each action, ignoring the results.
    Same as @'mapM_' 'id'@. -}
 sequence_ :: (Monad m, FoldableLL full (m item)) => full -> m ()
 sequence_ = mapM_ id
+
+{- | The sum of a collection of actions, generalizing concat.-}
+msum 
+    :: (MonadPlus m, FoldableLL full (m item))
+    => full -> m item
+msum = foldr mplus mzero
