@@ -156,6 +156,15 @@ class FoldableLL full item | full -> item where
     toList = foldr (:) []
     {-# INLINE toList #-}
 
+    {- | Converts the structure to a list. In addition, returns
+         the length of the returned list, if its computation of
+         doesn't take longer than /O(1)/. This is useful if we
+         want to use 'fromListN' or 'unfoldrN' later.
+    -}
+    toListN :: full -> (Maybe Int, [item])
+    toListN = ((,) Nothing) . toList
+    {-# INLINE toListN #-}
+
 {- | Combine the elements of a structure using a monoid.
      @'fold' = 'foldMap' id@ -}
 fold :: (FoldableLL full item, Monoid item) => full -> item

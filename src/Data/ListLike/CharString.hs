@@ -87,6 +87,7 @@ instance FoldableLL CharString Char where
     elem x = BS.elem x . unCS
     notElem x = BS.notElem x . unCS
     toList = BS.unpack . unCS
+    toListN (CS s) = (BS.unpack s, Just (BS.length s))
 
 instance TraversableLL CharString Char where
     rigidMap f = CS . BS.map f . unCS

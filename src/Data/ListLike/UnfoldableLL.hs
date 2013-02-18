@@ -41,7 +41,14 @@ class (TraversableLL full item) =>
     traverse
       :: (Applicative f, FoldableLL full1 item1)
       => (item1 -> f item) -> full1 -> f full
-    traverse f = fmap fromList . T.traverse f . toList
+    -- If the length of the original collection is known,
+    -- we use 'fromListN' to optimize the creation of
+    -- the new collection.
+    traverse f xs = case toListN xs of
+        (Nothing, ys)   -> tr  fromList     ys
+        (Just l,  ys)   -> tr (fromListN l) ys
+      where
+        tr fromL = fmap fromL . T.traverse f
     {-# INLINE traverse #-}
 
     {- | Apply a function to each element, returning any other
@@ -71,10 +78,25 @@ class (TraversableLL full item) =>
         u (x:xs) = Just (x, xs)
     {-# INLINE fromList #-}
 
+    {- | Generates the structure from a list.
+         In addition, it is given a likely upper bound length of the result
+         in its first argument. This function is usually more efficient than
+         'fromList' when the maximum length of the result is known and correct.
+         If the first argument is negative, the bound is not known and
+         'fromListN' behaves just like 'fromList'.
+    -}
+    fromListN :: Int -> [item] -> full
+    fromListN n = unfoldrN n u
+      where
+        u []     = Nothing
+        u (x:xs) = Just (x, xs)
+    {-# INLINE fromListN #-}
+
     {- | Converts one ListLike to another.  See also 'toList'.
-         Default implementation is @fromListLike = fromList . toList@ -}
+         Default implementation is @fromListLike = map id@ -}
     fromListLike :: (FoldableLL full' item) => full' -> full
-    fromListLike = fromList . toList
+    fromListLike = map id
+    --fromListLike = uncurry fromListNMaybe . toListN
     {-# INLINE fromListLike #-}
 
 mapM 
@@ -83,6 +105,11 @@ mapM
 mapM f = unwrapMonad . traverse (WrapMonad . f)
 {-# INLINE mapM #-}
 
+
+-- TODO: Should we export this?
+fromListNMaybe :: (UnfoldableLL full item) => Maybe Int -> [item] -> full
+fromListNMaybe = maybe fromList fromListN
+{-# INLINE fromListNMaybe #-}
 
 ------------------------------ Infinite lists
 {- | Generate a structure with the specified length with every element
@@ -106,3 +133,4 @@ instance UnfoldableLL [a] a where
     empty = []
     map f = L.map f . toList
     fromList = id
+    fromListN _ = id
