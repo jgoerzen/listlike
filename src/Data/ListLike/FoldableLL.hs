@@ -28,7 +28,7 @@ module Data.ListLike.FoldableLL
     (-- * FoldableLL Class
      FoldableLL(..),
      -- * Utilities
-     fold, foldMap,
+     fold, foldMap, headMaybe, lastMaybe,
      -- * Folding actinos
      -- ** Applicative actions
      traverse_, for_, sequenceA_, asum,
@@ -209,6 +209,19 @@ fold = foldMap id
 foldMap :: (FoldableLL full item, Monoid m) => (item -> m) -> full -> m
 foldMap f = foldr (mappend . f) mempty
 {-# INLINE foldMap #-}
+
+{- | Safely extracts the first element. -}
+headMaybe :: (FoldableLL full item) => full -> Maybe item
+headMaybe l | null l    = Nothing
+            | otherwise = Just $ head l
+{-# INLINE headMaybe #-}
+
+{- | Safely extracts the last element. -}
+lastMaybe :: (FoldableLL full item) => full -> Maybe item
+lastMaybe l | null l    = Nothing
+            | otherwise = Just $ last l
+{-# INLINE lastMaybe #-}
+
 
 instance FoldableLL [a] a where
     foldl = L.foldl
