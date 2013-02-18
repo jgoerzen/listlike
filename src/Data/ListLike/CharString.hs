@@ -101,6 +101,7 @@ instance FoldableLL CharString Char where
     --elemIndices x = fromList . L.map fromIntegral . BS.elemIndices x
     findIndex f = BS.findIndex f . unCS
     --findIndices x = fromList . L.map fromIntegral . BS.findIndices x
+    isPrefixOf p f = BS.isPrefixOf (unCS p) (unCS f)
 
 instance TraversableLL CharString Char where
     rigidMap f = CS . BS.map f . unCS
@@ -135,7 +136,6 @@ instance ListLike CharString Char where
     group = fromList . map CS . BS.group . unCS
     inits = fromList . map CS . BS.inits . unCS
     tails = fromList . map CS . BS.tails . unCS
-    isPrefixOf p f = BS.isPrefixOf (unCS p) (unCS f)
     --isSuffixOf = BS.isSuffixOf
     --isInfixOf = BS.isInfixOf
     filter p = CS . BS.filter p . unCS
@@ -215,6 +215,7 @@ instance FoldableLL CharStringLazy Char where
     --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
     findIndex f = mi64toi . BSL.findIndex f . unCSL
     --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
+    isPrefixOf p f = BSL.isPrefixOf (unCSL p) (unCSL f)
 
 mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
@@ -252,7 +253,6 @@ instance ListLike CharStringLazy Char where
     group = fromList . map CSL . BSL.group . unCSL
     inits = fromList . map CSL . BSL.inits . unCSL
     tails = fromList . map CSL . BSL.tails . unCSL
-    isPrefixOf p f = BSL.isPrefixOf (unCSL p) (unCSL f)
     --isSuffixOf = BSL.isSuffixOf
     --isInfixOf = BSL.isInfixOf
     filter p = CSL . BSL.filter p . unCSL

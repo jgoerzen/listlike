@@ -182,13 +182,6 @@ class (UnfoldableLL full item, Monoid full) =>
         | otherwise = cons l (tails (tail l))
 
     ------------------------------ Predicates
-    {- | True when the first list is at the beginning of the second. -}
-    isPrefixOf :: Eq item => full -> full -> Bool
-    isPrefixOf needle haystack
-        | null needle = True
-        | null haystack = False
-        | otherwise = (head needle) == (head haystack) && 
-                      isPrefixOf (tail needle) (tail haystack)
 
     {- | True when the first list is at the beginning of the second. -}
     isSuffixOf :: Eq item => full -> full -> Bool
@@ -394,7 +387,6 @@ instance ListLike [a] a where
     group = fromList . L.group
     inits = fromList . L.inits
     tails = fromList . L.tails
-    isPrefixOf = L.isPrefixOf
     isSuffixOf = L.isSuffixOf
     isInfixOf = L.isInfixOf
     filter = L.filter

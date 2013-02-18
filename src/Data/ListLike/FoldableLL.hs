@@ -178,6 +178,18 @@ class FoldableLL full item | full -> item where
     elemIndices i l = findIndices (== i) l
     {-# INLINE elemIndices #-}
 
+    ------------------------------ Predicates
+    
+    {- | True when the first list is at the beginning of the second. -}
+    isPrefixOf :: (Eq item) => full -> full -> Bool
+    isPrefixOf needle haystack = foldr f null haystack (toList needle)
+      where
+        f x k []        = True
+        f x k (n:ns)
+            | n == x    = k ns
+            | otherwise = False
+    {-# INLINE isPrefixOf #-}
+
     ------------------------------ Special folds
     {- | Flatten the structure. -}
     concat :: (FoldableLL full' full, Monoid full) => full' -> full
@@ -304,6 +316,9 @@ instance FoldableLL [a] a where
     {-# INLINE elemIndices #-}
     findIndex = L.findIndex
     {-# INLINE findIndex #-}
+
+    isPrefixOf = L.isPrefixOf
+    {-# INLINE isPrefixOf #-}
 
 {-
 instance (F.Foldable f) => FoldableLL (f a) a where
