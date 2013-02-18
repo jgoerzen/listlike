@@ -214,28 +214,6 @@ class (UnfoldableLL full item, Monoid full) =>
     partition :: (item -> Bool) -> full -> (full, full)
     partition p xs = (filter p xs, filter (not . p) xs)
 
-    ------------------------------ Indexing
-
-    {- | Returns the index of the element, if it exists. -}
-    elemIndex :: Eq item => item -> full -> Maybe Int
-    elemIndex e l = findIndex (== e) l
-
-    {- | Returns the indices of the matching elements.  See also 
-       'findIndices' -}
-    elemIndices :: (Eq item, ListLike result Int) => item -> full -> result
-    elemIndices i l = findIndices (== i) l
-
-    {- | Take a function and return the index of the first matching element,
-         or Nothing if no element matches -}
-    findIndex :: (item -> Bool) -> full -> Maybe Int
-    findIndex f = listToMaybe . findIndices f
-
-    {- | Returns the indices of all elements satisfying the function -}
-    findIndices :: (ListLike result Int) => (item -> Bool) -> full -> result
-    findIndices p xs = map snd $ filter (p . fst) $ thezips
-        where thezips = asTypeOf (zip xs [0..]) [(head xs, 0::Int)]
-
-
     ------------------------------ "Set" operations
     {- | Removes duplicate elements from the list.  See also 'nubBy' -}
     nub :: Eq item => full -> full
@@ -421,9 +399,6 @@ instance ListLike [a] a where
     isInfixOf = L.isInfixOf
     filter = L.filter
     partition = L.partition
-    elemIndex = L.elemIndex
-    elemIndices item = fromList . L.elemIndices item
-    findIndex = L.findIndex
     -- mapM = M.mapM
     nub = L.nub
     delete = L.delete

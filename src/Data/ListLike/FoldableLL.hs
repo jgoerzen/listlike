@@ -136,7 +136,7 @@ class FoldableLL full item | full -> item where
               | otherwise   = foldr f (const err) l n
       where
         f x k 0 = x
-        f _ k i = k (i - 1)
+        f _ k i = k $! i - 1
         err = error $ "index: index " ++ show n ++ " not found"
     {-# INLINE index #-}
 
@@ -147,6 +147,36 @@ class FoldableLL full item | full -> item where
     find :: (item -> Bool) -> full -> Maybe item
     find p = foldr (\x r -> if p x then Just x else r) Nothing
     {-# INLINE find #-}
+
+    {- | Take a function and return the index of the first matching element,
+         or @Nothing@ if no element matches. -}
+    findIndex :: (item -> Bool) -> full -> Maybe Int
+    findIndex p l = foldr f (const Nothing) l 0
+      where
+        f x k i | p x       = Just i
+                | otherwise = k $! i + 1
+    {-# INLINE findIndex #-}
+
+
+    {- | Returns the indices of all elements satisfying the function -}
+    findIndices :: (item -> Bool) -> full -> [Int]
+    findIndices p l = foldr f (const []) l 0
+      where
+        f x k i | p x          = i : (k $! i + 1)
+                | otherwise    =     (k $! i + 1)
+    {-# INLINE findIndices #-}
+
+
+    {- | Returns the index of the element, if it exists. -}
+    elemIndex :: (Eq item) => item -> full -> Maybe Int
+    elemIndex e l = findIndex (== e) l
+    {-# INLINE elemIndex #-}
+
+    {- | Returns the indices of the matching elements.  See also 
+       'findIndices' -}
+    elemIndices :: (Eq item) => item -> full -> [Int]
+    elemIndices i l = findIndices (== i) l
+    {-# INLINE elemIndices #-}
 
     ------------------------------ Special folds
     {- | Flatten the structure. -}
@@ -265,6 +295,15 @@ instance FoldableLL [a] a where
     {-# INLINE length #-}
     find = L.find
     {-# INLINE find #-}
+    index = (L.!!)
+    {-# INLINE index #-}
+
+    elemIndex = L.elemIndex
+    {-# INLINE elemIndex #-}
+    elemIndices item = L.elemIndices item
+    {-# INLINE elemIndices #-}
+    findIndex = L.findIndex
+    {-# INLINE findIndex #-}
 
 {-
 instance (F.Foldable f) => FoldableLL (f a) a where

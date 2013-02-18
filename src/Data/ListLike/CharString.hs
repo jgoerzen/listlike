@@ -97,6 +97,11 @@ instance FoldableLL CharString Char where
     toList = BS.unpack . unCS
     toListN (CS s) = (Just (BS.length s), BS.unpack s)
 
+    elemIndex i = BS.elemIndex i  . unCS
+    --elemIndices x = fromList . L.map fromIntegral . BS.elemIndices x
+    findIndex f = BS.findIndex f . unCS
+    --findIndices x = fromList . L.map fromIntegral . BS.findIndices x
+
 instance TraversableLL CharString Char where
     rigidMap f = CS . BS.map f . unCS
     rigidTraverse = traverse
@@ -135,10 +140,6 @@ instance ListLike CharString Char where
     --isInfixOf = BS.isInfixOf
     filter p = CS . BS.filter p . unCS
     --partition = BS.partition
-    elemIndex i = BS.elemIndex i  . unCS
-    --elemIndices x = fromList . L.map fromIntegral . BS.elemIndices x
-    findIndex f = BS.findIndex f . unCS
-    --findIndices x = fromList . L.map fromIntegral . BS.findIndices x
     --sequence = BS.sequence
     --mapM = BS.mapM
     --mapM_ = BS.mapM_
@@ -210,6 +211,11 @@ instance FoldableLL CharStringLazy Char where
     find p = BSL.find p . unCSL
     index l i = BSL.index (unCSL l) (fromIntegral i)
 
+    elemIndex i = mi64toi . BSL.elemIndex i  . unCSL
+    --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
+    findIndex f = mi64toi . BSL.findIndex f . unCSL
+    --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
+
 mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
 mi64toi (Just x) = Just (fromIntegral x)
@@ -251,10 +257,6 @@ instance ListLike CharStringLazy Char where
     --isInfixOf = BSL.isInfixOf
     filter p = CSL . BSL.filter p . unCSL
     --partition = BSL.partition
-    elemIndex i = mi64toi . BSL.elemIndex i  . unCSL
-    --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
-    findIndex f = mi64toi . BSL.findIndex f . unCSL
-    --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
     --sequence = BSL.sequence
     --mapM = BSL.mapM
     --mapM_ = BSL.mapM_
