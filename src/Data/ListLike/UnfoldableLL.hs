@@ -28,13 +28,15 @@ class (TraversableLL full item) =>
     UnfoldableLL full item | full -> item where
 
     unfoldr :: (a -> Maybe (item, a)) -> a -> full
-    -- | O(n) Like 'unfold'r, 'unfoldr'N builds a collection from a seed
+    -- | /O(n)/ Like 'unfoldr', 'unfoldrN' builds a collection from a seed
     -- value.  In addition, it is given a likely upper bound length of the
     -- result in its first argument. This function is usually more efficient
-    -- than unfoldr when the maximum length of the result is known and
+    -- than 'unfoldr' when the maximum length of the result is known and
     -- correct.
     -- If the first argument is negative, the bound is not known and
     -- 'unfoldrN' behaves just like 'unfoldr'.
+    -- The default implementation just calls 'unfoldr' and ignores the first
+    -- argument.
     unfoldrN :: Int -> (a -> Maybe (item, a)) -> a -> full
     unfoldrN _ = unfoldr
 
