@@ -80,6 +80,24 @@ class FoldableLL full item | full -> item where
                  mf (Just x) y = Just (f x y)
     {-# INLINE foldl1 #-}
 
+    {- | Left-associative fold that allows premature termination. -}
+    foldlE :: (a -> c) -> (a -> item -> Either c a) -> a -> full -> c
+    foldlE fin f a xs = foldr f' fin xs a
+        where f' x k z = case f z x of
+                            Right a     -> k a
+                            Left c      -> c
+
+    {- | Left-associative strict fold that allows premature termination. -}
+    foldlE' :: (a -> c) -> (a -> item -> Either c a) -> a -> full -> c
+    foldlE' fin f = foldlE fin (f $!)
+{-
+    foldlE' fin f a xs = foldr f' fin xs a
+        where f' x k z = case f z x of
+                            Right a     -> k $! a
+                            Left c      -> c
+-}
+    {-# INLINE foldlE' #-}
+
     {- | Right-associative fold -}
     foldr :: (item -> b -> b) -> b -> full -> b
     foldr f a xs = foldl f' id xs a
@@ -132,12 +150,19 @@ class FoldableLL full item | full -> item where
     {- | The element at 0-based index @i@.  Raises an exception if @i@ is out
          of bounds.  Like @(!!)@ for lists. -}
     index :: full -> Int -> item
+    index l n = foldlE' err f n l
+      where
+        f 0 x = Left x
+        f i _ = Right $! i - 1
+        err = error $ "index: index " ++ show n ++ " not found"
+    {-
     index l n | n < 0       = err
               | otherwise   = foldr f (const err) l n
       where
         f x k 0 = x
         f _ k i = k $! i - 1
         err = error $ "index: index " ++ show n ++ " not found"
+    -}
     {-# INLINE index #-}
 
     ------------------------------ Searching
@@ -151,10 +176,16 @@ class FoldableLL full item | full -> item where
     {- | Take a function and return the index of the first matching element,
          or @Nothing@ if no element matches. -}
     findIndex :: (item -> Bool) -> full -> Maybe Int
+    findIndex p = foldlE' (const Nothing) f 0
+      where
+        f i x | p x         = Left (Just i)
+              | otherwise   = Right $ i + 1
+{-
     findIndex p l = foldr f (const Nothing) l 0
       where
         f x k i | p x       = Just i
                 | otherwise = k $! i + 1
+-}
     {-# INLINE findIndex #-}
 
 
@@ -290,6 +321,14 @@ instance FoldableLL [a] a where
     {-# INLINE foldl1 #-}
     foldl' = L.foldl'
     {-# INLINE foldl' #-}
+    foldlE fin f = g
+      where
+        g z []      = fin z
+        g z (x:xs)  = case f z x of
+                        Left c  -> c
+                        Right a -> g a xs
+    {-# INLINE foldlE #-}
+
     foldr = L.foldr
     {-# INLINE foldr #-}
     foldr1 = L.foldr1
