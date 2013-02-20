@@ -10,7 +10,7 @@ For license and copyright information, see the file COPYRIGHT
 {- |
    Module     : Data.ListLike
    Copyright  : Copyright (C) 2007 John Goerzen
-   License    : LGPL
+   License    : BSD3
 
    Maintainer : John Goerzen <jgoerzen@complete.org>
    Stability  : provisional
@@ -93,12 +93,11 @@ module Data.ListLike
                  -- ** Arrays
                  -- $notesarray
 
-                 -- ** Maps
-                 -- $notesmap
-
                  -- ** ByteStrings
                  -- $notesbytestring
-                 
+                 CharString (..),
+                 CharStringLazy (..),
+
                  -- * Base Typeclasses
                  -- ** The ListLike class
                  ListLike,
@@ -119,7 +118,9 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
 import Data.ListLike.Base
+import Data.ListLike.CharString
 import Data.ListLike.FoldableLL
+import Data.ListLike.TraversableLL
 import Data.ListLike.Instances()
 import Data.ListLike.String
 import Data.ListLike.Utils
@@ -140,14 +141,14 @@ They carry the
 same names, too.  Therefore, you'll want to be careful how you import
 the module.  I suggest using:
 
->import qualified ListLike as LL
+>import qualified Data.ListLike as LL
 
 Then, you can use LL.fold, LL.map, etc. to get the generic version of
 the functions you want.  Alternatively, you can hide the other versions
 from Prelude and import specific generic functions from here, such as:
 
 >import Prelude hiding (map)
->import ListLike (map)
+>import Data.ListLike (map)
 
 The module "Data.ListLike" actually simply re-exports the items found
 in a number of its sub-modules.  If you want a smaller subset of
@@ -205,37 +206,14 @@ modules.  The exceptions are:
   not assigned a value to every slot in the array.
 -}
 
-{- $notesmap
-
-'Data.Map.Map' is an instance of 'ListLike' and is a rather interesting one at
-that.  The \"item\" for the Map instance is a @(key, value)@ pair.  This
-permits you to do folds, maps, etc. over a Map just like you would on a list.
-
-The nature of a Map -- that every key is unique, and that it is internally
-sorted -- means that there are some special things to take note of:
-
-* 'cons' may or may not actually increase the size of the Map.  If the given
-   key is already in the map, its value will simply be updated.  Since
-   a Map has a set internal ordering, it is also not guaranteed that cons
-   will add something to the beginning of the Map.
-
-* 'snoc' is the same operation as 'cons'.
-
-* 'append' is 'Data.Map.union'
-
-* 'nub', 'nubBy',
-  'reverse', 'sort', 'sortBy', etc. are the identity function and don\'t
-  actually perform any computation
-
-* 'insert' is the same as 'cons'.
-
-* 'replicate' and 'genericReplicate' ignore the count and return a Map
-  with a single element.
--}
-
 {- $notesbytestring
 
 Both strict and lazy ByteStreams can be used with 'ListLike'.
+
+ByteString ListLike instances operate on 'Word8' elements.  This is because
+both Data.ByteString.ByteString and Data.ByteString.Char8.ByteString have
+the same underlying type.  If you wish to use the Char8 representation,
+the newtype wrappers 'CharString' and 'CharStringLazy' are available.
 
 Most 'ListLike' operations map directly to ByteStream options.  Notable
 exceptions:

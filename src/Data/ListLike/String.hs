@@ -10,9 +10,9 @@ For license and copyright information, see the file COPYRIGHT
 {- |
    Module     : Data.ListLike.String
    Copyright  : Copyright (C) 2007 John Goerzen
-   License    : LGPL
+   License    : BSD3
 
-   Maintainer : John Goerzen <jgoerzen@complete.org>
+   Maintainer : John Lato <jwlato@gmail.com>
    Stability  : provisional
    Portability: portable
 
@@ -34,6 +34,7 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
 import qualified Data.List as L
+import Data.ListLike.UnfoldableLL
 import Data.ListLike.Base
 
 {- | An extension to 'ListLike' for those data types that are similar

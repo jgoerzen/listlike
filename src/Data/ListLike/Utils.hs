@@ -1,3 +1,6 @@
+{-# LANGUAGE FlexibleContexts #-}
+
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
@@ -10,9 +13,9 @@ For license and copyright information, see the file COPYRIGHT
 {- |
    Module     : Data.ListLike.Utils
    Copyright  : Copyright (C) 2007 John Goerzen
-   License    : LGPL
+   License    : BSD3
 
-   Maintainer : John Goerzen <jgoerzen@complete.org>
+   Maintainer : John Lato <jwlato@gmail.com>
    Stability  : provisional
    Portability: portable
 
@@ -36,6 +39,7 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
 import Control.Monad (MonadPlus(..))
 import Data.ListLike.Base
 import Data.ListLike.FoldableLL
+import Data.ListLike.UnfoldableLL
 import Data.Maybe (maybe)
 import Data.Monoid
 

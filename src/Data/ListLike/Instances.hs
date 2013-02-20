@@ -1,3 +1,8 @@
+{-# LANGUAGE MultiParamTypeClasses            
+            ,FlexibleInstances
+            ,TypeSynonymInstances #-}
+
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
@@ -10,9 +15,9 @@ For license and copyright information, see the file COPYRIGHT
 {- |
    Module     : Data.ListLike.Instances
    Copyright  : Copyright (C) 2007 John Goerzen
-   License    : LGPL
+   License    : BSD3
 
-   Maintainer : John Goerzen <jgoerzen@complete.org>
+   Maintainer : John Lato <jwlato@gmail.com>
    Stability  : provisional
    Portability: portable
 
@@ -31,21 +36,30 @@ import Prelude hiding (length, head, last, null, tail, map, filter, concat,
                        product, repeat, replicate, cycle, take, drop,
                        splitAt, elem, notElem, unzip, lines, words,
                        unlines, unwords)
+import qualified Prelude as P
+import           Control.Monad
 import qualified Data.List as L
-import Data.ListLike.Base
-import Data.ListLike.String
-import Data.ListLike.IO
-import Data.ListLike.FoldableLL
-import Data.Int
-import Data.Monoid
-import qualified Data.ByteString as BS
+import qualified Data.Sequence as S
+import           Data.Sequence ((><), (|>), (<|))
 import qualified Data.Foldable as F
+import           Data.ListLike.Base
+import qualified Data.ListLike.Base as Base
+import           Data.ListLike.String
+import           Data.ListLike.IO
+import           Data.ListLike.FoldableLL
+import           Data.ListLike.TraversableLL
+import           Data.Int
+import           Data.Monoid
+import qualified Data.ByteString as BS
+import qualified Data.ByteString.Char8 as BSC
+import qualified Data.Foldable as F
+import qualified Data.Traversable as T
 import qualified Data.Array.IArray as A
-import Data.Array.IArray((!), (//), Ix(..))
+import           Data.Array.IArray((!), (//), Ix(..))
 import qualified Data.ByteString.Lazy as BSL
+import qualified Data.ByteString.Lazy.Char8 as BSLC
 import qualified System.IO as IO
-import Data.Word
-import qualified Data.Map as Map
+import           Data.Word
 
 --------------------------------------------------
 -- []
@@ -88,6 +102,10 @@ instance FoldableLL BS.ByteString Word8 where
     foldr' = BS.foldr'
     foldr1 = BS.foldr1
 
+instance TraversableLL BS.ByteString Word8 where
+    rigidMap f = BS.map f
+    rigidTraverse = Base.rigidTraverse
+
 instance ListLike BS.ByteString Word8 where
     empty = BS.empty
     singleton = BS.singleton
@@ -100,12 +118,11 @@ instance ListLike BS.ByteString Word8 where
     init = BS.init
     null = BS.null
     length = BS.length
-    -- map = BS.map
-    rigidMap = BS.map
+    -- map =
     reverse = BS.reverse
     intersperse = BS.intersperse
     concat = BS.concat . toList
-    --concatMap = BS.concatMap
+    --concatMap =
     rigidConcatMap = BS.concatMap
     any = BS.any
     all = BS.all
@@ -135,9 +152,10 @@ instance ListLike BS.ByteString Word8 where
     elemIndices x = fromList . BS.elemIndices x
     findIndex = BS.findIndex
     findIndices x = fromList . BS.findIndices x
-    --sequence = BS.sequence
-    --mapM = BS.mapM
-    --mapM_ = BS.mapM_
+    -- the default definitions don't work well for array-like things, so
+    -- do monadic stuff via a list instead
+    sequence  = liftM fromList . P.sequence  . toList
+    mapM func = liftM fromList . P.mapM func . toList
     --nub = BS.nub
     --delete = BS.delete
     --deleteFirsts = BS.deleteFirsts
@@ -168,11 +186,11 @@ instance ListLikeIO BS.ByteString Word8 where
     hGet = BS.hGet
     hGetNonBlocking = BS.hGetNonBlocking
     hPutStr = BS.hPutStr
-    hPutStrLn = BS.hPutStrLn
+    hPutStrLn = BSC.hPutStrLn
     getLine = BS.getLine
     getContents = BS.getContents
     putStr = BS.putStr
-    putStrLn = BS.putStrLn
+    putStrLn = BSC.putStrLn
     interact = BS.interact
     readFile = BS.readFile
     writeFile = BS.writeFile
@@ -197,6 +215,10 @@ mi64toi :: Maybe Int64 -> Maybe Int
 mi64toi Nothing = Nothing
 mi64toi (Just x) = Just (fromIntegral x)
 
+instance TraversableLL BSL.ByteString Word8 where
+    rigidMap = BSL.map
+    rigidTraverse = Base.rigidTraverse
+
 instance ListLike BSL.ByteString Word8 where
     empty = BSL.empty
     singleton = BSL.singleton
@@ -210,7 +232,6 @@ instance ListLike BSL.ByteString Word8 where
     null = BSL.null
     length = fromIntegral . BSL.length
     -- map = BSL.map
-    rigidMap = BSL.map
     reverse = BSL.reverse
     --intersperse = BSL.intersperse
     concat = BSL.concat . toList
@@ -244,6 +265,8 @@ instance ListLike BSL.ByteString Word8 where
     --elemIndices x = fromList . L.map fromIntegral . BSL.elemIndices x
     findIndex f = mi64toi . BSL.findIndex f
     --findIndices x = fromList . L.map fromIntegral . BSL.findIndices x
+    sequence  = liftM fromList . P.sequence  . toList
+    mapM func = liftM fromList . P.mapM func . toList
     --sequence = BSL.sequence
     --mapM = BSL.mapM
     --mapM_ = BSL.mapM_
@@ -281,11 +304,11 @@ instance ListLikeIO BSL.ByteString Word8 where
     hGet = BSL.hGet
     hGetNonBlocking = BSL.hGetNonBlocking
     hPutStr = BSL.hPut
-    --hPutStrLn = BSL.hPutStrLn
+    -- hPutStrLn = BSLC.hPutStrLn
     getLine = BS.getLine >>= strict2lazy
     getContents = BSL.getContents
     putStr = BSL.putStr
-    putStrLn = BSL.putStrLn
+    putStrLn = BSLC.putStrLn
     interact = BSL.interact
     readFile = BSL.readFile
     writeFile = BSL.writeFile
@@ -297,112 +320,13 @@ instance StringLike BSL.ByteString where
 
 --------------------------------------------------
 -- Map
+-- N.B. the Map instance is broken because it treats the key as part of the
+-- element.  Consider:
+--  let m = fromList [(False,0)] :: Map Bool Int
+--  let m' = cons (False, 1) m
+--  m' == fromList [(False,1)] =/= [(False,1), (False,0)]
+--  Map isn't a suitable candidate for ListLike...
 
-instance (Ord key) => FoldableLL (Map.Map key val) (key, val) where
-    foldr f start m = Map.foldWithKey func start m
-            where func k v accum = f (k, v) accum
-    foldl f start m = L.foldl f start (Map.toList m)
-
-l2m :: (Ord k, Ord k2) => ([(k, v)], [(k2, v2)]) -> (Map.Map k v, Map.Map k2 v2)
-l2m (l1, l2) = (Map.fromList l1, Map.fromList l2)
-instance (Ord key, Eq val) => ListLike (Map.Map key val) (key, val) where
-    empty = Map.empty
-    singleton (k, v) = Map.singleton k v
-    cons (k, v) m = Map.insert k v m
-    snoc = flip cons
-    append = Map.union
-    head = Map.elemAt 0
-    last m = Map.elemAt (Map.size m - 1) m
-    -- was deleteAt 0, but that is broken in GHC 6.6
-    tail = drop 1
-    -- broken in GHC 6.6: init m = Map.deleteAt (Map.size m - 1) m
-    init = Map.fromAscList . L.init . Map.toAscList
-    null = Map.null
-    length = Map.size
-    map f = fromList . map f . Map.toList
-    rigidMap f = Map.fromList . L.map f . Map.toList
-    reverse = id
-    intersperse i f
-        | Map.size f <= 1 = f
-        | otherwise = cons i f
-    -- concat
-    -- concatMap
-    -- rigidConcatMap
-    -- any
-    -- all
-    -- maximum
-    -- minimum
-    replicate = genericReplicate
-    take n = Map.fromAscList . L.take n . Map.toAscList
-    drop n = Map.fromAscList . L.drop n . Map.toAscList
-    splitAt n = l2m . L.splitAt n . Map.toList
-    takeWhile f = Map.fromAscList . L.takeWhile f . Map.toAscList
-    dropWhile f = Map.fromAscList . L.dropWhile f . Map.toAscList
-    span f = l2m . L.span f . Map.toList
-    break f = span (not . f)
-    group m
-        | null m = empty
-        | otherwise = cons (singleton (head m)) (group (tail m))
-    -- group
-    -- inits
-    -- tails
-    isPrefixOf f1 f2 = L.isPrefixOf (Map.toList f1) (Map.toList f2)
-    isSuffixOf f1 f2 = L.isSuffixOf (Map.toList f1) (Map.toList f2)
-    isInfixOf = Map.isSubmapOf
-    --elem = Map.member
-    --notElem = Map.notMember
-    -- find
-    filter f m = Map.filterWithKey func m
-            where func k v = f (k, v)
-    index = flip Map.elemAt
-    elemIndex (k, v) m =
-        case Map.lookupIndex k m of
-             Nothing -> fail "elemIndex: no matching key"
-             Just i -> if snd (Map.elemAt i m) == v
-                           then Just i
-                           else fail "elemIndex on Map: matched key but not value"
-    elemIndices i m = 
-        case elemIndex i m of
-             Nothing -> empty
-             Just x -> singleton x
-    -- findIndex
-    -- findIndices
-    -- sequence
-    -- mapM
-    -- rigidMapM
-    -- mapM_
-    nub = id
-    delete (k, v) m =
-        case Map.lookup k m of
-             Nothing -> m
-             Just x -> if x == v
-                          then Map.delete k m
-                          else m
-    union = Map.union
-    -- intersect
-    sort = id
-    insert = cons
-    toList = Map.toList
-    fromList = Map.fromList
-    nubBy func = Map.fromAscList . L.nubBy func . Map.toAscList
-    --deleteBy
-    deleteFirstsBy func m1 m2 = Map.fromAscList $ 
-                                L.deleteFirstsBy func (Map.toAscList m1)
-                                                 (Map.toAscList m2)
-    --deleteFirstsBy
-    unionBy func m1 m2 = Map.fromList $ 
-                            L.unionBy func (Map.toList m1) (Map.toList m2)
-    --intersectBy
-    --groupBy
-    sortBy _ = id
-    insertBy _ = insert
-    genericLength = fromIntegral . Map.size
-    genericTake n = Map.fromAscList . L.genericTake n . Map.toAscList
-    genericDrop n = Map.fromAscList . L.genericDrop n . Map.toAscList
-    genericSplitAt n = l2m . L.genericSplitAt n . Map.toList
-    genericReplicate count item
-        | count <= 0 = empty
-        | otherwise = singleton item
 
 --------------------------------------------------
 -- Arrays
@@ -424,6 +348,10 @@ instance (Integral i, Ix i) => Monoid (A.Array i e) where
               newelems = A.elems l2
               newbhigh = bhigh + newlen
               (blow, bhigh) = A.bounds l1
+
+instance (Integral i, Ix i) => TraversableLL (A.Array i e) e where
+    rigidMap = A.amap
+    rigidTraverse = T.traverse
 
 instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     empty = mempty
@@ -447,7 +375,6 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     null l = genericLength l == (0::Integer)
     length = genericLength
     -- map
-    rigidMap = A.amap
     reverse l = A.listArray (A.bounds l) (L.reverse (A.elems l)) 
     -- intersperse
     -- concat
@@ -481,10 +408,9 @@ instance (Integral i, Ix i) => ListLike (A.Array i e) e where
     elemIndices i = fromList . L.elemIndices i . toList
     findIndex f = L.findIndex f . toList
     findIndices f = fromList . L.findIndices f . toList
-    -- sequence = M.sequence . toList
-    -- mapM f = M.mapM f . toList
+    sequence  = liftM fromList . P.sequence  . toList
+    mapM func = liftM fromList . P.mapM func . toList
     -- rigidMapM = mapM
-    -- mapM_ f = M.mapM_ f . toList
     nub = fromList . L.nub . toList
     -- delete
     -- deleteFirsts
@@ -540,3 +466,111 @@ instance (Integral i, Ix i) => ListLikeIO (A.Array i Char) Char where
     -- readFile
     -- writeFile
     -- appendFile
+
+-- ---------------------------
+-- Data.Sequence instances
+
+instance ListLikeIO (S.Seq Char) Char where
+    hGetLine h = IO.hGetLine h >>= (return . fromList)
+    hGetContents h = IO.hGetContents h >>= (return . fromList)
+    hGet h i = ((hGet h i)::IO String) >>= (return . fromList)
+    hGetNonBlocking h i = ((hGetNonBlocking h i):: IO String) >>= (return . fromList)
+    hPutStr h = hPutStr h . toString
+    hPutStrLn h = hPutStrLn h . toString
+    getLine = IO.getLine >>= (return . fromString)
+    getContents = IO.getContents >>= (return . fromString)
+    putStr = IO.putStr . toString
+    putStrLn = IO.putStrLn . toString
+    -- interact
+    -- readFile
+    -- writeFile
+    -- appendFile
+
+instance StringLike (S.Seq Char) where
+    toString = toList
+    fromString = fromList
+
+instance FoldableLL (S.Seq a) a where
+    foldl = F.foldl
+    foldl' = F.foldl'
+    foldl1 = F.foldl1
+    foldr = F.foldr
+    foldr' = F.foldr'
+    foldr1 = F.foldr1
+
+instance TraversableLL (S.Seq a) a where
+    rigidMap      = fmap
+    rigidTraverse = T.traverse
+
+instance ListLike (S.Seq a) a where
+    empty = S.empty
+    singleton = S.singleton
+    cons = (<|)
+    snoc = (|>)
+    append = (><)
+    head s = let (a S.:< _) = S.viewl s in a
+    last s = let (_ S.:> a) = S.viewr s in a
+    tail s = S.index (S.tails s) 1
+    init s = S.index (S.inits s) (S.length s - 1)
+    null = S.null
+    length = S.length
+    map f = fromList . toList . fmap f
+    --rigidMap =
+    reverse = S.reverse
+    --intersperse =
+    --concat =
+    --concatMap = 
+    --rigidConcatMap =
+    any = F.any
+    all = F.all
+    maximum = F.maximum
+    minimum = F.minimum
+    replicate n = S.replicate (if n >= 0 then n else 0)
+    take = S.take
+    drop = S.drop
+    splitAt = S.splitAt
+    --takeWhile =
+    --dropWhile =
+    span = S.spanl
+    -- break =
+    --group =
+    inits = fromList . toList . S.inits
+    tails = fromList . toList . S.tails
+    --isPrefixOf =
+    --isSuffixOf =
+    --isInfixOf =
+    --elem =
+    --notElem =
+    --find =
+    filter = S.filter
+    partition = S.partition
+    index = S.index
+    elemIndex = S.elemIndexL
+    elemIndices p = fromList . S.elemIndicesL p
+    findIndex = S.findIndexL
+    findIndices p = fromList . S.findIndicesL p
+    --sequence =
+    --mapM f =
+    --nub =
+    --delete =
+    --deleteFirsts =
+    --union =
+    --intersect =
+    sort = S.sort
+    --insert = S.insert
+    toList = F.toList
+    fromList = S.fromList
+    fromListLike = fromList . toList
+    --nubBy =
+    --deleteBy =
+    --deleteFirstsBy =
+    --unionBy =
+    --intersectBy =
+    --groupBy f =
+    sortBy = S.sortBy
+    --insertBy =
+    genericLength = fromInteger . fromIntegral . S.length
+    genericTake i = S.take (fromIntegral i)
+    genericDrop i = S.drop (fromIntegral i)
+    genericSplitAt i = S.splitAt (fromIntegral i)
+    genericReplicate i = S.replicate (fromIntegral i)

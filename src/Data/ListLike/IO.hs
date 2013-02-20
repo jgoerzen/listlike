@@ -1,3 +1,7 @@
+{-# LANGUAGE MultiParamTypeClasses            
+            ,FunctionalDependencies #-}
+
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
@@ -10,9 +14,9 @@ For license and copyright information, see the file COPYRIGHT
 {- |
    Module     : Data.ListLike.IO
    Copyright  : Copyright (C) 2007 John Goerzen
-   License    : LGPL
+   License    : BSD3
 
-   Maintainer : John Goerzen <jgoerzen@complete.org>
+   Maintainer : John Lato <jwlato@gmail.com>
    Stability  : provisional
    Portability: portable
 

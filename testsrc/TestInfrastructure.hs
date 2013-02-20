@@ -1,3 +1,12 @@
+{-# LANGUAGE ScopedTypeVariables
+            ,RankNTypes
+            ,ExistentialQuantification
+            ,MultiParamTypeClasses
+            ,FunctionalDependencies
+            ,FlexibleInstances
+            ,UndecidableInstances
+            ,FlexibleContexts #-}
+
 {-
 Copyright (C) 2007 John Goerzen <jgoerzen@complete.org>
 
@@ -11,12 +20,12 @@ For license and copyright information, see the file COPYRIGHT
 module TestInfrastructure where
 
 import Test.QuickCheck
-import Test.QuickCheck.Batch
+import Test.QuickCheck.Test
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Lazy as BSL
 import qualified Data.ListLike as LL
-import qualified Data.Map as Map
 import qualified Data.Array as A
+import qualified Data.Sequence as S
 import qualified Data.Foldable as F
 import System.Random
 import System.IO
@@ -26,71 +35,75 @@ import Data.Word
 import Data.List
 import Data.Monoid
 
-{-
-#if defined __HUGS__
--}
-instance (Arbitrary a) => Arbitrary (Maybe a) where
-  arbitrary            = sized arbMaybe
-   where
-    arbMaybe 0 = return Nothing
-    arbMaybe n = fmap Just (resize (n-1) arbitrary)
-  coarbitrary Nothing  = variant 0
-  coarbitrary (Just x) = variant 1 . coarbitrary x
-{-
-#endif
--}
 
-(@=?) :: (Eq a, Show a) => a -> a -> Result
-expected @=? actual = 
-        Result {ok = Just (expected == actual), 
-                arguments = ["Result: expected " ++ show expected ++ ", got " ++ show actual],
-                stamp = []}
-    
-(@?=) :: (Eq a, Show a) => a -> a -> Result
-(@?=) = flip (@=?)
-
-instance (LL.ListLike f i, Arbitrary i) => Arbitrary f where
+instance (Arbitrary i) => Arbitrary (MyList i) where
     arbitrary = sized (\n -> choose (0, n) >>= myVector)
         where myVector n =
                   do arblist <- vector n
                      return (LL.fromList arblist)
+    shrink (MyList l) = map MyList $ shrink l
+
+instance (CoArbitrary i) => CoArbitrary (MyList i) where
+    coarbitrary l = coarbitrary (LL.toList l)
+
+instance (Arbitrary i) => Arbitrary (S.Seq i) where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- vector n
+                     return (LL.fromList arblist)
+    shrink = map LL.fromList . shrink . LL.toList
+
+instance (CoArbitrary i) => CoArbitrary (S.Seq i) where
+    coarbitrary l = coarbitrary (LL.toList l)
+
+instance Arbitrary (BSL.ByteString) where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- vector n
+                     return (LL.fromList arblist)
+    shrink = map LL.fromList . shrink . LL.toList
+
+instance CoArbitrary (BSL.ByteString) where
+    coarbitrary l = coarbitrary (LL.toList l)
+
+instance Arbitrary (BS.ByteString) where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- vector n
+                     return (LL.fromList arblist)
+    shrink = map LL.fromList . shrink . LL.toList
+
+instance CoArbitrary (BS.ByteString) where
+    coarbitrary l = coarbitrary (LL.toList l)
+
+instance Arbitrary i => Arbitrary (A.Array Int i) where
+    arbitrary = sized (\n -> choose (0, n) >>= myVector)
+        where myVector n =
+                  do arblist <- vector n
+                     return (LL.fromList arblist)
+    shrink = map LL.fromList . shrink . LL.toList
+
+instance (CoArbitrary i) => CoArbitrary (A.Array Int i) where
     coarbitrary l = coarbitrary (LL.toList l)
 
 class (Show b, Arbitrary a, Show a, Eq a, Eq b, LL.ListLike a b) => TestLL a b where
-    -- | Compare a ListLike to a list using any local conversions needed
-    llcmp :: a -> [b] -> Result
-    llcmp f l = l @=? (LL.toList f)
-
-    -- | Check the lenghts of the two items.  True if they should be considered
-    -- to match.
-    checkLengths :: a -> [b] -> Bool
-    checkLengths f l = (LL.length f) == length l
+  llcmp :: a -> [b] -> Property
+  llcmp f l =  (putStrLn ("Expected: " ++ show l ++ "\nGot: " ++ show f))
+               `whenFail` (l == (LL.toList f))
+  checkLengths :: a -> [b] -> Bool
+  checkLengths f l = (LL.length f) == length l
 
 instance (Arbitrary a, Show a, Eq a) => TestLL [a] a where
-    llcmp x y = y @=? x
 
 instance (Arbitrary a, Show a, Eq a) => TestLL (MyList a) a where
-    llcmp (MyList x) l = l @=? x
 
 instance TestLL BS.ByteString Word8 where
 
 instance TestLL BSL.ByteString Word8 where
 
-instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
+instance (Arbitrary a, Show a, Eq a) => TestLL (S.Seq a) a where
 
-instance (Show k, Show v, Arbitrary k, Arbitrary v, Ord v, Ord k) => TestLL (Map.Map k v) (k, v) where
-    llcmp m l = 
-        if mycmp (Map.toList m) && mychk l
-            then l @=? l                         -- True
-            else l @=? (Map.toList m)            -- False
-        where mycmp [] = True
-              mycmp (x:xs) = if elem x l 
-                                then mycmp xs
-                                else False
-              mychk [] = True
-              mychk ((k, _):xs) = if Map.member k m then mychk xs else False
-    -- FIXME: should find a way to use LL.length instead of Map.size here
-    checkLengths m l = Map.size m == length (mapRemoveDups l)
+instance (Arbitrary a, Show a, Eq a) => TestLL (A.Array Int a) a where
 
 mapRemoveDups :: (Eq k1) => [(k1, v1)] -> [(k1, v1)]
 mapRemoveDups = nubBy (\(k1, _) (k2, _) -> k1 == k2)
@@ -118,39 +131,7 @@ instance LL.StringLike (MyList Char) where
     toString (MyList x) = x
     fromString x = MyList x
 
-instance Arbitrary Word8 where
-    arbitrary = sized $ \n -> choose (0, min (fromIntegral n) maxBound)
-    coarbitrary n = variant (if n >= 0 then 2 * x else 2 * x + 1)
-                where x = abs . fromIntegral $ n
-
-instance Arbitrary Char where
-    arbitrary = sized $ \n -> choose (toEnum 0, min (toEnum n) maxBound)
-    coarbitrary n = variant (if (fromEnum n) >= 0 then toEnum (2 * x) else toEnum (2 * x + 1))
-                where (x::Int) = abs . fromEnum $ n
-
-instance Random Word8 where
-    randomR (a, b) g = (\(x, y) -> (fromInteger x, y)) $
-                       randomR (toInteger a, toInteger b) g
-    random g = randomR (minBound, maxBound) g
-
-testoptions = defOpt {length_of_tests = 0, debug_tests = False}
-
-mkTest msg test = HU.TestLabel msg $ HU.TestCase $ (run test testoptions >>= checResult)
-    where checResult (TestOk x y z) = printmsg x y >> return ()
-          checResult (TestExausted x y z) = 
-            do hPrintf stderr "\r%-78s\n" $
-                "Warning: Arguments exhausted after " ++ show y ++ " cases."
-               return ()
-          checResult (TestFailed x y) = HU.assertFailure $
-                "Test Failure\n" ++ 
-                "Arguments: " ++
-                (concat . intersperse "\n           " $ x) ++ 
-                "\nTest No.:  " ++ show y
-          checResult (TestAborted x) = HU.assertFailure (show x)
-          printmsg x y 
-            | False = hPrintf stderr "\r%-78s\r" 
-                      (msg ++ " " ++ x ++ " (" ++ show y ++ " cases)")
-            | otherwise = return ()
+mkTest msg test = HU.TestLabel msg $ HU.TestCase (quickCheck test)
 
 -- Modified from HUnit
 runVerbTestText :: HU.PutText st -> HU.Test -> IO (HU.Counts, st)
@@ -199,31 +180,26 @@ apw :: String -> (forall f' f i. (TestLL f i, Show i, Eq i, LL.ListLike f i, Eq 
 apw msg x = HU.TestLabel msg $ HU.TestList $
     [wwrap "wrap [[Int]]" (x::LLWrap [[Int]] [Int] Int),
      wwrap "wrap MyList (MyList Int)" (x::LLWrap (MyList (MyList Int)) (MyList Int) Int),
+     wwrap "wrap S.Seq (S.Seq Int)" (x::LLWrap (S.Seq (S.Seq Int)) (S.Seq Int) Int),
      wwrap "wrap Array (Array Int)" (x::LLWrap (A.Array Int (A.Array Int Int)) (A.Array Int Int) Int),
      wwrap "wrap Array [Int]" (x::LLWrap (A.Array Int [Int]) [Int] Int)
      ]
 
 -- | all props, 1 args: full
-apf :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i) => LLTest f i) -> HU.Test 
+apf :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.ListLike f i, Eq f, Show f, Arbitrary f, Arbitrary i, CoArbitrary f, CoArbitrary i) => LLTest f i) -> HU.Test 
 apf msg x = HU.TestLabel msg $ HU.TestList $
     [w "[Int]" (x::LLTest [Int] Int),
      w "MyList Int" (x::LLTest (MyList Int) Int),
      w "String" (x::LLTest String Char),
      w "[Bool]" (x::LLTest [Bool] Bool),
      w "MyList Bool" (x::LLTest (MyList Bool) Bool),
-     w "Map Int Int" (x::LLTest (Map.Map Int Int) (Int, Int)),
-     w "Map Bool Int" (x::LLTest (Map.Map Bool Int) (Bool, Int)),
-     w "Map Int Bool" (x::LLTest (Map.Map Int Bool) (Int, Bool)),
-     w "Map Bool Bool" (x::LLTest (Map.Map Bool Bool) (Bool, Bool)),
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
+     w "Sequence Int" (x::LLTest (S.Seq Int) Int),
+     w "Sequence Bool" (x::LLTest (S.Seq Bool) Bool),
+     w "Sequence Char" (x::LLTest (S.Seq Char) Char),
      w "Array Int Int" (x::LLTest (A.Array Int Int) Int),
      w "Array Int Bool" (x::LLTest (A.Array Int Bool) Bool),
-     w "[[Int]]" (x::LLTest [[Int]] [Int]),
-     w "MyList (MyList Int)" (x::LLTest (MyList (MyList Int)) (MyList Int)),
-     w "[MyList Int]" (x::LLTest [MyList Int] (MyList Int)),
-     w "Array [Int]" (x::LLTest (A.Array Int [Int]) [Int]),
-     w "Array (Array Int)" (x::LLTest (A.Array Int (A.Array Int Int)) (A.Array Int Int)),
      w "Array (Just Int)" (x::LLTest (A.Array Int (Maybe Int)) (Maybe Int))
     ]
 
@@ -232,6 +208,7 @@ aps :: String -> (forall f i. (Ord i, TestLL f i, Show i, Eq i, LL.StringLike f,
 aps msg x = HU.TestLabel msg $ HU.TestList $
     [w "String" (x::LLTest String Char),
      w "MyList Char" (x::LLTest (MyList Char) Char),
+     w "Sequence Char" (x::LLTest (S.Seq Char) Char),
      w "ByteString" (x::LLTest BS.ByteString Word8),
      w "ByteString.Lazy" (x::LLTest BSL.ByteString Word8),
      w "Array Int Char" (x::LLTest (A.Array Int Char) Char) 

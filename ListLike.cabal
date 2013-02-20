@@ -1,12 +1,13 @@
 Name: ListLike
-Version: 1.0.1
-License: LGPL
-Maintainer: John Goerzen <jgoerzen@complete.org>
+Version: 3.1.7.1
+License: BSD3
+Maintainer: John Lato <jwlato@gmail.com>
 Author: John Goerzen
 Copyright: Copyright (c) 2007-2008 John Goerzen
 license-file: COPYRIGHT
-extra-source-files: COPYING
+extra-source-files: COPYRIGHT, README
 Category: Generics
+Cabal-Version: >= 1.6
 Build-Type: Simple
 homepage: http://software.complete.org/listlike
 synopsis: Generic support for list-like structures
@@ -21,26 +22,32 @@ Description: Generic support for list-like structures in Haskell.
  ByteString, for types that support input and output, and for types that can handle
  infinite lists.
 Stability: Stable
-Hs-Source-Dirs: src
-Exposed-Modules: Data.ListLike,
-        Data.ListLike.Base,
-        Data.ListLike.FoldableLL,
-        Data.ListLike.IO,
-        Data.ListLike.Instances,
-        Data.ListLike.String,
-        Data.ListLike.Utils
--- Other-Modules: Data.ConfigFile.Lexer
-Extensions: ExistentialQuantification, OverlappingInstances, 
-   UndecidableInstances, MultiParamTypeClasses,
-   FunctionalDependencies, FlexibleInstances, PatternSignatures,
-   FlexibleContexts, TypeSynonymInstances
-Build-Depends: base,
-               haskell98, mtl, containers, bytestring, array
-GHC-Options: -O2
 
-Executable: runtests
-Buildable: False
-Main-Is: runtests.hs
-HS-Source-Dirs: testsrc, .
-Extensions: ExistentialQuantification, OverlappingInstances,
-    UndecidableInstances, CPP
+Library
+  Hs-Source-Dirs: src
+  Exposed-Modules: Data.ListLike,
+          Data.ListLike.Base,
+          Data.ListLike.CharString,
+          Data.ListLike.FoldableLL,
+          Data.ListLike.TraversableLL,
+          Data.ListLike.IO,
+          Data.ListLike.Instances,
+          Data.ListLike.String,
+          Data.ListLike.Utils
+  -- Other-Modules: Data.ConfigFile.Lexer
+  Build-Depends: base       >= 3     && < 5
+                ,containers >= 0.3   && < 0.6
+                ,bytestring >= 0.9.1 && < 0.11
+                ,array      >= 0.3   && < 0.5
+                ,mtl        >= 2     && < 3
+  
+Executable runtests
+  Buildable: False
+  Main-Is: runtests.hs
+  HS-Source-Dirs: testsrc, .
+  Extensions: ExistentialQuantification
+      UndecidableInstances, CPP
+
+source-repository head
+  type:     git
+  location: git://github.com/JohnLato/listlike.git
