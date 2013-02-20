@@ -143,7 +143,13 @@ genericReplicate count x = unfoldrN (max 0 $ fromIntegral count) f count
 
 
 instance UnfoldableLL [a] a where
-    unfoldr = L.unfoldr
+    --unfoldr = L.unfoldr
+    unfoldr f = u
+      where
+        u s = case f s of
+                Nothing         -> []
+                Just (x, s')    -> x : u s'
+    {-# INLINE unfoldr #-}
     singleton = (: [])
     empty = []
     map f = L.map f . toList
